@@ -174,6 +174,99 @@ void NICEparamNodeID(
 }
 
 /*
+ * Write counter code, optionally followed by a bitmap, then followed by the
+ * counter value.
+ */
+void NICEcounter8(
+  uint16_t counter,
+  uint8_t value
+)
+{
+  counter = NICE_CTR_8(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) &0xFF;
+  outbuf[outptr++] = value;
+}
+
+void NICEcounter16(
+  uint16_t counter,
+  uint16_t value
+)
+{
+  counter = NICE_CTR_16(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) &0xFF;
+  outbuf[outptr++] = value & 0xFF;
+  outbuf[outptr++] = (value >> 8) & 0xFF;
+}
+
+void NICEcounter32(
+  uint16_t counter,
+  uint32_t value
+)
+{
+  counter = NICE_CTR_32(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) &0xFF;
+  outbuf[outptr++] = value & 0xFF;
+  outbuf[outptr++] = (value >> 8) & 0xFF;
+  outbuf[outptr++] = (value >> 16) & 0xFF;
+  outbuf[outptr++] = (value >> 24) & 0xFF;
+}
+
+void NICEcounter8BM(
+  uint16_t counter,
+  uint16_t map,
+  uint8_t value
+)
+{
+  counter = NICE_CTR_8_BM(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) & 0xFF;
+  outbuf[outptr++] = map & 0xFF;
+  outbuf[outptr++] = (map >> 8) & 0xFF;
+  outbuf[outptr++] = value;
+}
+
+void NICEcounter16BM(
+  uint16_t counter,
+  uint16_t map,
+  uint16_t value
+)
+{
+  counter = NICE_CTR_16_BM(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) & 0xFF;
+  outbuf[outptr++] = map & 0xFF;
+  outbuf[outptr++] = (map >> 8) & 0xFF;
+  outbuf[outptr++] = value;
+  outbuf[outptr++] = (value >> 8) & 0xFF;
+}
+
+void NICEcounter32BM(
+  uint16_t counter,
+  uint16_t map,
+  uint32_t value
+)
+{
+  counter = NICE_CTR_32_BM(counter);
+
+  outbuf[outptr++] = counter & 0xFF;
+  outbuf[outptr++] = (counter >> 8) & 0xFF;
+  outbuf[outptr++] = map & 0xFF;
+  outbuf[outptr++] = (map >> 8) & 0xFF;
+  outbuf[outptr++] = value;
+  outbuf[outptr++] = (value >> 8) & 0xFF;
+  outbuf[outptr++] = (value >> 16) & 0xFF;
+  outbuf[outptr++] = (value >> 24) & 0xFF;
+}
+
+/*
  * Write node address followed by a node name and flag an executor node by
  * setting bit 7 of the name length
  */

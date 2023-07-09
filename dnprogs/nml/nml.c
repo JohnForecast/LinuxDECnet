@@ -34,11 +34,14 @@
 
 #define PROC_DECNET_DEV         "/proc/net/decnet_dev"
 #define PROC_DECNET_CACHE       "/proc/net/decnet_cache"
+#define PROC_DECNET_NODES	"/proc/net/decnet_nodes"
+#define PROC_REVISION		"/proc/net/decnet_revision"
 #define PROC_DECNET             "/proc/net/decnet"
 #define PROC_SEGBUFSIZE         "/proc/sys/net/decnet/segbufsize"
 #define PROC_INCOMINGTIMER	"/proc/sys/net/decnet/incoming_timer"
 #define PROC_OUTGOINGTIMER	"/proc/sys/net/decnet/outgoing_timer"
 
+static uint8_t revision[3];
 static uint16_t localaddr, router = 0;
 static uint8_t localarea;
 static char routername[NICE_MAXNODEL + 1] = "";
@@ -60,6 +63,19 @@ uint16_t nodecount;
 #define MAX_NODEADDRESS         65536
 uint16_t nexthop[MAX_NODEADDRESS];
 
+static struct nodectrs {
+  uint8_t	valid;
+  uint8_t	delay;
+  uint16_t	sincezeroed;
+  uint32_t	usrbytesrcvd;
+  uint32_t	usrbytessent;
+  uint32_t	totalmsgrcvd;
+  uint32_t	totalmsgsent;
+  uint16_t	connectsrcvd;
+  uint16_t	connectssent;
+  uint16_t	timeouts;
+} nodectrs[MAX_NODEADDRESS];
+
 /*
  * Read a single integer value from a file (typically /proc/sys/...).
  */
@@ -79,6 +95,32 @@ static int get_value(
       }
     }
     fclose(file);
+  }
+  return 0;
+}
+
+/*
+ * Get the revision of the kernel module. If the file does not exist, we
+ * assume a revision number of 1.0.0
+ */
+static int get_revision(void)
+{
+  FILE *file = fopen(PROC_REVISION, "r");
+  char buf[64];
+
+  if (file) {
+    if (fgets(buf, sizeof(buf), file)) {
+      if (sscanf(buf, "%hhu.%hhu.%hhu\n",
+                 &revision[0], &revision[1], &revision[2]) == 3) {
+        fclose(file);
+        return 1;
+      }
+    }
+    fclose(file);
+  } else {
+    revision[0] = 1;
+    revision[1] = 0;
+    revision[2] = 0;
   }
   return 0;
 }
@@ -350,6 +392,51 @@ static void build_nexthop_table(void)
 }
 
 /*
+ * Load node information (delay, counters).
+ */
+static void load_node_info(void)
+{
+  char buf[256], var1[32];
+  uint8_t delay;
+  uint16_t since;
+  uint32_t usrbytesrcvd, usrbytessent, totalmsgrcvd, totalmsgsent;
+  uint16_t connectsrcvd, connectssent, timeouts;
+
+  FILE *procfile = fopen(PROC_DECNET_NODES, "r");
+
+  memset(nodectrs, 0, sizeof(nodectrs));
+
+  if (procfile) {
+    while (!feof(procfile)) {
+      if (!fgets(buf, sizeof(buf), procfile))
+	break;
+
+      if (sscanf(buf, "%s %hhu %hu 0x%x 0x%x 0x%x 0x%x 0x%hx 0x%hx 0x%hx\n",
+		      var1, &delay, &since, &usrbytesrcvd, &usrbytessent,
+		      &totalmsgrcvd, &totalmsgsent,
+		      &connectsrcvd, &connectssent, &timeouts) == 10) {
+	int area, node, addr;
+
+	sscanf(var1, "%d.%d", &area, &node);
+	addr = (area << 10) | node;
+
+	nodectrs[addr].valid = 1;
+	nodectrs[addr].delay = delay;
+	nodectrs[addr].sincezeroed = since;
+	nodectrs[addr].usrbytesrcvd = usrbytesrcvd;
+	nodectrs[addr].usrbytessent = usrbytessent;
+	nodectrs[addr].totalmsgrcvd = totalmsgrcvd;
+	nodectrs[addr].totalmsgsent = totalmsgsent;
+	nodectrs[addr].connectsrcvd = connectsrcvd;
+	nodectrs[addr].connectssent = connectssent;
+	nodectrs[addr].timeouts = timeouts;
+      }
+    }
+    fclose(procfile);
+  }
+}
+
+/*
  * Process read information requests about the executor node
  */
 static void read_node_executor(
@@ -416,6 +503,17 @@ static void read_node_executor(
       NICEflush();
       break;
 
+    case NICE_READ_OPT_CTRS:
+      /*
+       * For now, just fake the response
+       */
+      NICEsuccessResponse();
+      NICEnodeEntity(localaddr, node ? node->n_name : NULL, TRUE);
+      NICEcounter8(NICE_C_N_OVERSIZELOSS, 0);
+      NICEcounter8(NICE_C_N_FORMATERR, 0);
+      NICEcounter8(NICE_C_N_VERIFREJECT, 0);
+      NICEflush();
+      break;
 
     default:
       NICEunsupportedResponse();
@@ -475,6 +573,9 @@ static void read_node_single(
         if (active)
           NICEparamDU2(NICE_P_N_ACTIVELINKS, get_count(address));
 
+	if ((revision[0] >= 3) && nodectrs[address].valid)
+	  NICEparamDU2(NICE_P_N_DELAY, nodectrs[address].delay);
+
         if (active || (address == router))
           if (circuit[0])
             NICEparamAIn(NICE_P_N_CIRCUIT, circuit);
@@ -493,6 +594,22 @@ static void read_node_single(
       }
       /*** TODO ***/
       NICEflush();
+      break;
+
+    case NICE_READ_OPT_CTRS:
+      if (nodectrs[address].valid) {
+	NICEsuccessResponse();
+	NICEnodeEntity(address, name, FALSE);
+	NICEcounter16(NICE_C_N_SECONDS, nodectrs[address].sincezeroed);
+	NICEcounter32(NICE_C_N_USERBYTESRCVD, nodectrs[address].usrbytesrcvd);
+	NICEcounter32(NICE_C_N_USERBYTESSENT, nodectrs[address].usrbytessent);
+	NICEcounter32(NICE_C_N_TOTMSGSRCVD, nodectrs[address].totalmsgrcvd);
+	NICEcounter32(NICE_C_N_TOTMSGSSENT, nodectrs[address].totalmsgsent);
+	NICEcounter16(NICE_C_N_CONNRCVD, nodectrs[address].connectsrcvd);
+	NICEcounter16(NICE_C_N_CONNSENT, nodectrs[address].connectssent);
+	NICEcounter16(NICE_C_N_RESP_TMO, nodectrs[address].timeouts);
+	NICEflush();
+      }
       break;
 
     default:
@@ -541,6 +658,9 @@ static void read_node(
 
   scan_links();
   build_nexthop_table();
+
+  if (revision[0] >= 3)
+    load_node_info();
   
   if ((signed char)entity > 0) {
     /*
@@ -753,10 +873,11 @@ void process_request(
   struct dn_naddr *execaddr = getnodeadd();
 
   /*
-   * Get some onformation about the current state of this node
+   * Get some information about the current state of this node
    */
   localaddr = (execaddr->a_addr[1] << 8) | execaddr->a_addr[0];
   localarea = (localaddr >> 10) & 0x3F;
+  get_revision();
   get_router();
 
   NICEinit(sock);

@@ -14,7 +14,7 @@ all: $(PROG1)
 	$(CC) $(CFLAGS) $(SYSCONF_PREFIX) -c -o $@ $<
 
 $(PROG1): $(PROG1OBJS) $(DEPLIBDNET) $(DEPLIBDAEMON)
-	$(CC) $(CFLAGS) -o $@ $(PROG1OBJS) $(LIBDNET) $(LIBDAEMON) -L ../dnroute/netlink -lnetlink
+	$(CC) $(CFLAGS) -o $@ $(PROG1OBJS) $(LIBDNET) $(LIBDAEMON)
 
 install:
 	install -d $(prefix)/sbin

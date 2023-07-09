@@ -137,6 +137,16 @@
   (NICE_TYPE_C | NICE_TYPE_C_MULTI | (n))
 
 /*
+ * Common counter type encodings.
+ */
+#define NICE_CTR_8(n)		((n) | NICE_ID_CTR | NICE_ID_CTR_LEN_8BIT)
+#define NICE_CTR_16(n)		((n) | NICE_ID_CTR | NICE_ID_CTR_LEN_16BIT)
+#define NICE_CTR_32(n)		((n) | NICE_ID_CTR | NICE_ID_CTR_LEN_32BIT)
+#define NICE_CTR_8_BM(n)	(NICE_CTR_8(n) | NICE_ID_CTR_BITMAP)
+#define NICE_CTR_16_BM(n)	(NICE_CTR_16(n) | NICE_ID_CTR_BITMAP)
+#define NICE_CTR_32_BM(n)	(NICE_CTR_32(n) | NICE_ID_CTR_BITMAP)
+
+/*
  * Circuit parameters
  */
 #define NICE_P_C_STATE          0               /* STATE (C-1) */
@@ -732,6 +742,12 @@ extern void NICEparamHIn(uint16_t, char, char *);
 extern void NICEparamC1(uint16_t, uint8_t);
 extern void NICEparamCMn(uint16_t, uint8_t);
 extern void NICEparamNodeID(uint16_t, uint16_t, char *);
+extern void NICEcounter8(uint16_t, uint8_t);
+extern void NICEcounter16(uint16_t, uint16_t);
+extern void NICEcounter32(uint16_t, uint32_t);
+extern void NICEcounter8BM(uint16_t, uint16_t, uint8_t);
+extern void NICEcounter16BM(uint16_t, uint16_t, uint16_t);
+extern void NICEcounter32BM(uint16_t, uint16_t, uint32_t);
 extern void NICEnodeEntity(uint16_t, char *, int);
 extern void NICEcircuitEntity(char *);
 extern void NICEareaEntity(uint8_t);
