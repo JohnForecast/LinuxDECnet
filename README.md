@@ -4,12 +4,12 @@ DECnet for Linux updated to run on latest Linux kernel
 
 README.DECnet
 
-  Detailed instructions for downloading and installing DECnet on a Linux system.
+  - Detailed instructions for downloading and installing DECnet on a Linux system.
   
   
 BuildAndInstall.sh
 
-  Shell script which automates most of the process of installing DECnet on a Linux system:
+  - Shell script which automates most of the process of installing DECnet on a Linux system:
   
   1. Create a working directory on the target system and make that the current directory
   
