@@ -23,10 +23,12 @@
 #include <syslog.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/utsname.h>
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
+#include <fcntl.h>
 #include "libnetlink.h"
 #include "nice.h"
 
@@ -37,6 +39,7 @@
 #define PROC_DECNET_NODES	"/proc/net/decnet_nodes"
 #define PROC_REVISION		"/proc/net/decnet_revision"
 #define PROC_DECNET             "/proc/net/decnet"
+#define PROC_ZERO_NODE		"/proc/net/decnet_zero_node"
 #define PROC_SEGBUFSIZE         "/proc/sys/net/decnet/segbufsize"
 #define PROC_INCOMINGTIMER	"/proc/sys/net/decnet/incoming_timer"
 #define PROC_OUTGOINGTIMER	"/proc/sys/net/decnet/outgoing_timer"
@@ -840,7 +843,7 @@ static void read_information(void)
   if (NICEget1(&option) && NICEget1(&entity)) {
     NICEacceptedResponse();
 
-    dnetlog(LOG_DEBUG, "option=0x%02x, entity=%d\n", option, entity);
+    dnetlog(LOG_DEBUG, "read: option=0x%02x, entity=%d\n", option, entity);
 
     switch (option & NICE_READ_OPT_ENTITY) {
       case NICE_ENT_NODE:
@@ -857,6 +860,139 @@ static void read_information(void)
 
       default:
         break;
+    }
+    NICEdoneResponse();
+  }
+}
+
+/*
+ * Issue a "zero counters" command to the decnet module
+ */
+static int zero_command(
+  char *command
+)
+{
+  int fd = open(PROC_ZERO_NODE, O_WRONLY);
+
+  if (fd != -1) {
+    if (write(fd, command, strlen(command)) == strlen(command)) {
+      close(fd);
+      return TRUE;
+    }
+    close(fd);
+  }
+  NICEoperationFailureResponse();
+  return FALSE;
+}
+
+/*
+ * Process a zero counters operation for a single node.
+ */
+static void zero_node_single(
+  uint16_t address,
+  char *name
+)
+{
+  struct nodeent *dp;
+  char addr[8];
+
+  /*
+   * If we only have a nodename, try to get it's associated address. If this
+   * fails we just have to give up.
+   */
+  if (name) {
+    int i;
+
+    for (i = 0; name[i]; i++)
+      name[i] = tolower(name[i]);
+
+    if ((dp = getnodebyname(name)) == NULL)
+      return;
+
+    address = *((uint16_t *)dp->n_addr);
+  }
+
+  sprintf(addr, "%u.%u", (address >> 10) & 0x3F, address & 0x3FF);
+
+  if (zero_command(addr)) {
+    NICEsuccessResponse();
+    NICEflush();
+  }
+}
+
+/*
+ * Process a zero counters operation for all nodes
+ */
+static void zero_node_all(void)
+{
+  if (zero_command("*")) {
+    NICEsuccessResponse();
+    NICEflush();
+  }
+}
+
+/*
+ * Process zero counters for a single or all (known) nodes.
+ */
+static void zero_node(
+  unsigned char option,
+  unsigned char entity
+)
+{
+  uint16_t addr;
+  char length, name[NICE_MAXNODEL + 1];
+
+  if (revision[0] >= 3)
+    load_node_info();
+
+  if ((signed char)entity > 0) {
+    /*
+     * Node is specified by name
+     */
+    NICEbackup(sizeof(uint8_t));
+    memset(name, 0, sizeof(name));
+    if (NICEgetAI(&length, name, NICE_MAXNODEL))
+      zero_node_single(0, name);
+    return;
+  }
+
+  switch (entity) {
+    case NICE_NFMT_KNOWN:
+      zero_node_all();
+      break;
+
+    case NICE_NFMT_ADDRESS:
+      if (NICEget2(&addr)) {
+	if (addr == 0)
+	  addr = localaddr;
+	zero_node_single(addr, NULL);
+      }
+      break;
+
+    default:
+      break;
+  }
+}
+
+/*
+ * Process zero counters requests
+ */
+static void zero_counters(void)
+{
+  unsigned char option, entity;
+
+  if (NICEget1(&option) && NICEget1(&entity)) {
+    NICEacceptedResponse();
+
+    dnetlog(LOG_DEBUG, "zero: option=0x%02x, entity=%d\n", option, entity);
+
+    switch (option & NICE_ZERO_OPT_ENTITY) {
+      case NICE_ENT_NODE:
+	zero_node(option, entity);
+	break;
+
+      default:
+	break;
     }
     NICEdoneResponse();
   }
@@ -895,12 +1031,17 @@ void process_request(
           read_information();
           break;
 
+        case NICE_FC_ZERO:                      /* Zero counters */
+	  if (revision[0] >= 3)
+	    zero_counters();
+	  else NICEunsupportedResponse();
+	  break;
+
         case NICE_FC_DLL:                       /* Request down-line load */
         case NICE_FC_ULD:                       /* Request up-line dump */
         case NICE_FC_BOOT:                      /* Trigger bootstrap */
         case NICE_FC_TEST:                      /* Test */
         case NICE_FC_CHANGE:                    /* Change parameter */
-        case NICE_FC_ZERO:                      /* Zero counters */
         case NICE_FC_SYS:                       /* System specific function */
         default:
           NICEunsupportedResponse();

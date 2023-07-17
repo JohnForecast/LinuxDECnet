@@ -46,6 +46,10 @@
 #define NICE_READ_OPT_EVENTS    0x40            /* Events */
 #define NICE_READ_OPT_ENTITY    0x07            /* Entity field */
 
+						/* Zero counters */
+#define NICE_ZERO_OPT_READZERO	0x80		/* Read and Zero */
+#define NICE_ZERO_OPT_ENTITY	0x07		/* Entity field */
+
 /*
  * Entity type numbers
  */
@@ -758,6 +762,7 @@ extern void NICEformatResponse(void);
 extern void NICEunsupportedResponse(void);
 extern void NICEtoolongResponse(void);
 extern void NICEunrecognizedComponentResponse(char);
+extern void NICEoperationFailureResponse(void);
 extern void NICEacceptedResponse(void);
 extern void NICEpartialResponse(void);
 extern void NICEsuccessResponse(void);

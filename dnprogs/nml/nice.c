@@ -380,6 +380,16 @@ void NICEunrecognizedComponentResponse(
 }
 
 /*
+ * Generate an "Operation failure" error response
+ */
+void NICEoperationFailureResponse(void)
+{
+  char opfail[3] = { NICE_RET_OPFAIL, 0, 0 };
+
+  write(sock, &opfail, sizeof(opfail));
+}
+
+/*
  * Generate an "Accepted" response
  */
 void NICEacceptedResponse(void)
