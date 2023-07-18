@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ ${EUID} -ne 0 ]]; then
+    echo "You must be a root user to run this script" 2>&1
+    exit 1
+fi
+
+grep ^decnet3 /proc/modules >/dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+    node=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f4`
+    addr=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f2`
+    ifc=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f6`
+    modprobe decnet3 dn_nodeaddr="${addr}" dn_nodename="${node}" dn_ifname="${ifc}"
+fi
