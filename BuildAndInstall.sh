@@ -95,8 +95,8 @@ check_addr() {
 }
 
 check_name() {
-    if [ "`$EXPR length $1`" -le 6 ]; then
-        if [ `$EXPR $1 : '[0-9a-zA-Z]*'` -ne "`$EXPR length $1`" ]; then
+    if [ "`$EXPR length "$1"`" -le 6 ]; then
+        if [ `$EXPR "$1" : '[0-9a-zA-Z]*'` -ne "`$EXPR length "$1"`" ]; then
             echo "DECnet node names may be up to 6 alphanumeric characters"
             return 0
         fi
@@ -291,7 +291,7 @@ if [ $DECnetConfig -eq 1 ]; then
     while ${TRUE} ; do
 	read -p "Enter your DECnet node name [$DefaultName] : " Name
 	if [ -z "$Name" ]; then
-	    Name = $DefaultName
+	    Name=$DefaultName
 	fi
 	check_name $Name
 	if [ $? -eq 1 ]; then break; fi
