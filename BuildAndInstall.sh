@@ -65,7 +65,7 @@ if [[ ${EUID} -ne 0 ]]; then
     exit 1
 fi
 
-PKGLIST="git libssl-dev make linux-libc-dev kernel-headers-$(uname -r)"
+PKGLIST="git libssl-dev make linux-libc-dev"
 
 #
 # Useful functions
@@ -121,6 +121,17 @@ $1 >> $Log 2>&1
 return $?
 }
 
+#
+
+check_headers() {
+    if [ "${HAVE_HEADERS}" = "1" ]; then
+	if [ -d /lib/modules/$(uname -r)/source/include ]; then
+	    return
+	fi
+    fi
+    PKGLIST="${PKGLIST} kernel-headers-$(uname -r)"
+}
+
 determine_os() {
     case $1 in
 	raspbian|debian)
@@ -174,6 +185,8 @@ unknown_os() {
 # Make sure that all required packages are installed
 
 if [ -e /etc/os-release ]; then
+    check_headers
+
     source /etc/os-release
 
     while $TRUE ; do
