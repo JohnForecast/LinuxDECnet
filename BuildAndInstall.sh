@@ -100,6 +100,10 @@ check_name() {
             echo "DECnet node names may be up to 6 alphanumeric characters"
             return 0
         fi
+	if [ `$EXPR "$1" : '[0-9]*'` -eq "`$EXPR length "$1"`" ]; then
+	    echo "DECnet node names must include at least 1 alpha character"
+	    return 0
+	fi
         return 1
     fi
     return 0
