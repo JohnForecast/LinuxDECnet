@@ -394,7 +394,7 @@ fi
 
 DOCMD "cd $Here/LinuxDECnet/kernel"
 DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD} modules_install"
-if [$? -ne 0 ]; then
+if [ $? -ne 0 ]; then
     echo "Kernel module install failed"
     exit 1
 fi
@@ -449,7 +449,7 @@ EOF
 
     NodeAddr=`${EXPR} \( $Area \* 1024 \) + $Node`
     byte4=`${EXPR} $NodeAddr % 256`
-    byte5=`${EXPR $NodeAddr / 256`
+    byte5=`${EXPR} $NodeAddr / 256`
 
     ${PRINTF} >/tmp/$$.link "[Match]\n"
     ${PRINTF} >>/tmp/$$.link "OriginalName=%s\n\n" $Interface
@@ -486,7 +486,7 @@ EOF
 		    fi
 		done
 
-		while TRUE ; do
+		while ${TRUE} ; do
 		    echo "This system appears to be using systemd"
 		    echo "Do you want systemd to:"
 		    if [ ${MACchange} -eq 0 ]; then
