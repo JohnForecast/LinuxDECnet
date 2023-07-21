@@ -65,7 +65,7 @@ if [[ ${EUID} -ne 0 ]]; then
     exit 1
 fi
 
-PKGLIST="gcc git libssl-dev make linux-libc-dev"
+PKGLIST="gcc g++ git libssl-dev make linux-libc-dev libncurses-dev"
 
 #
 # Useful functions
