@@ -517,9 +517,9 @@ EOF
 			    fi
 		        done
 		    fi
-		    ${CP} $Here/systemd/network/decnet3.service /etc/systemd/system
+		    ${CP} $Here/Startup/systemd/decnet3.service /etc/systemd/system
 		    ${SYSTEMCTL} daemon-reload
-		    ${SYSTEMCTL} decnet3.service
+		    ${SYSTEMCTL} enable decnet3.service
 		fi
 	    fi
 	fi
