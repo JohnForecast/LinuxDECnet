@@ -133,7 +133,7 @@ check_headers() {
 	    return
 	fi
     fi
-    PKGLIST="${PKGLIST} kernel-headers-$(uname -r)"
+    PKGLIST="${PKGLIST} linux-headers-$(uname -r)"
 }
 
 determine_os() {
