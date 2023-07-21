@@ -15,6 +15,7 @@
 #include <linux/types.h>
 #include <linux/socket.h>
 #include <linux/kernel.h>
+#include <linux/swap.h>
 #include <linux/sockios.h>
 #include <linux/net.h>
 #include <linux/netdevice.h>
