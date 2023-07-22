@@ -25,6 +25,7 @@ CHMOD=/bin/chmod
 CP=/bin/cp
 CUT=/usr/bin/cut
 DATE=/bin/date
+DEPMOD=/sbin/depmod
 EXPR=/usr/bin/expr
 GIT=/usr/bin/git
 GREP=/bin/grep
@@ -398,6 +399,7 @@ if [ $? -ne 0 ]; then
     echo "Kernel module install failed"
     exit 1
 fi
+DOCMD "${DEPMOD} -A"
 
 DOCMD "cd $Here/LinuxDECnet/dnprogs"
 
