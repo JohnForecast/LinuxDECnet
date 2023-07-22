@@ -334,7 +334,7 @@ if [ $DECnetConfig -eq 1 ]; then
             check_name $remname
             if [ $? -eq 1 ]; then break; fi
         done
-        printf >>/tmp/nodes$$ "node             %-7s        name            %-6s\n" $remaddr $remname
+        printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" $remaddr $remname
     done
 fi
 
