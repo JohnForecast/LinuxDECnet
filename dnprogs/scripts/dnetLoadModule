@@ -11,5 +11,7 @@ if [ $? -ne 0 ]; then
     node=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f4`
     addr=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f2`
     ifc=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f6`
-    modprobe decnet3 dn_nodeaddr="${addr}" dn_nodename="${node}" dn_ifname="${ifc}"
+    /sbin/modprobe decnet3 dn_nodeaddr="${addr}" dn_nodename="${node}" dn_ifname="${ifc}"
 fi
+exit 0
+
