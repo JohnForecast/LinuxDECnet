@@ -244,12 +244,17 @@ static int dn_node_seq_show(
 #define VALOF(v, limit) (v) < limit ? v : limit
         seq_printf(seq, "%-7s %-3u %-11llu "
                    "0x%08llx 0x%08llx 0x%08llx 0x%08llx "
+                   "0x%08llx 0x%08llx 0x%08llx 0x%08llx "
                    "0x%04x 0x%04x 0x%04x\n",
                    dn_addr2asc(nodep->addr, buf1),
                    delay > 255 ? 255 : delay,
                    ktime_get_real_seconds() - ctrp->timezeroed,
                    VALOF(ctrp->user_bytes_rcv, 0xFFFFFFFF),
                    VALOF(ctrp->user_bytes_xmt, 0xFFFFFFFF),
+		   VALOF(ctrp->user_msg_rcv, 0xFFFFFFFF),
+		   VALOF(ctrp->user_msg_xmt, 0xFFFFFFFF),
+		   VALOF(ctrp->total_bytes_rcv, 0xFFFFFFFF),
+		   VALOF(ctrp->total_bytes_xmt, 0xFFFFFFFF),
                    VALOF(ctrp->total_msg_rcv, 0xFFFFFFFF),
                    VALOF(ctrp->total_msg_xmt, 0xFFFFFFFF),
                    VALOF(ctrp->connects_rcv, 0xFFFF),

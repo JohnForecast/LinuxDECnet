@@ -1161,7 +1161,7 @@ int dn_nsp_rcv(
                                         struct dn_scp *scp = DN_SK(sk);
 
                                         if (scp->nodeEntry != NULL)
-                                                Count_total_rcvd(scp->nodeEntry);
+                                                Count_total_rcvd(scp->nodeEntry, skb->len);
                                         return sk_receive_skb(sk, skb, 0);
                                 }
 
@@ -1333,7 +1333,7 @@ void dn_nsp_xmt(
         cb->dst = scp->nodeEntry->addr;
 
         if (scp->nodeEntry != NULL)
-                Count_total_sent(scp->nodeEntry);
+                Count_total_sent(scp->nodeEntry, skb->len);
         dn_routing_tx_long(skb, scp->nextEntry);
 }
 
@@ -1752,7 +1752,7 @@ static void dn_nsp_disconnect(
                         struct dn_scp *scp = DN_SK(sk);
 
                         if (scp->nodeEntry != NULL)
-                                Count_total_sent(scp->nodeEntry);
+                                Count_total_sent(scp->nodeEntry, skb->len);
                 }
                 
                 dn_routing_tx_long(skb, nextp);

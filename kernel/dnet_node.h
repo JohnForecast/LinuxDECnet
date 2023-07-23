@@ -30,6 +30,10 @@ typedef struct dn_node_entry {
                 time64_t        timezeroed;
                 uint64_t        user_bytes_rcv;
                 uint64_t        user_bytes_xmt;
+		uint64_t	user_msg_rcv;
+		uint64_t	user_msg_xmt;
+		uint64_t	total_bytes_rcv;
+		uint64_t	total_bytes_xmt;
                 uint64_t        total_msg_rcv;
                 uint64_t        total_msg_xmt;
                 uint32_t        connects_rcv;
@@ -88,6 +92,7 @@ static inline void Count_user_rcvd(
 )
 {
         Add64(&nodep->counters.user_bytes_rcv, len);
+	Inc64(&nodep->counters.user_msg_rcv);
 }
 
 static inline void Count_user_sent(
@@ -96,19 +101,24 @@ static inline void Count_user_sent(
 )
 {
         Add64(&nodep->counters.user_bytes_xmt, len);
+	Inc64(&nodep->counters.user_msg_xmt);
 }
 
 static inline void Count_total_rcvd(
-  struct dn_node_entry *nodep
+  struct dn_node_entry *nodep,
+  uint32_t len
 )
 {
+	Add64(&nodep->counters.total_bytes_rcv, len);
         Inc64(&nodep->counters.total_msg_rcv);
 }
 
 static inline void Count_total_sent(
-  struct dn_node_entry *nodep
+  struct dn_node_entry *nodep,
+  uint32_t len
 )
 {
+	Add64(&nodep->counters.total_bytes_xmt);
         Inc64(&nodep->counters.total_msg_xmt);
 }
 

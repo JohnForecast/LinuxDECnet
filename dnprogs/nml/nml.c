@@ -72,6 +72,10 @@ static struct nodectrs {
   uint16_t	sincezeroed;
   uint32_t	usrbytesrcvd;
   uint32_t	usrbytessent;
+  uint32_t	usrmsgrcvd;
+  uint32_t	usrmsgsent;
+  uint32_t	totalbytesrcvd;
+  uint32_t	totalbytessent;
   uint32_t	totalmsgrcvd;
   uint32_t	totalmsgsent;
   uint16_t	connectsrcvd;
@@ -402,7 +406,8 @@ static void load_node_info(void)
   char buf[256], var1[32];
   uint8_t delay;
   uint16_t since;
-  uint32_t usrbytesrcvd, usrbytessent, totalmsgrcvd, totalmsgsent;
+  uint32_t usrbytesrcvd, usrbytessent, usrmsgrcvd, usrmsgsent;
+  uint32_t totalbytesrcvd, totalbytessent, totalmsgrcvd, totalmsgsent;
   uint16_t connectsrcvd, connectssent, timeouts;
 
   FILE *procfile = fopen(PROC_DECNET_NODES, "r");
@@ -416,8 +421,9 @@ static void load_node_info(void)
 
       if (sscanf(buf, "%s %hhu %hu 0x%x 0x%x 0x%x 0x%x 0x%hx 0x%hx 0x%hx\n",
 		      var1, &delay, &since, &usrbytesrcvd, &usrbytessent,
-		      &totalmsgrcvd, &totalmsgsent,
-		      &connectsrcvd, &connectssent, &timeouts) == 10) {
+		      &usrmsgrcvd, &usrmsgsent, &totalbytesrcvd,
+		      &totalbytessent, &totalmsgrcvd, &totalmsgsent,
+		      &connectsrcvd, &connectssent, &timeouts) == 14) {
 	int area, node, addr;
 
 	sscanf(var1, "%d.%d", &area, &node);
@@ -428,6 +434,10 @@ static void load_node_info(void)
 	nodectrs[addr].sincezeroed = since;
 	nodectrs[addr].usrbytesrcvd = usrbytesrcvd;
 	nodectrs[addr].usrbytessent = usrbytessent;
+	nodectrs[addr].usrmsgrcvd = usrmsgrcvd;
+	nodectrs[addr].usrmsgsent = usrmsgsent;
+	nodectrs[addr].totalbytesrcvd = totalbytesrcvd;
+	nodectrs[addr].totalbytessent = totalbytessent;
 	nodectrs[addr].totalmsgrcvd = totalmsgrcvd;
 	nodectrs[addr].totalmsgsent = totalmsgsent;
 	nodectrs[addr].connectsrcvd = connectsrcvd;
@@ -606,6 +616,10 @@ static void read_node_single(
 	NICEcounter16(NICE_C_N_SECONDS, nodectrs[address].sincezeroed);
 	NICEcounter32(NICE_C_N_USERBYTESRCVD, nodectrs[address].usrbytesrcvd);
 	NICEcounter32(NICE_C_N_USERBYTESSENT, nodectrs[address].usrbytessent);
+	NICEcounter32(NICE_C_N_USERMSGSRCVD, nodectrs[address].usrmsgrcvd);
+	NICEcounter32(NICE_C_N_USERMSGSSENT, nodectrs[address].usrmsgsent);
+	NICEcounter32(NICE_C_N_TOTBYTESRCVD, nodectrs[address].totalbytesrcvd);
+	NICEcounter32(NICE_C_N_TOTBYTESSENT, nodectrs[address].totalbytessent);
 	NICEcounter32(NICE_C_N_TOTMSGSRCVD, nodectrs[address].totalmsgrcvd);
 	NICEcounter32(NICE_C_N_TOTMSGSSENT, nodectrs[address].totalmsgsent);
 	NICEcounter16(NICE_C_N_CONNRCVD, nodectrs[address].connectsrcvd);
