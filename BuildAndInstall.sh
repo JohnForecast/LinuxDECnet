@@ -481,7 +481,7 @@ EOF
 	    if [ $? -ne 0 ]; then
 		for i in /etc/systemd/network/??-mac.link
 		do
-		    grep "OriginalName=${Interface}" $i /dev/null 2>&1
+		    grep "OriginalName=${Interface}" $i >/dev/null 2>&1
 		    if [ $? -eq 0 ]; then
 			MACchange=1
 			break
