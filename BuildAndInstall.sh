@@ -456,7 +456,7 @@ EOF
     ${PRINTF} >/tmp/$$.link "[Match]\n"
     ${PRINTF} >>/tmp/$$.link "OriginalName=%s\n\n" $Interface
     ${PRINTF} >>/tmp/$$.link "[Link]\n"
-    ${PRINTF} >>/tmp/$$.link "MacAddress=aa:00:04:00:%02x:%02x\n" $byte4 $byte5
+    ${PRINTF} >>/tmp/$$.link "MACAddress=aa:00:04:00:%02x:%02x\n" $byte4 $byte5
     ${PRINTF} >>/tmp/$$.link "NamePolicy=kernel database onboard slot path\n"
 
     DOCMD "${MV} /tmp/$$.link $Here/Startup/systemd/00-mac.link"
