@@ -118,7 +118,7 @@ static inline void Count_total_sent(
   uint32_t len
 )
 {
-	Add64(&nodep->counters.total_bytes_xmt);
+	Add64(&nodep->counters.total_bytes_xmt, len);
         Inc64(&nodep->counters.total_msg_xmt);
 }
 
