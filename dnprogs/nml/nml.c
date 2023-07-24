@@ -420,9 +420,9 @@ static void load_node_info(void)
 	break;
 
       if (sscanf(buf, "%s %hhu %hu "
-		  "0x%x 0x%x 0x%x 0x%x "
-		  "0x%x 0x%x 0x%x 0x%x "
-	`	  "0x%hx 0x%hx 0x%hx\n",
+		      "0x%x 0x%x 0x%x 0x%x "
+		      "0x%x 0x%x 0x%x 0x%x "
+		      "0x%hx 0x%hx 0x%hx\n",
 		      var1, &delay, &since, &usrbytesrcvd, &usrbytessent,
 		      &usrmsgrcvd, &usrmsgsent, &totalbytesrcvd,
 		      &totalbytessent, &totalmsgrcvd, &totalmsgsent,
