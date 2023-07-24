@@ -1066,7 +1066,7 @@ static int __dn_setsockopt(
                 case DSO_CONDATA:
                         if (sock->state == SS_CONNECTED)
                                 return -EISCONN;
-                        if (scp->state != DN_O)
+                        if ((scp->state != DN_O) && (scp->state != DN_CR))
                                 return -EINVAL;
 
                         if (optlen !=  sizeof(struct optdata_dn))
