@@ -1797,11 +1797,10 @@ static int dn_sendmsg(
  *              this specific address. Write "*" to zero counter for
  *              all entries in the node cache.
  */
-ssize_t dnet_zero_write(
+int dnet_zero_write(
   struct file *filep,
-  const char __user *buf,
-  size_t count,
-  loff_t *offp
+  char *buf,
+  size_t count
 )
 {
         char address[DN_ASCBUF_LEN + 1];
@@ -1823,7 +1822,7 @@ ssize_t dnet_zero_write(
                         return -EINVAL;
 
                 if (!ISNUM(*str))
-                        return -1;
+                        return -EINVAL;
                 area = *str++ - '0';
                 if (ISNUM(*str)) {
                         area *= 10;
@@ -1834,7 +1833,7 @@ ssize_t dnet_zero_write(
                         return -EINVAL;
 
                 if (!ISNUM(*str))
-                  return -1;
+                	return -EINVAL;
                 node = *str++ -'0';
                 if (ISNUM(*str)) {
                         node *= 10;
@@ -1850,7 +1849,7 @@ ssize_t dnet_zero_write(
                 }
 
                 if ((node == 0) || (node > 1023) || (area == 0) || (area > 63))
-                  return -EINVAL;
+                	return -EINVAL;
 
                 if (ISALPHANUM(*str))
                         return -EINVAL;
@@ -1860,12 +1859,8 @@ ssize_t dnet_zero_write(
 
         dn_node_zero_counters(addr);
 
-        return count;
+        return 0;
 }
-
-struct proc_ops zero_fops = {
-        .proc_write = dnet_zero_write,
-};
 
 #endif
 
@@ -1924,7 +1919,12 @@ static int __init dnet_init(void)
                                 dn_register_sysctl();
 
 #ifdef CONFIG_PROC_FS
-                                proc_create("decnet_zero_node", 0222, init_net.proc_net, &zero_fops);
+				proc_create_net_single_write("decnet_zero_node",
+							      0222,
+							      init_net.proc_net,
+							      NULL,
+							      dnet_zero_write,
+							      NULL);
 #endif
                                 return 0;
                         }
