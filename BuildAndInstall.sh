@@ -66,7 +66,7 @@ if [[ ${EUID} -ne 0 ]]; then
     exit 1
 fi
 
-PKGLIST="gcc g++ git libssl-dev make linux-libc-dev libncurses-dev"
+PKGLIST="gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev"
 
 #
 # Useful functions
@@ -126,6 +126,10 @@ $1 >> $Log 2>&1
 return $?
 }
 
+set_default_interface() {
+    DefaultInterface=`ip link | $GREP -m1 BROADCAST | cut -d ' ' -f2 | tr -d ':'`
+}
+
 #
 
 check_headers() {
@@ -137,7 +141,7 @@ check_headers() {
     PKGLIST="${PKGLIST} linux-headers-$(uname -r)"
 }
 
-determine_os() {
+check_installed_packages() {
     case $1 in
 	raspbian|debian)
 	    if [ -x ${APTGET} -a -x ${DPKG} ]; then
@@ -195,7 +199,7 @@ if [ -e /etc/os-release ]; then
     source /etc/os-release
 
     while $TRUE ; do
-	determine_os ${ID}
+	check_installed_packages ${ID}
 	if [ $? -eq 1 ]; then
 	    break
 	fi
@@ -278,7 +282,7 @@ done
 
 DefaultName=`hostname -s | cut -b1-6`
 DefaultAddr="1.1"
-DefaultInterface="eth0"
+set_default_interface
 
 if [ $DECnetConfig -eq 1 ]; then
     echo
