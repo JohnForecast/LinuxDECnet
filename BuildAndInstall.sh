@@ -367,6 +367,10 @@ if [ ${DECnetDownload} -le 3 ]; then
         DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD} clean"
     fi
     DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD}"
+    if [ $? -ne 0 ]; then
+	echo "DECnet kernel module make failed"
+	exit 1
+    fi
 
     cd $Here/LinuxDECnet/dnprogs
 
