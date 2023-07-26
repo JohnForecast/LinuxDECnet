@@ -1803,19 +1803,13 @@ int dnet_zero_write(
   size_t count
 )
 {
-        char address[DN_ASCBUF_LEN + 1];
-        char *str = address;
+        char *str = buf;
         uint16_t addr, area, node;
 
         if (count >= DN_ASCBUF_LEN)
                 return -EMSGSIZE;
 
-        if (copy_from_user(address, buf, count))
-                return -EFAULT;
-        
-        address[count] = '\0';
-
-        if (strcmp(address, "*") != 0) {
+        if (strcmp(buf, "*") != 0) {
                 while (*str && !(ISNUM(*str))) str++;
 
                 if (*str == 0)
