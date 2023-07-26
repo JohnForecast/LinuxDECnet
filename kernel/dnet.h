@@ -264,7 +264,7 @@ static inline void dn_dn2eth(
 /*
  * Is the receive side of the socket congested? If the buffer space
  * consumed by receive buffers is > 50% of the receive buffer space set by
- * the use (SO_RCVBUF).
+ * the user (SO_RCVBUF).
  */
 static __inline__ int dn_congested(
   struct sock *sk

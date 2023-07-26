@@ -349,14 +349,27 @@ int __init dn_dev_init(void)
                 }
 
         if (decnet_address) {
-                /*
-                 * Special case the first hello timer so that we only wait
-                 * 2 seconds.
-                 */
-                ETHDEVICE.t3 = 2;
-                ETHDEVICE.t4 = 0;
-                ETHDEVICE.timer.expires = jiffies + HZ;
-                add_timer(&ETHDEVICE.timer);
+#ifdef DNET_COMPAT
+		uint8_t ethaddr[ETH_ALEN];
+
+		dn_dn2eth(ethaddr, decnet_address);
+		if (memcmp(ethaddr, eth->addr, ETH_ALEN) != 0) {
+			pr_info("DECnet address mismatch with %s device\n",
+				eth->name);
+			decnet_address = 0;
+			rc = -EINVAL;
+		} else 
+#endif
+		{
+                	/*
+                	 * Special case the first hello timer so that we
+			 * only wait 2 seconds.
+                	 */
+                	ETHDEVICE.t3 = 2;
+                	ETHDEVICE.t4 = 0;
+                	ETHDEVICE.timer.expires = jiffies + HZ;
+                	add_timer(&ETHDEVICE.timer);
+		}
         }
 
 #ifdef CONFIG_PROC_FS
