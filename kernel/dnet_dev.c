@@ -354,7 +354,7 @@ int __init dn_dev_init(void)
 		uint8_t ethaddr[ETH_ALEN];
 
 		dn_dn2eth(ethaddr, decnet_address);
-		if (memcmp(ethaddr, eth->addr, ETH_ALEN) != 0) {
+		if (memcmp(ethaddr, eth->dev_addr, ETH_ALEN) != 0) {
 			pr_info("DECnet address mismatch with %s device\n",
 				eth->name);
 			decnet_address = 0;

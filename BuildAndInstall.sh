@@ -45,8 +45,8 @@ DPKG=/usr/bin/dpkg
 # Redhat/Fedora tools
 RPM=/usr/bin/rpm
 
-Here=`$PWD`
-Log=$Here/Log
+Here=`${PWD}`
+Log=${Here}/Log
 
 DECnetDownload=1
 DECnetConfig=1
@@ -73,20 +73,20 @@ PKGLIST="gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev"
 #
 check_addr() {
     if [ ! -z "$1" ]; then
-        if [ `$EXPR $1 : '[0-9]*\.[0-9]*'` -ne "`$EXPR length $1`" ]; then
+        if [ `${EXPR} $1 : '[0-9]*\.[0-9]*'` -ne "`${EXPR} length $1`" ]; then
             echo "Node address must be in the format area.node"
             return 0
         fi
 
-        AreaNo=`echo $1 | $CUT -d. -f1`
-        NodeNo=`echo $1 | $CUT -d. -f2`
+        AreaNo=`echo $1 | ${CUT} -d. -f1`
+        NodeNo=`echo $1 | ${CUT} -d. -f2`
 
-        if [ "$AreaNo" -le 0 -o "$AreaNo" -ge 64 ]; then
+        if [ "${AreaNo}" -le 0 -o "${AreaNo}" -ge 64 ]; then
             echo "Area must be between 1 and 63 inclusive"
             return 0
         fi
 
-        if [ "$NodeNo" -le 0 -o "$NodeNo" -ge 1024 ]; then
+        if [ "${NodeNo}" -le 0 -o "${NodeNo}" -ge 1024 ]; then
             echo "Node must be between 1 and 1023 inclusive"
             return 0
         fi
@@ -96,12 +96,12 @@ check_addr() {
 }
 
 check_name() {
-    if [ "`$EXPR length "$1"`" -le 6 ]; then
-        if [ `$EXPR "$1" : '[0-9a-zA-Z]*'` -ne "`$EXPR length "$1"`" ]; then
+    if [ "`${EXPR} length "$1"`" -le 6 ]; then
+        if [ `${EXPR} "$1" : '[0-9a-zA-Z]*'` -ne "`${EXPR} length "$1"`" ]; then
             echo "DECnet node names may be up to 6 alphanumeric characters"
             return 0
         fi
-	if [ `$EXPR "$1" : '[0-9]*'` -eq "`$EXPR length "$1"`" ]; then
+	if [ `${EXPR} "$1" : '[0-9]*'` -eq "`${EXPR} length "$1"`" ]; then
 	    echo "DECnet node names must include at least 1 alpha character"
 	    return 0
 	fi
@@ -111,7 +111,7 @@ check_name() {
 }
 
 check_interface() {
-    $GREP -q "$1:" /proc/net/dev
+    ${GREP} -q "$1:" /proc/net/dev
     if [ $? -ne 0 ]; then
         echo "Can't find device $1 on your system. Choose one of the following:"
         awk '/.*:/ { print substr($1,0,index($1, ":")) }' < /proc/net/dev
@@ -127,7 +127,7 @@ return $?
 }
 
 set_default_interface() {
-    DefaultInterface=`ip link | $GREP -m1 BROADCAST | cut -d ' ' -f2 | tr -d ':'`
+    DefaultInterface=`ip link | ${GREP} -m1 BROADCAST | cut -d ' ' -f2 | tr -d ':'`
 }
 
 #
@@ -147,31 +147,12 @@ check_installed_packages() {
 	    if [ -x ${APTGET} -a -x ${DPKG} ]; then
 		for pkg in ${PKGLIST}
 		do
-		    ${DPKG} -s $pkg >/dev/null 2>&1
+		    ${DPKG} -s ${pkg} >/dev/null 2>&1
 		    if [ $? -ne 0 ]; then
-			echo -n "Installing $pkg ..."
-			${APTGET} install -y $pkg >/dev/null 2>&1
+			echo -n "Installing ${pkg} ..."
+			${APTGET} install -y ${pkg} >/dev/null 2>&1
 			if [ $? -ne 0 ]; then
-			    echo "Failed to install package '" $pkg "'"
-			    exit 1
-			fi
-			echo
-		    fi
-		done
-		return 1
-	    fi
-	    ;;
-
-	rhel|sles|fedora|centos)
-	    if [ -x ${RPM} ]; then
-	        for pkg in ${PKGLIST}
-		do
-		    ${RPM} -q $pkg >/dev/null 2>&1
-		    if [ $? ne 0 ]; then
-			echo -n "Installing $pkg ..."
-			${RPM} -i $pkg >/dev/null 2>&1
-			if [ $? ne 0 ]; then
-			    echo "Failed to install package '" $pkg "'"
+			    echo "Failed to install package '" ${pkg} "'"
 			    exit 1
 			fi
 			echo
@@ -186,34 +167,38 @@ check_installed_packages() {
 
 unknown_os() {
     echo "Unable to determine which package manager to use"
-    echo "The following packages must be installed for this script to work:"
+    echo "Manually install the following packages and re-run this script"
+    echo "with the 'HAVE_PACKAGES=1' override"
     echo
     echo "    ${PKGLIST}"
+    exit 1
 }
 
 # Make sure that all required packages are installed
 
-if [ -e /etc/os-release ]; then
-    check_headers
+if [ "${HAVE_PACKAGES}" != "1" ]; then
+    if [ -e /etc/os-release ]; then
+	check_headers
 
-    source /etc/os-release
+	source /etc/os-release
 
-    while $TRUE ; do
-	check_installed_packages ${ID}
-	if [ $? -eq 1 ]; then
-	    break
-	fi
-
-	if [ ! -z ${ID_LIKE} ]; then
-	    determine_os ${ID_LIKE}
-	    if [ $? -1 eq 1 ]; then
+	while ${TRUE} ; do
+	    check_installed_packages ${ID}
+	    if [ $? -eq 1 ]; then
 		break
 	    fi
-	fi
-	unknown_os
-    done
-else
-unknown_os
+
+	    if [ ! -z ${ID_LIKE} ]; then
+		check_installed_packages ${ID_LIKE}
+		if [ $? -1 eq 1 ]; then
+		    break
+		fi
+	    fi
+	    unknown_os
+	done
+    else
+    unknown_os
+    fi
 fi
 
 if [ -d ./LinuxDECnet ]; then
@@ -227,8 +212,8 @@ if [ -d ./LinuxDECnet ]; then
 	echo
 	read -p "Enter code (1 - 4): " DECnetDownload Junk
 
-	if [ "$Junk" = "" ]; then
-	    case $DECnetDownload in
+	if [ "${Junk}" = "" ]; then
+	    case ${DECnetDownload} in
 		1|2|3|4)
 		    break
 		    ;;
@@ -249,8 +234,8 @@ if [ -e /etc/decnet.conf ]; then
 	echo
 	read -p "Enter code (1 - 2): " DECnetConfig Junk
 
-	if [ "$Junk" = "" ]; then
-	    case $DECnetConfig in
+	if [ "${Junk}" = "" ]; then
+	    case ${DECnetConfig} in
 		1|2)
 		    break
 		    ;;
@@ -264,13 +249,13 @@ fi
 echo
 while ${TRUE} ; do
     echo "When the build completes, do you want to:"
-    echo "  1 - Install the new kernel modules an DECnet on this system"
+    echo "  1 - Install the new kernel modules and DECnet on this system"
     echo "  2 - Pause before install the new kernel and DECnet on this system"
     echo "  3 - Terminate this script"
     read -p "Enter code (1 - 3): " PostBuild junk
 
-    if [ "$Junk" = "" ]; then
-	case $PostBuild in
+    if [ "${Junk}" = "" ]; then
+	case ${PostBuild} in
 	    1|2|3)
 		break
 		;;
@@ -284,34 +269,34 @@ DefaultName=`hostname -s | cut -b1-6`
 DefaultAddr="1.1"
 set_default_interface
 
-if [ $DECnetConfig -eq 1 ]; then
+if [ ${DECnetConfig} -eq 1 ]; then
     echo
     while ${TRUE} ; do
-	read -p "Enter your DECnet node address [$DefaultAddr] : " Addr
-	if [ -z "$Addr" ]; then
-	    Addr=$DefaultAddr
+	read -p "Enter your DECnet node address [${DefaultAddr}] : " Addr
+	if [ -z "${Addr}" ]; then
+	    Addr=${DefaultAddr}
 	fi
-	check_addr $Addr
+	check_addr ${Addr}
 	if [ $? -eq 1 ]; then break; fi
     done
-    Area=$AreaNo
-    Node=$NodeNo
+    Area=${AreaNo}
+    Node=${NodeNo}
 
     while ${TRUE} ; do
-	read -p "Enter your DECnet node name [$DefaultName] : " Name
-	if [ -z "$Name" ]; then
-	    Name=$DefaultName
+	read -p "Enter your DECnet node name [${DefaultName}] : " Name
+	if [ -z "${Name}" ]; then
+	    Name=${DefaultName}
 	fi
-	check_name $Name
+	check_name ${Name}
 	if [ $? -eq 1 ]; then break; fi
     done
 
     while ${TRUE} ; do
-	read -p "Enter your Ethernet/Wireless interface name [$DefaultInterface] : " Interface
-	if [ -z "$Interface" ]; then
-	    Interface=$DefaultInterface
+	read -p "Enter your Ethernet/Wireless interface name [${DefaultInterface}] : " Interface
+	if [ -z "${Interface}" ]; then
+	    Interface=${DefaultInterface}
 	fi
-	check_interface $Interface
+	check_interface ${Interface}
 	if [ $? -eq 1 ]; then break; fi
     done
 
@@ -326,32 +311,32 @@ if [ $DECnetConfig -eq 1 ]; then
         echo
         while ${TRUE} ; do
             read -p "Enter the node's address: area.node (e.g. 1.1) : " remaddr
-            if [ -z "$remaddr" ]; then
+            if [ -z "${remaddr}" ]; then
                 break 2
             fi
-            check_addr $remaddr
+            check_addr ${remaddr}
             if [ $? -eq 1 ]; then break; fi
         done
 
         while ${TRUE} ; do
             read -p "Enter its node name                            : " remname
-            check_name $remname
+            check_name ${remname}
             if [ $? -eq 1 ]; then break; fi
         done
-        printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" $remaddr $remname
+        printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" ${remaddr} ${remname}
     done
 fi
 
 echo
 echo "All questions have been answered"
-echo "The download/build log will be in $Log"
+echo "The download/build log will be in ${Log}"
 
-start=`$DATE`
+start=`${DATE}`
 
-echo "DECnet build started at $start\n" > $Log
+echo "DECnet build started at ${start}\n" > ${Log}
 
 if [ ${DECnetDownload} -eq 1 ]; then
-    DOCMD "cd $Here"
+    DOCMD "cd ${Here}"
     DOCMD "${RM} -rf LinuxDECnet"
     DOCMD "${GIT} clone https://github.com/JohnForecast/LinuxDECnet"
     if [ $? -ne 0 ]; then
@@ -361,7 +346,7 @@ if [ ${DECnetDownload} -eq 1 ]; then
 fi
 
 if [ ${DECnetDownload} -le 3 ]; then
-    cd $Here/LinuxDECnet/kernel
+    cd ${Here}/LinuxDECnet/kernel
 
     if [ ${DECnetDownload} -le 2 ]; then
         DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD} clean"
@@ -372,7 +357,7 @@ if [ ${DECnetDownload} -le 3 ]; then
 	exit 1
     fi
 
-    cd $Here/LinuxDECnet/dnprogs
+    cd ${Here}/LinuxDECnet/dnprogs
 
     if [ ${DECnetDownload} -le 2 ]; then
 	DOCMD "${MAKE} clean"
@@ -386,7 +371,7 @@ if [ ${DECnetDownload} -le 3 ]; then
 
 echo "Kernel module and DECnet Utilities build complete"
 
-case $PostBuild in
+case ${PostBuild} in
     1)
     ;;
 
@@ -401,7 +386,7 @@ esac
 
 fi
 
-DOCMD "cd $Here/LinuxDECnet/kernel"
+DOCMD "cd ${Here}/LinuxDECnet/kernel"
 DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD} modules_install"
 if [ $? -ne 0 ]; then
     echo "Kernel module install failed"
@@ -409,7 +394,7 @@ if [ $? -ne 0 ]; then
 fi
 DOCMD "${DEPMOD} -A"
 
-DOCMD "cd $Here/LinuxDECnet/dnprogs"
+DOCMD "cd ${Here}/LinuxDECnet/dnprogs"
 
 # Create /usr/include/netdnet if it does not exists and load the 2 default files
 
@@ -437,7 +422,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-if [ $DECnetConfig -eq 1 ]; then
+if [ ${DECnetConfig} -eq 1 ]; then
     ${CAT} >/tmp/$$.conf <<EOF
 #V001.0
 #               DECnet hosts file
@@ -446,7 +431,7 @@ if [ $DECnetConfig -eq 1 ]; then
 #Type           Address         Tag             Name    Tag     Device
 #-----          -------         -----           -----   -----   ------
 EOF
-    ${PRINTF} >>/tmp/$$.conf "executor         %-7s        name            %-6s  line   %s\n" $Addr $Name $Interface
+    ${PRINTF} >>/tmp/$$.conf "executor         %-7s        name            %-6s  line   %s\n" ${Addr} ${Name} ${Interface}
 
     ${CAT} /tmp/node$$ >>/tmp/$$.conf
     ${RM} /tmp/node$$
@@ -455,19 +440,19 @@ EOF
 
 # Handle startup logic
 
-    DOCMD "${MKDIR} -p $Here/Startup/systemd"
+    DOCMD "${MKDIR} -p ${Here}/Startup/systemd"
 
-    NodeAddr=`${EXPR} \( $Area \* 1024 \) + $Node`
-    byte4=`${EXPR} $NodeAddr % 256`
-    byte5=`${EXPR} $NodeAddr / 256`
+    NodeAddr=`${EXPR} \( ${Area} \* 1024 \) + ${Node}`
+    byte4=`${EXPR} ${NodeAddr} % 256`
+    byte5=`${EXPR} ${NodeAddr} / 256`
 
     ${PRINTF} >/tmp/$$.link "[Match]\n"
-    ${PRINTF} >>/tmp/$$.link "OriginalName=%s\n\n" $Interface
+    ${PRINTF} >>/tmp/$$.link "OriginalName=%s\n\n" ${Interface}
     ${PRINTF} >>/tmp/$$.link "[Link]\n"
-    ${PRINTF} >>/tmp/$$.link "MACAddress=aa:00:04:00:%02x:%02x\n" $byte4 $byte5
+    ${PRINTF} >>/tmp/$$.link "MACAddress=aa:00:04:00:%02x:%02x\n" ${byte4} ${byte5}
     ${PRINTF} >>/tmp/$$.link "NamePolicy=kernel database onboard slot path\n"
 
-    DOCMD "${MV} /tmp/$$.link $Here/Startup/systemd/00-mac.link"
+    DOCMD "${MV} /tmp/$$.link ${Here}/Startup/systemd/00-mac.link"
 
     ${PRINTF} >/tmp/$$.service "[Unit]\n"
     ${PRINTF} >>/tmp/$$.service "Description=Load DECnet module and start"
@@ -508,7 +493,7 @@ EOF
 		        Modify=Yes
 		    fi
 
-		    case $Modify in
+		    case ${Modify} in
 			Yes|No)
 			    break
 			    ;;
@@ -517,17 +502,17 @@ EOF
 		    echo
 		done
 
-		if [ "$Modify" = "Yes" ]; then
-		    if [ $MACchange -eq 0 ]; then
+		if [ "${Modify}" = "Yes" ]; then
+		    if [ ${MACchange} -eq 0 ]; then
 		        for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09"
 		        do
 			    if [ ! -e /etc/systemd/network/${i}-mac.link ]; then
-			        ${CP} $Here/Startup/systemd/00-mac.link /etc/systemd/network/${i}-mac.link
+			        ${CP} ${Here}/Startup/systemd/00-mac.link /etc/systemd/network/${i}-mac.link
 			        break
 			    fi
 		        done
 		    fi
-		    ${CP} $Here/Startup/systemd/decnet3.service /etc/systemd/system
+		    ${CP} ${Here}/Startup/systemd/decnet3.service /etc/systemd/system
 		    ${SYSTEMCTL} daemon-reload
 		    ${SYSTEMCTL} enable decnet3.service
 		fi
@@ -540,7 +525,7 @@ echo
 echo "Kernel and/or DECnet Utilities successfully installed"
 echo
 echo "You may still need to decide how to start up DECnet - see section X of"
-echo "README.DECnet in $Here/LinuxDECnet"
+echo "README.DECnet in ${Here}/LinuxDECnet"
 echo "A reboot is required to change MAC addresses and clear out any"
 echo "currently loaded DECnet module"
 echo
