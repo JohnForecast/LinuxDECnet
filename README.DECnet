@@ -1,0 +1,122 @@
+Note: This document describes the installation of DECnet support on any Linux
+release. Note that only a (very) limited number of distributions have been
+tested.
+
+The kit may be obtained by:
+
+    git clone https://github.com/JohnForecast/LinuxDECnet
+
+This release is a continuation of the Raspbian DECnet kit available at:
+
+    git clone https://github.com/JohnForecast/RaspbianDECnet
+
+Kernel 6.0.x was the last release which included source code for a DECnet
+implementation. The RaspbianDECnet kit relied on the availability of this
+kernel code so could not be installed on kernel 6.1.x or later.
+
+
+Distributions tested:
+
+Minimum kernel supported:	4.19.0
+Maximum kernel supported:	6.1.0
+
+Tested distributions:
+
+Debian 10, kernel 4.19.0 on X86_64 (ESXi 6.7u3 VM)
+Debian 11, kernel 5.10.0 on X86_64 (ESXi 6.7u3 VM)
+RaspiOS 2023-02-21, kernel 6.0.19 on AARCH64 (Raspberry Pi 3)
+Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
+
+Changes from RaspbianDECnet:
+
+  - Designed to be built as an external module
+
+	Simplifies and speeds up the installation procedure. We no longer
+	need to rebuild the kernel as part of the installation. For a low
+	end system like the Raspberry Pi this really speeds up the
+	installation.
+
+  - Can only be built as an ethernet endnode
+
+	This substantially simplifies the kernel code. The routing code
+	in RaspbianDECnet was never supported.
+
+  - Minimize use of Linux kernel frameworks
+
+	Most of the problems with RaspbianDECnet between Linux versions
+	were changes to the kenel framework APIs. RaspbianDECnet used the
+	Destination Cache, Neighbour structures, flow idn infrastructure and
+	the routing infrastructure. LinuxDECnet does not use any of these
+	frameworks.
+
+
+Installation:
+
+In order to bring up DECnet on Linux you will need to compile and install an
+external module implementing the core DECnet protocols along with all the
+userland applications.
+
+The build and installation can be automated by downloading the
+BuildAndInstall.sh script, making it executable and running it inside a
+newly created work directory. You must be running as root to execute this
+script.
+
+By default, BuildAndInstall.sh will download, build and install a decnet
+kernel module (decnet3.ko) and DECnet utilities tailored for the system it is
+running on. If you try to run BuildAndInstall.sh a second time, it will notice
+that an existing build is already present and offer to clean and rebuild the
+software or re-install the existing binaries.
+
+BuildAndInstall.sh will detect if the system uses systemd and offer to install
+scripts to change the MAC address of the ethernet/wi-fi adapter and start
+DECnet on boot.
+
+
+Command Line Overrides:
+
+Several overrides may be used to control the operation of BuildAndInstall.sh.
+These overrides would be placed on the command line prior to invoking
+BuildAndInstall.sh:
+
+	OVERRIDES ./BuildAndInstall.sh
+
+or
+
+	sudo OVERRIDES ./BuildAndInstall.sh
+
+    1. If your system uses a kernel which was installed outside of the package
+       manager mechanism, you must load the linux headers for this kernel
+       using this same mechanism and include "HAVE_HEADERS=1" as an override.
+
+    2. BuildAndInstall.sh is written for Debian and Debian derived distributions
+       which use the "apt" package management system. If your system uses
+       another package management system, you must manually load all
+       required packages and include "HAVE_PACKAGES=1" as an override.
+
+
+Changes from previous Linux DECnet release:
+
+    7/22/2023
+
+    These changes are relative to the last RaspbianDECnet release:
+
+	Fix read handling for SEQPACKET sockets if the remote system sends
+	a message longer than the receive size
+
+	Added additional parameter when loading the DECnet kernel module:
+
+	    dn_ifname="dev"		sets the interface to be used
+
+	Note that dn_ifname and dn_nodeaddr are now required.
+
+	LinuxDECnet uses the newer version of nml which used to be called
+	nml2 and the older version is no longer available. It also defaults
+	to the newer version of fal which used to be called fal2. The older
+	version is still available as fal-old.
+
+	The kernel DECnet module now implements node counters and nml
+	supports reading and zeroing node counters.
+
+	All version numbers have moved to 3.x and the DECnet module is
+	called decnet3.ko so it can co-exist with the older version.
+
