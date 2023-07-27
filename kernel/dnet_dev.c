@@ -249,8 +249,9 @@ static int __init parse_name(
                 while (*str != 0) {
                         if (!ISALPHANUM(*str))
                                 return -1;
-                        if (ISALPHA(*str++))
+                        if (ISALPHA(*str))
                                 valid = 1;
+			str++;
                 }
 
                 if (valid) {
