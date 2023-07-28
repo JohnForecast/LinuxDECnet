@@ -42,9 +42,6 @@ SYSTEMCTL=/usr/bin/systemctl
 APTGET=/usr/bin/apt-get
 DPKG=/usr/bin/dpkg
 
-# Redhat/Fedora tools
-RPM=/usr/bin/rpm
-
 Here=`${PWD}`
 Log=${Here}/Log
 
