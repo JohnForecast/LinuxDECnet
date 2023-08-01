@@ -526,6 +526,125 @@
 #define NICE_P_G_CLASS_VALUE    0x01FF          /* Event class */
 
 /*
+ * Module parameters
+ */
+#define NICE_P_M_CONS_RES_TMR	110		/* Reservation timer */
+
+#define NICE_P_M_LDR_ASSIST	10		/* ASSISTANCE */
+#define NICE_P_M_LDR_ASSIST_ENA	0		/*   - ENABLED */
+#define NICE_P_M_LDR_ASSIST_DIS	1		/*   - DISABLED */
+
+#define NICE_P_M_CFG_CIRCUIT	100		/* CIRCUIT */
+
+#define NICE_P_M_CFG_SURV	110		/* SURVEILLANCE */
+#define NICE_P_M_CFG_SURV_ENA	0		/*   - ENABLED */
+#define NICE_P_M_CFG_SURV_DIS	1		/*   - DISABLED */
+
+#define NICE_P_M_CFG_ELAPSED_TM	111		/* ELAPSED TIME */
+#define NICE_P_M_CFG_PHYS_ADDR	120		/* PHYSICAL ADDRESS */
+#define NICE_P_M_CFG_LAST_RPT	130		/* LAST REPORT */
+#define NICE_P_M_CFG_MAINT_VER	1001		/* MAINTENANCE VERSION */
+#define NICE_P_M_CFG_FUNCTIONS	1002		/* FUNCTIONS */
+#define NICE_P_M_CFG_CONS_USER	1003		/* CONSOLE USER */
+#define NICE_P_M_CFG_RES_TMR	1004		/* RESERVATION TIMER */
+#define NICE_P_M_CFG_CMD_SIZE	1005		/* COMMAND SIZE */
+#define NICE_P_M_CFG_RESP_SIZE	1006		/* RESPONSE SIZE*/
+#define NICE_P_M_CFG_HW_ADDR	1007		/* HARDWARE ADDRESS */
+#define NICE_P_M_CFG_DEVICE	1100		/* DEVICE */
+#define NICE_P_M_CFG_SW_IDENT	1200		/* SOFTWARE IDENTIFICATION */
+#define NICE_P_M_CFG_SYS_PROC	1300		/* SYSTEM PROCESSOR */
+#define NICE_P_M_CFG_DATA_LINK	1400		/* DATA LINK */
+#define NICE_P_M_CFG_DL_NUF_SIZ	1401		/* DATA LINK BUFFER SIZE */
+
+#define NICE_P_M_ACC_NODE	320		/* NODE */
+#define NICE_P_M_ACC_USER	330		/* USER */
+
+#define NICE_P_M_ACC_PWD	331		/* PASSWORD */
+#define NICE_P_M_ACC_PWD_SET	0		/*   - SET */
+
+#define NICE_P_M_ACC_ACCOUNT	332		/* ACCOUNT */
+#define NICE_P_M_ACC_NETWORK	1110		/* NETWORK */
+
+#define NICE_P_M_PROT_STATE	0		/* STATE */
+#define NICE_P_M_PROT_STATE_ON	0		/*   - ON */
+#define NICE_P_M_PROT_STATE_OFF	1		/*   - OFF */
+#define NICE_P_M_PROT_STATE_SHU	2		/*   - SHUT */
+
+#define NICE_P_M_PROC_SUBS	1		/* SUBSTATE */
+#define NICE_P_M_PROT_SUBS_RUN	0		/*   - RUNNING */
+#define NICE_P_M_PROT_SUBS_SYNC	1		/*   - SYNC */
+#define NICE_P_M_PROT_SUBS_UNSY	2		/*   - UNSYNC */
+
+#define NICE_P_M_PROT_CTR_TMR	100		/* COUNTER TIMER */
+#define NICE_P_M_PROT_ACT_CHAN	1000		/* ACTIVE CHANNELS */
+#define NICE_P_M_PROT_ACT_SWIT	1010		/* ACTIVE SWITCHED */
+#define NICE_P_M_PROT_DTE	1100		/* DTE */
+#define NICE_P_M_PROT_GROUP	1101		/* GROUP */
+#define NICE_P_M_PROT_NETWORK	1110		/* NETWORK */
+#define NICE_P_M_PROT_LINE	1120		/* LINE */
+#define NICE_P_M_PROT_CHANNELS	1130		/* CHANNELS */
+#define NICE_P_M_PROT_MAX_CHAN	1131		/* MAXIMUM CHANNELS */
+#define NICE_P_M_PROT_MAX_CIRC	1132		/* MAXIMUM CIRCUITS */
+#define NICE_P_M_PROT_DEF_DATA	1140		/* DEFAULT DATA */
+#define NICE_P_M_PROT_DEF_WIND	1141		/* DEFAULT WINDOW */
+#define NICE_P_M_PROT_MAX_DATA	1150		/* MAXIMUM DATA */
+#define NICE_P_M_PROT_MAX_WIND	1151		/* MAXIMUM WINDOW */
+#define NICE_P_M_PROT_MAX_CLRS	1152		/* MAXIMUM CLEARS */
+#define NICE_P_M_PROT_MAX_RSET	1153		/* MAXIMUM RESETS */
+#define NICE_P_M_PROT_MAX_RSTAR	1154		/* MAXIMUM RESTARTS */
+#define NICE_P_M_PROT_CALL_TMR	1160		/* CALL TIMER */
+#define NICE_P_M_PROT_CLR_TMR	1161		/* CLEAR TIMER */
+#define NICE_P_M_PROT_RESET_TMR	1162		/* RESET TIMER */
+#define NICE_P_M_PROT_RSTAR_TMR	1163		/* RESTART TIMER */`
+#define NICE_P_M_PROT_DTE_Q	1170		/* DTE (qual by GROUP) */
+#define NICE_P_M_PROT_NUMBER_Q	1171		/* NUMBER (qual by GROUP) */
+#define NICE_P_M_PROT_TYPE_Q	1172		/* TYPE (qual by GROUP) */
+#define NICE_P_M_PROT_TYPE_Q_BI	0		/*   - BILATERAL */
+
+#define NICE_P_M_SERV_CTR_TMR	100		/* COUNTER TIMER */
+#define NICE_P_M_SERV_ACT_CIR	200		/* ACTIVE CIRCUITS */
+#define NICE_P_M_SERV_DEST	300		/* DESTINATION */
+#define NICE_P_M_SERV_MAX_CIR	310		/* MAXIMUM CIRCUITS */
+#define NICE_P_M_SERV_NODE	320		/* NODE */
+#define NICE_P_M_SERV_USER	330		/* USER */
+#define NICE_P_M_SERV_PWD	331		/* PASSWORD */
+#define NICE_P_M_SERV_PWD_SET	0		/*   - PASSWORD SET */
+
+#define NICE_P_M_SERV_ACCOUNT	332		/* ACCOUNT */
+#define NICE_P_M_SERV_OBJECT	340		/* OBJECT */
+#define NICE_P_M_SERV_PRIORITY	350		/* PRIORITY */
+#define NICE_P_M_SERV_CALL_MASK	351		/* CALL MASK */
+#define NICE_P_M_SERV_CALL_VAL	352		/* CALL VALUE */
+#define NICE_P_M_SERV_GROUP	353		/* GROUP */
+#define NICE_P_M_SERV_NUMBER	354		/* NUMBER */
+#define NICE_P_M_SERV_SUBADDR	355		/* SUBADDRESSES */
+
+/*
+ * Module Counters
+ */
+#define NICE_C_M_PROT_SECONDS	0		/* Seconds since last zeroed */
+#define NICE_C_M_PROT_BYTESRCVD	1000		/* Bytes Received */
+#define NICE_C_M_PROT_BYTESSENT	1001		/* Bytes Sent */
+#define NICE_C_M_PROT_DBRCVD	1010		/* Data Blocks Received */
+#define NICE_C_M_PROT_DBSENT	1011		/* Data Blocks Sent */
+#define NICE_C_M_PROT_CALLSRCVD	1200		/* Calls Received */
+#define NICE_C_M_PROT_CALLSSENT	1201		/* Calls Sent */
+#define NICE_C_M_PROT_FSELRCVD	1210		/* Fast Selects Received */
+#define NICE_C_M_PROT_FSELSENT	1211		/* Fast Selects Sent */
+#define NICE_C_M_PROT_MAXCIRACT	1220		/* Max Switchs Circuits Active */
+#define NICE_C_M_PROT_MAXCHACT	1221		/* Max channels active */
+#define NICE_C_M_PROT_RESERRS	1230		/* Received Call Resource Errs */
+#define NICE_C_M_PROT_LOCRESET	1240		/* Locally initiated resets */
+#define NICE_C_M_PROT_REMRESET	1241		/* Remote initiated resets */
+#define NICE_C_M_PROT_NETRESET	1242		/* Network initiated resets */
+#define NICE_C_M_PROT_RESTARTS	1250		/* Restarts */
+
+#define NICE_C_M_SERV_SECONDS	0		/* Seconds since last zeroed */
+#define NICE_C_M_SERV_NAXCIR	200		/* Max Circuits Active */
+#define NICE_C_M_SERV_INC_NORES	210		/* Incoming calls rejected */
+#define NICE_C_M_SERV_LL_REJ	211		/* Logicl Linksrejected */
+
+/*
  * Node parameters
  */
 #define NICE_P_N_STATE          0               /* STATE (C-1) */
