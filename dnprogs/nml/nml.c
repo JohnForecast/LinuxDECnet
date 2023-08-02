@@ -29,7 +29,6 @@
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #include <fcntl.h>
-#include "libnetlink.h"
 #include "nice.h"
 
 #define IDENT_STRING            "DECnet for Linux"

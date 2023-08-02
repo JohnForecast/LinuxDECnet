@@ -6,8 +6,6 @@ PROG1=dnetnml
 MANPAGES8=dnetnml.8
 PROG1OBJS=main.o nice.o nml.o
 
-CFLAGS+=-I ../dnroute/netlink/include
-
 all: $(PROG1)
 
 .c.o:
