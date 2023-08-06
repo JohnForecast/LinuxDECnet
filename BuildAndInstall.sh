@@ -393,26 +393,6 @@ DOCMD "${DEPMOD} -A"
 
 DOCMD "cd ${Here}/LinuxDECnet/dnprogs"
 
-# Create /usr/include/netdnet if it does not exists and load the 2 default files
-
-if [ ! -d /usr/include/netdnet ]; then
-    DOCMD "${MKDIR} /usr/include/netdnet"
-    if [ ! -e /usr/include/netdnet/dn.h ]; then
-	DOCMD "${CP} include/netdnet/dn.h /usr/include/netdnet"
-	if [ $? -ne 0 ]; then
-	    echo "Copy of standard header file \'dn.h\' failed"
-	    exit 1
-	fi
-    fi
-    if [ ! -e /usr/include/netdnet/dnetdb.h ]; then
-	DOCMD "${CP} include/netdnet/dnetdb.h /usr/include/netdnet"
-	if [ $? -ne 0 ]; then
-	    echo "Copy of standard header file \'dnetdb.h\' failed"
-	    exit 1
-	fi
-    fi
-fi
-
 DOCMD "${MAKE} install"
 if [ $? -ne 0 ]; then
     echo "DECnet Utilities install failed"
