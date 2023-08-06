@@ -18,13 +18,14 @@ kernel code so could not be installed on kernel 6.1.x or later.
 Distributions tested:
 
 Minimum kernel supported:	4.19.0
-Maximum kernel supported:	6.1.0
+Maximum kernel supported:	6.1.21
 
 Tested distributions:
 
 Debian 10, kernel 4.19.0 on X86_64 (ESXi 6.7u3 VM)
 Debian 11, kernel 5.10.0 on X86_64 (ESXi 6.7u3 VM)
 RaspiOS 2023-02-21, kernel 6.0.19 on AARCH64 (Raspberry Pi 3)
+RaspiOS 2023-05-03, kernel 6.1.21 on AARCH64 (Raspberry Pi 4B)
 Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
 
 Changes from RaspbianDECnet:
