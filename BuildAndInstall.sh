@@ -39,6 +39,7 @@ TRUE=/bin/true
 SYSTEMCTL=/usr/bin/systemctl
 
 # Debian tools
+APT=/usr/bin/apt
 APTGET=/usr/bin/apt-get
 DPKG=/usr/bin/dpkg
 
@@ -132,6 +133,13 @@ set_default_interface() {
 check_headers() {
     if [ "${HAVE_HEADERS}" = "1" ]; then
 	if [ -d /lib/modules/$(uname -r)/source/include ]; then
+	    return
+	fi
+    fi
+    if [ -x ${APT} ]; then
+	${APT} list 2>/dev/null | ${GREP} raspberrypi-kernel-headers >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+	    PKGLIST="${PKGLIST} raspberrypi-kernel-headers"
 	    return
 	fi
     fi
