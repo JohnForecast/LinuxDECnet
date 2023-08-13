@@ -279,7 +279,6 @@ void NICEnodeEntity(
   size_t len = nodename ? strlen(nodename) : 0;
   int i;
 
-  outbuf[outptr++] = 0;
   outbuf[outptr++] = nodeaddress & 0xFF;
   outbuf[outptr++] = (nodeaddress >> 8) & 0xFF;
 
@@ -297,7 +296,6 @@ void NICEcircuitEntity(
   char *circuit
 )
 {
-  outbuf[outptr++] = 0;
   outbuf[outptr++] = strlen(circuit);
   memcpy((char *)&outbuf[outptr], circuit, strlen(circuit));
   outptr += strlen(circuit);
@@ -310,7 +308,6 @@ void NICEareaEntity(
   uint8_t area
 )
 {
-  outbuf[outptr++] = 0;
   outbuf[outptr++] = 0;
   outbuf[outptr++] = area;
 }
@@ -415,8 +412,11 @@ void NICEpartialResponse(void)
 void NICEsuccessResponse(void)
 {
   outbuf[outptr++] = NICE_RET_SUCCESS;
+
+  outbuf[outptr++] = 0;			/* Error detail */
   outbuf[outptr++] = 0;
-  outbuf[outptr++] = 0;
+
+  outbuf[outptr++] = 0;			/* Error message */
 }
 
 /*
