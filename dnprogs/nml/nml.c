@@ -612,9 +612,10 @@ static void read_node_single(
       break;
 
     case NICE_READ_OPT_CTRS:
+      NICEsuccessResponse();
+      NICEnodeEntity(address, name, FALSE);
+
       if (nodectrs[address].valid) {
-	NICEsuccessResponse();
-	NICEnodeEntity(address, name, FALSE);
 	NICEcounter16(NICE_C_N_SECONDS, nodectrs[address].sincezeroed);
 	NICEcounter32(NICE_C_N_USERBYTESRCVD, nodectrs[address].usrbytesrcvd);
 	NICEcounter32(NICE_C_N_USERBYTESSENT, nodectrs[address].usrbytessent);
@@ -627,8 +628,8 @@ static void read_node_single(
 	NICEcounter16(NICE_C_N_CONNRCVD, nodectrs[address].connectsrcvd);
 	NICEcounter16(NICE_C_N_CONNSENT, nodectrs[address].connectssent);
 	NICEcounter16(NICE_C_N_RESP_TMO, nodectrs[address].timeouts);
-	NICEflush();
       }
+      NICEflush();
       break;
 
     default:
