@@ -29,7 +29,7 @@ extern int verbosity;
  * All access to the outbound NICE response buffer MUST go through these
  * routines.
  */
-static unsigned char outbuf[512], inbuf[512];
+static unsigned char outbuf[300], inbuf[300];
 static int outptr, inptr;
 static ssize_t inlen;
 static int sock;
