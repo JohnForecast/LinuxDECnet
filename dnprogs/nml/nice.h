@@ -858,6 +858,7 @@
 
 extern void NICEinit(int);
 extern void NICEflush(void);
+extern void NICEflushPartial(void);
 extern void NICEparamDU1(uint16_t, uint8_t);
 extern void NICEparamDU2(uint16_t, uint16_t);
 extern void NICEparamAIn(uint16_t, char *);
@@ -883,7 +884,6 @@ extern void NICEtoolongResponse(void);
 extern void NICEunrecognizedComponentResponse(char);
 extern void NICEoperationFailureResponse(void);
 extern void NICEacceptedResponse(void);
-extern void NICEpartialResponse(void);
 extern void NICEsuccessResponse(void);
 extern void NICEdoneResponse(void);
 extern int NICEread(void);

@@ -30,7 +30,7 @@ extern int verbosity;
  * routines.
  */
 static unsigned char outbuf[300], inbuf[300];
-static int outptr, inptr;
+static int outptr, inptr, entptr;
 static ssize_t inlen;
 static int sock;
 
@@ -67,6 +67,37 @@ void NICEflush(void)
     write(sock, outbuf, outptr);
   }
   outptr = 0;
+}
+
+/*
+ * Flush any data in the outbound buffer, converting the current message to
+ * a "Partial" response.
+ */
+void NICEflushPartial(void)
+{
+  if (outptr) {
+    uint8_t save = outbuf[0];
+
+    outbuf[0] = NICE_RET_PARTIAL;
+
+    if (verbosity > 1) {
+      int i;
+      char buf[2048];
+
+      dnetlog(LOG_DEBUG, "Sent NICE Response message %d bytes:\n", outptr);
+
+      buf[0] = '\0';
+
+      for (i = 0; i < outptr; i++)
+        sprintf(&buf[strlen(buf)], "0x%02x ", outbuf[i]);
+      
+      dnetlog(LOG_DEBUG, "%s\n", buf);
+    }
+    write(sock, outbuf, outptr);
+
+    outbuf[0] = save;
+    outptr = entptr;
+  }
 }
 
 /*
@@ -287,6 +318,8 @@ void NICEnodeEntity(
     for (i = 0; i < len; i++)
       outbuf[outptr++] = toupper(nodename[i]);
   }
+
+  entptr = outptr;
 }
 
 /*
@@ -299,6 +332,8 @@ void NICEcircuitEntity(
   outbuf[outptr++] = strlen(circuit);
   memcpy((char *)&outbuf[outptr], circuit, strlen(circuit));
   outptr += strlen(circuit);
+
+  entptr = outptr;
 }
 
 /*
@@ -310,6 +345,8 @@ void NICEareaEntity(
 {
   outbuf[outptr++] = 0;
   outbuf[outptr++] = area;
+
+  entptr = outptr;
 }
 
 /*
@@ -394,16 +431,6 @@ void NICEacceptedResponse(void)
   char accepted = NICE_RET_ACCEPTED;
 
   write(sock, &accepted, sizeof(accepted));
-}
-
-/*
- * Generate a "Partial" response
- */
-void NICEpartialResponse(void)
-{
-  char partial = NICE_RET_PARTIAL;
-
-  write(sock, &partial, sizeof(partial));
 }
 
 /*
