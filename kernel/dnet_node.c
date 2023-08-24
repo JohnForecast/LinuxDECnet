@@ -239,6 +239,7 @@ static int dn_node_seq_show(
         struct dn_node_counters *ctrp = &nodep->counters;
         char buf1[DN_ASCBUF_LEN];
         uint32_t delay;
+	time64_t delta = ktime_get_real_seconds - ctrp->timezeroed;
 
         delay = (nodep->delay + HZ - 1) / HZ;
 #define VALOF(v, limit) (v) < limit ? v : limit
@@ -248,7 +249,7 @@ static int dn_node_seq_show(
                    "0x%04x 0x%04x 0x%04x\n",
                    dn_addr2asc(nodep->addr, buf1),
                    delay > 255 ? 255 : delay,
-                   ktime_get_real_seconds() - ctrp->timezeroed,
+		   delta > 0xFFFE ? 0xFFFF : delta,
                    VALOF(ctrp->user_bytes_rcv, 0xFFFFFFFF),
                    VALOF(ctrp->user_bytes_xmt, 0xFFFFFFFF),
 		   VALOF(ctrp->user_msg_rcv, 0xFFFFFFFF),
