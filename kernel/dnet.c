@@ -1412,7 +1412,7 @@ static int dn_recvmsg(
                 rv = 0;
                 
                 if (!skb_queue_empty(&scp->other_receive_queue)) {
-                        if ((flags & MSG_OOB) != 0) {
+                        if ((flags & MSG_OOB) == 0) {
                                 /*
                                  * Tell the user that an interupt message is
                                  * available.
@@ -1546,13 +1546,13 @@ static inline int dn_is_blocked(
   int flags
 )
 {
-        if (sk_wmem_alloc_get(sk) >= READ_ONCE(sk->sk_sndbuf))
-                return 1;
-        
         if ((flags & MSG_OOB) != 0) {
                 if ((scp->other.flowrem == 0) || dn_intr_xmt_pending(queue))
                         return 1;
         } else {
+        	if (sk_wmem_alloc_get(sk) >= READ_ONCE(sk->sk_sndbuf))
+               		return 1;
+        
                 if (skb_queue_len(queue) >= scp->snd_window)
                         return 1;
 
