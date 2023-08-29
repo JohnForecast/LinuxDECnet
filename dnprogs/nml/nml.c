@@ -802,7 +802,6 @@ static void read_area_info(
   switch (how) {
     case NICE_READ_OPT_SUM:
     case NICE_READ_OPT_STATUS:
-    case NICE_READ_OPT_CHAR:
       NICEsuccessResponse();
       NICEareaEntity(area);
 
