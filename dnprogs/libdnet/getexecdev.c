@@ -35,7 +35,7 @@ char *getexecdev(void)
 
 	if ((dnhosts = fopen(SYSCONF_PREFIX "/etc/decnet.conf","r")) == NULL)
 	{
-		printf("getnodebyname: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
+		printf("getexecdev: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
 		errno = ENOENT;
 		return NULL;
 	}
@@ -49,7 +49,7 @@ char *getexecdev(void)
 	    	       (strcmp(nodetag,"node")     != 0)) ||
 		       (strcmp(nametag,"name")     != 0))
 		   {
-		       printf("getnodebyname: Invalid decnet.conf syntax\n");
+		       printf("getexecdev: Invalid decnet.conf syntax\n");
 		       errno = ENOENT;
 		       return NULL;
 		   }

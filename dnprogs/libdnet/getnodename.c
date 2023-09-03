@@ -34,7 +34,7 @@ int getnodename(char *name, size_t len)
 
 	if ((dnhosts = fopen(SYSCONF_PREFIX "/etc/decnet.conf","r")) == NULL)
 	{
-		printf("getnodeadd: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
+		printf("getnodename: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
 		return 0;
 	}
 	while (fgets(nodeln,80,dnhosts) != NULL)
@@ -46,7 +46,7 @@ int getnodename(char *name, size_t len)
 	    	       (strcmp(nodetag,"node")     != 0)) ||
 		       (strcmp(nametag,"name")     != 0))
 		   {
-		       printf("getnodeadd: Invalid decnet.conf syntax\n");
+		       printf("getnodename: Invalid decnet.conf syntax\n");
 			 fclose(dnhosts);
 		       return 0;
 		   }

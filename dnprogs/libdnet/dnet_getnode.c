@@ -41,7 +41,7 @@ void *dnet_getnode(void)
 
     if ((gs->fp = fopen(SYSCONF_PREFIX "/etc/decnet.conf","r")) == NULL)
     {
-	fprintf(stderr, "dnet_htoa: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
+	fprintf(stderr, "dnet_getnode: Can not open " SYSCONF_PREFIX "/etc/decnet.conf\n");
 	return NULL;
     }
     
