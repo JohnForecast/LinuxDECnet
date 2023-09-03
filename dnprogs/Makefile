@@ -11,7 +11,7 @@ DATE="$(shell date +'%Y%m%d')"
 SUBDIRS_LINUX=apps phone dnroute nml multinet
 
 SUBDIRS=include libdnet libdaemon libdap librms fal dndir dnsubmit dndel \
-	dncopy dts dtr dntask dnlogin mail dnetd libvaxdata \
+	dncopy dts dtr dntask dnlogin mail ncp dnetd libvaxdata \
 	scripts \
 	contrib/ph3-der-loewe \
 

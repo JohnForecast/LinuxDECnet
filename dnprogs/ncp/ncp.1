@@ -1,0 +1,164 @@
+.TH NCP 1 "September 2, 2023" "DECnet Utilities"
+.SH NAME
+ncp \- Network Control Program
+.SH SYNOPSIS
+.B ncp
+verb object(s) [parameters]
+.br
+.SH DESCRIPTION
+.PP
+\fBncp\fP connects to a network managment listener (object 19) on the local or
+remote system to provide network management operations. The implementation
+of \fBncp\fP on Linux is a subset of the full specification typically
+implemented on DEC systems and provides mostly read-only operations.
+
+If no arguments are provided on the command line, \fBncp\fP will drop into
+an interactive mode with a \fBNCP> \fP prompt. In this mode, \fBncp\fP uses
+the readline library to interact with the user.
+.br
+
+.TP
+The following verbs are supported:
+
+.br
+.B "\fIshow\fP \- Display DECnet information
+.br
+
+.RS
+.RS
+.B "\fIactive areas\fP    \- areas in use on the target system"
+.br
+.B "\fIactive circuits\fP \- circuits in use on the target system"
+.br
+.B "\fIactive lines\fP    \- lines in use on the target system"
+.br
+.B "\fIactive nodes\fP    \- nodes in use on the target system"
+.br
+.B "\fIarea <n>\fP        \- specific area on the target system"
+.br
+.B "\fIcircuit <name>\fP  \- specific circuit on the target system"
+.br
+.B "\fIexecutor\fP        \- the target system"
+.br
+.B "\fIknown areas\fP     \- all areas known to the target system"
+.br
+.B "\fIknown circuits\fP  \- all circuits known to the target system"
+.br
+.B "\fIknown lines\fP     \- all lines known to the target system"
+.br
+.B "\fIknown nodes\fP     \- all nodes known to the target system"
+.br
+.B "\fIline <name>\fP     \- specific line on the target system"
+.br
+.B "\fInode <node-id>\fP  \- specific node on the target system"
+.br
+
+<node-id> is either a node address or node name.
+
+The information displayed is controlled by one of the following parameters:
+
+.RS
+.B "\fIsummary\fP         \- Overview of the object"
+.br
+.B "\fIstatus\fP          \- Operating status of the object"
+.br
+.B "\fIcharacteristics\fP \- Parameter values"
+.br
+.B "\fIcounters\fP        \- Performance counters"
+.br
+.RE
+.RE
+.RE
+
+.B "\fIlist\fP \- Display DECnet information from permanent database"
+.br
+
+.RS
+.RS
+This displays similar information to the \fIshow\fP command except it is
+unable to display dynamically created information (e.g. anything to do with
+areas and any "active xxx" operations).
+
+Note that DECnet for Linux only maintains a single database so \fIlist\fP
+and \fIshow\fP requests will display the same information.
+.br
+.RE
+.RE
+
+.B "\fIzero\fP \- Zero performance counters"
+.br
+
+.RS
+.RS
+.B "\fIcircuit <name>\fP  \- specific circuit on the target system"
+.br
+.B "\fIexecutor\fP        \- the target system"
+.br
+.B "\fIknown circuits\fP  \- all circuits known to the target system"
+.br
+.B "\fIknown lines\fP     \- all lines known to the target system"
+.br
+.B "\fIknown nodes\fP     \- all nodes known to the target system"
+.br
+.B "\fIline <name>\fP     \- specific line of the target system"
+.br
+.B "\fInode <node-id>\fP  \- specific node on the target system"
+.br
+.RE
+.RE
+
+.B "\fIcopy\fP \- Copy node name/address mapping information"
+.br
+
+.RS
+.RS
+.B "\fIknown nodes from <node-id>\fP" 
+.br
+.RS
+.B "\fI[user <user>] [password <pwd>] [account <acct>]\fP"
+.br
+.B "\fI[using permanent | volatile]\fP"
+.br
+.RE
+.RE
+.RE
+
+.B "\fItell\fP \- Execute following command on remote system"
+.br
+
+.RS
+.RS
+.B "\fI<node-id> [user <user> [password <pwd>] [account <acct>]\fP"
+.br
+.RE
+.RE
+
+.SH EXAMPLES
+.br
+Display all nodes known to the local system.
+.br
+.br
+.PP
+   ncp show known nodes
+.br
+
+.br
+Zero the node counters on node "mv3100" associated with node "61.77".
+.br
+.PP
+   ncp tell mv3100 zero node 61.77
+.br
+
+.br
+Copy the permanent node name database from node "master" to this node and
+update /etc/decnet.conf. Note that this command must be run as root in order
+to modify /etc.
+.br
+.br
+.PP
+   ncp copy known nodes from master using permanent
+.br
+
+.SH SEE ALSO
+.BR dnetnml "(8)"
+
