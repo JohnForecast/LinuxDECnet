@@ -1,15 +1,15 @@
 /******************************************************************************
-    (C) John Forecast                           john@forecast.name
+(C) John Forecast                           john@forecast.name
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    any later version.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 ******************************************************************************/
 
 #include <stdio.h>
@@ -24,21 +24,26 @@
 #include <netdnet/dnetdb.h>
 
 /*
- * The requested test is passed in the connect optional data:
- *
- * Byte 0:              Test #
- * Byte 1:              Subtest/flags
- * Byte 2:              Flow control type (Data/Interrupt tests)
- * Byte 2:              Interrupt flow control value (always 1)
- * Byte 3:              Flow control value (Data test)
- * Byte 3:              Message length (Interrupt test)
- * Byte 4,5:            Unknown
- * Byte 6,7:            Message length (Data test)
- */
+* The requested test is passed in the connect optional data:
+*
+* Byte 0:              Test #
+*                      Bit 7 requests DTR to display statistics
+* Byte 1:              Subtest/flags
+* Byte 2:              Flow control type (Data/Interrupt tests)
+* Byte 2:              Interrupt flow control value (always 1)
+* Byte 3:              Flow control value (Data test)
+* Byte 3:              Message length (Interrupt test)
+* Byte 4,5:            Unknown
+* Byte 6,7:            Message length (Data test)
+*/
+#define DTS_TEST_MASK		0x7F	/* Mask for test type */
+
 #define DTS_TEST_CONNECT        0x00    /* Connect test */
 #define DTS_TEST_DATA           0x01    /* Data transfer test */
 #define DTS_TEST_DISCONNECT     0x02    /* Disconnect test */
 #define DTS_TEST_INTERRUPT      0x03    /* Interrupt transfer test */
+
+#define DTS_TEST_PRINT		0x80	/* Request DTR display statistics */
 
 #define DTS_SUBTEST_REJ         0x00    /* Reject subtest of connect */
 #define DTS_SUBTEST_ACC         0x01    /* Accept subtest of connect */
@@ -48,12 +53,12 @@
 
 #define DTS_SUBTEST_MASK        0x01    /* Mask for subtest type */
 
-                                        /* Connect/disconnect flags */
+				/* Connect/disconnect flags */
 #define DTS_CONNDIS_NONE        0x00    /* No optional data to send */
 #define DTS_CONNDIS_STD         0x02    /* Send standard optional data */
 #define DTS_CONNDIS_RCVD        0x04    /* Send received optional data */
 
-                                        /* Data/Interrupt test options */
+				/* Data/Interrupt test options */
 #define DTS_DATAINT_SINK        0x00    /* Drop all received data */
 #define DTS_DATAINT_SEQ         0x01    /* Validate sequence numbers */
 #define DTS_DATAINT_PAT         0x02    /* Validate data pattern */
@@ -69,15 +74,15 @@
 #define DTS_PATTERN             "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 char std_optdata[16] = {
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
+'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
 };
 
 /*
- * Note that RSX sends a short request block for interrupt tests (3 bytes)
- * so in this case we need to handle whatever interrupt message the client
- * sends us.
- */
+* Note that RSX sends a short request block for interrupt tests (3 bytes)
+* so in this case we need to handle whatever interrupt message the client
+* sends us.
+*/
 
 void perform_test(int, unsigned short, unsigned char *);
 int check_pattern(char *, int);
@@ -87,14 +92,14 @@ void dnet_abort(int);
 int verbosity = 0;
 
 void usage(
-  char *prog,
-  FILE *f
+char *prog,
+FILE *f
 )
 {
-  fprintf(f, "\n%s options:\n", prog);
-  fprintf(f, " -v        Verbose messages\n");
-  fprintf(f, " -h        Display this message\n");
-  fprintf(f, " -d        Show debug logging\n");
+fprintf(f, "\n%s options:\n", prog);
+fprintf(f, " -v        Verbose messages\n");
+fprintf(f, " -h        Display this message\n");
+fprintf(f, " -d        Show debug logging\n");
   fprintf(f, " -V        Show version number\n\n");
 }
 
@@ -136,6 +141,8 @@ int main(
     struct optdata_dn optdata;
     socklen_t optlen = sizeof(optdata);
 
+    memset(&optdata, 0, sizeof(optdata));
+
     if (getsockopt(sock, DNPROTO_NSP, DSO_CONDATA, &optdata, &optlen) == 0) {
       /*
        * DTS sends its requests via optional connect data - must be at least
@@ -163,8 +170,11 @@ void perform_test(
   int bufsize = 131072;
   uint32_t seq = 1;
   int anylen = 0;
+  int prdata = (req[0] & DTS_TEST_PRINT) != 0 ? 1 : 00;
 
   memset(&optdata, 0, sizeof(optdata));
+
+  req[0] &= DTS_TEST_MASK;
 
   switch (req[0]) {
     case DTS_TEST_DISCONNECT:
