@@ -895,8 +895,6 @@ static __inline__ int dn_queue_oth_skb(
         int err;
         unsigned long flags;
 
-        BUG_ON(skb_queue_empty(&scp->other_receive_queue));
-        
         err = sk_filter(sk, skb);
         if (err)
                 return err;
