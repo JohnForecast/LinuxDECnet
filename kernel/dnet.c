@@ -1282,7 +1282,8 @@ static int dn_data_ready(
   struct sock *sk,
   struct sk_buff_head *q,
   int flags,
-  int target
+  int target,
+  int framing
 )
 {
         struct sk_buff *skb;
@@ -1297,17 +1298,12 @@ static int dn_data_ready(
                 len += skb->len;
 
                 if ((cb->nsp_flags & NSP_MSG_EOM) != 0) {
-                        /*
-                         * SOCK_SEQPACKET reads to EOM
-                         */
-                        if (sk->sk_type == SOCK_SEQPACKET)
-                                return 1;
-
-                        /*
-                         * So does SOCK_STREAM unless MAITALL is specified
-                         */
-                        if ((flags & MSG_WAITALL) == 0)
-                                return 1;
+			/*
+			 * If we are using message framing (SOCK_SEQPACKET
+	`		 * of WAITALL) we read to EOM.
+			 */
+			if (framing != 0)
+				return 1;
                 }
 
                 /*
@@ -1372,6 +1368,11 @@ static int dn_recvmsg(
         int rv = 0;
         struct sk_buff *skb, *n;
         long timeo = sock_rcvtimeo(sk, flags & MSG_DONTWAIT);
+	int msg_framing = 1;
+
+	if ((sock->type == SOCK_STREAM) &&
+	    ((flags & (MSG_WAITALL | MSG_OOB)) == 0))
+		msg_framing = 0;
 
         lock_sock(sk);
 
@@ -1429,7 +1430,7 @@ static int dn_recvmsg(
                         goto out;
                 }
 
-                if (dn_data_ready(sk, queue, flags, target))
+                if (dn_data_ready(sk, queue, flags, target, msg_framing))
                         break;
 
                 if ((flags & MSG_DONTWAIT) != 0) {
@@ -1439,7 +1440,7 @@ static int dn_recvmsg(
 
                 add_wait_queue(sk_sleep(sk), &wait);
                 sk_set_bit(SOCKWQ_ASYNC_WAITDATA, sk);
-                sk_wait_event(sk, &timeo, dn_data_ready(sk, queue, flags, target), &wait);
+                sk_wait_event(sk, &timeo, dn_data_ready(sk, queue, flags, target, msg_framing), &wait);
                 sk_clear_bit(SOCKWQ_ASYNC_WAITDATA, sk);
                 remove_wait_queue(sk_sleep(sk), &wait);
         }
@@ -1473,9 +1474,10 @@ static int dn_recvmsg(
                                 skb_pull(skb, chunk);
                 }
 
-                if ((skb->len == 0) ||
-                    ((sock->type == SOCK_SEQPACKET) &&
-                     (copied >= target))) {
+		if ((skb->len == 0) ||
+		    (((flags & MSG_PEEK) == 0) &&
+		     (copied >= target) &&
+		     (msg_framing != 0))) {
                         skb_unlink(skb, queue);
                         kfree_skb(skb);
 
@@ -1490,12 +1492,8 @@ static int dn_recvmsg(
                         }
                 }
 
-                if (eor) {
-                        if (sk->sk_type == SOCK_SEQPACKET)
-                                break;
-                        if ((flags & MSG_WAITALL) == 0)
-                                break;
-                }
+		if (eor && (msg_framing != 0))
+			break;
 
                 if ((flags & MSG_OOB) != 0)
                         break;
