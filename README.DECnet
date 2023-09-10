@@ -1,5 +1,5 @@
 Note: This document describes the installation of DECnet support on any Linux
-release dreived from Debian (Debian, Ubuntu etc). Note that only a (very)
+release derived from Debian (Debian, Ubuntu etc). Note that only a (very)
 limited number of distributions have been tested.
 
 The kit may be obtained by:
@@ -58,7 +58,7 @@ external module implementing the core DECnet protocols along with all the
 userland applications.
 
 The build and installation can be automated by downloading the
-BuildAndInstall.sh script, making it executable and running it inside a
+debian/BuildAndInstall.sh script, making it executable and running it inside a
 newly created work directory. You must be running as root to execute this
 script.
 
@@ -96,6 +96,19 @@ or
 
 
 Changes from previous Linux DECnet release:
+
+    9/9/2023
+
+    Cleaned up the logic which decides whether received messages are read to the end-of-message
+    flag (SOCK_SEQPACKET and interrupt messages for any socket type).
+
+    Added a subset ncp implementation which supports all the functions provided by the local
+    nml. It also supports the "tell" commands so that these requests may be directed to remote
+    systems.
+
+    BuildandInstall.sh has been moved to a "debian" directory to allow for the possibility of
+    supporting other distributions.
+
 
     7/22/2023
 
