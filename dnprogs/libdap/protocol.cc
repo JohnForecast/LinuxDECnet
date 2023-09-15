@@ -2129,7 +2129,7 @@ char *dap_date_message::make_y2k(char *dt)
         timepos = 8;
     }
 
-    char yearstr[5];
+    char yearstr[8];
     sprintf(yearstr, "%04d", year);
     y2kdate[7] = '\0';
     strcat(y2kdate, yearstr);

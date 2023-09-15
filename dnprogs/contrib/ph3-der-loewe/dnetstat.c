@@ -135,7 +135,7 @@ int proc_file (FILE * fh) {
  struct dn_nse local, remote;
  char state[32], immed[32];
  char buf[1024];
- char out[1024] = {0}, * outdir = out+57;
+ char out[2048] = {0}, * outdir = out+57;
  char conid[8] = {0,0,0,0,0,0,0,0}, *lid, *rid;
  char * lbuf = buf, * rbuf = buf + 512;
  char * dir = ""; // max be "UNI" or "BI", "IN", "OUT"

@@ -127,7 +127,7 @@ static void dn_display_dev(
         
         seq_printf(seq, "%-8s %1s     %04u %04u   %04lu %04lu   %04lu %04lu"
                    "   %-5hu   %03d %02x    %-10s %-7s %-7s\n",
-                   dndev->dev->name ? dndev->dev->name : "???",
+                   dndev->dev->name[0] != '\0' ? dndev->dev->name : "???",
                    "B",
                    0, 0,
                    (unsigned long)dndev->t3, (unsigned long)dndev->hello,
