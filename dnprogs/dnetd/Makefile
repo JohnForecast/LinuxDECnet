@@ -27,6 +27,9 @@ install:
 	if [ ! -f $(sysconfprefix)/etc/dnetd.conf ]; then install -m 640 dnetd.conf $(sysconfprefix)/etc; fi
 	if [ ! -f $(sysconfprefix)/etc/decnet.proxy ]; then install -m 640 ../fal/decnet.proxy $(sysconfprefix)/etc; fi
 
+location:
+	$(info $(prefix))
+
 dep depend:	
 	$(CC) $(CFLAGS) -MM *.c >.depend 2>/dev/null
 

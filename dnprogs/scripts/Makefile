@@ -28,6 +28,9 @@ endif
 	install -m 0644 decnetconf.8 $(manprefix)/man/man8
 	install -m 0755 dnetLoadModule $(prefix)/sbin
 
+location:
+	$(info $(prefix))
+
 dep depend:	
 
 
