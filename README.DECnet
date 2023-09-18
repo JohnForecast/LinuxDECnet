@@ -27,6 +27,7 @@ Debian 11, kernel 5.10.0 on X86_64 (ESXi 6.7u3 VM)
 RaspiOS 2023-02-21, kernel 6.0.19 on AARCH64 (Raspberry Pi 3)
 RaspiOS 2023-05-03, kernel 6.1.21 on AARCH64 (Raspberry Pi 4B)
 Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
+Fedora 38, kernel 6.4.15 on X86_64 (ESXi 6.7u3 VM)
 
 Changes from RaspbianDECnet:
 
@@ -89,13 +90,20 @@ or
        manager mechanism, you must load the linux headers for this kernel
        using this same mechanism and include "HAVE_HEADERS=1" as an override.
 
-    2. BuildAndInstall.sh is written for Debian and Debian derived distributions
-       which use the "apt" package management system. If your system uses
-       another package management system, you must manually load all
-       required packages and include "HAVE_PACKAGES=1" as an override.
+    2. If, for any reason, you need BuildAndInstall.sh to avoid installing packages
+       you can install the packages manually and include "HAVE_PACKAGES=1" as an override.
 
 
 Changes from previous Linux DECnet release:
+
+    9/18/2023
+
+    Added installation support for Fedora distributions. X86_64 only for now.
+    BuldAndInstall.sh is back at the top level of the directory hierarchy.
+
+    Started cleanup of removing unneeded/unwanted components from the installation (e.g.
+    dnetinfo is no longer needed since this release only provides end-node support).
+
 
     9/9/2023
 
@@ -103,7 +111,7 @@ Changes from previous Linux DECnet release:
     flag (SOCK_SEQPACKET and interrupt messages for any socket type).
 
     Added a subset ncp implementation which supports all the functions provided by the local
-    nml. It also supports the "tell" commands so that these requests may be directed to remote
+    nml. It also supports the "tell" command so that these requests may be directed to remote
     systems.
 
     BuildandInstall.sh has been moved to a "debian" directory to allow for the possibility of
