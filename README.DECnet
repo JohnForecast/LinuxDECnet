@@ -1,5 +1,5 @@
-Note: This document describes the installation of DECnet support on any Linux
-release derived from Debian (Debian, Ubuntu etc). Note that only a (very)
+Note: This document describes the installation of DECnet support on Linux. Currently it
+supports releases derived from Debian and Fedora. Note that only a (very)
 limited number of distributions have been tested.
 
 The kit may be obtained by:
