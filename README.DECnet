@@ -156,13 +156,13 @@ Notes:
 
     3. SELinux
 
-	DECnet does not operate correctly in SELinux is in the enforcing mode (dnetd
+	DECnet does not operate correctly if SELinux is in the enforcing mode (dnetd
 	will not be able to access sockets and incoming connections will fail).
 	DECnet will operate correctly if SELinux is in permissive mode or disabled. If
 	someone comes up with a suitable policy configuration to allow DECnet to run with
 	SELinux in the enforcing mode, I would be open to including it in the installation
-	procedure but, given the lack of modern security features (e.g. clear text
-	passwords) it is not clear to me that it is a worthwhile effort.
+	procedure but, given the lack of modern security features (e.g. encryption)
+	it is not clear to me that it is a worthwhile effort.
 
 
 Changes from previous Linux DECnet release:
