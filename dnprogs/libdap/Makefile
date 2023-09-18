@@ -35,10 +35,10 @@ clean:
 	rm -f *.o *.po *.bak .depend $(STATICLIB) $(SHAREDLIB) $(LIBNAME).so*
 
 install:
-	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)/lib
-	install -m 0644 $(STATICLIB) $(libprefix)/lib
-	ln -sf $(SHAREDLIB) $(libprefix)/lib/$(LIBNAME).so.$(MAJOR_VERSION)
-	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)/lib/$(LIBNAME).so
+	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)/$(libdir)
+	install -m 0644 $(STATICLIB) $(libprefix)/$(libdir)
+	ln -sf $(SHAREDLIB) $(libprefix)/$(libdir)/$(LIBNAME).so.$(MAJOR_VERSION)
+	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)/$(libdir)/$(LIBNAME).so
 
 .SUFFIXES: .po
 

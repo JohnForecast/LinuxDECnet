@@ -48,12 +48,12 @@ $(SHAREDLIB): ${PICOBJS}
 	$(CC) $(CFLAGS) -fPIC -shared $(SYSCONF_PREFIX) -c -o $@ $<
 
 install: libdnet.a $(SHAREDLIB)
-	install -d $(libprefix)/lib
-	install -m 0644 libdnet.a $(libprefix)/lib/libdnet.a
-	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)/lib/$(SHAREDLIB)
-	ln -sf $(SHAREDLIB) $(libprefix)/lib/$(LIBNAME).so.$(MAJOR_VERSION)
-	ln -sf $(SHAREDLIB) $(libprefix)/lib/$(LIBNAME).so
-	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)/lib/$(LIBNAME).so
+	install -d $(libprefix)/$(libdir)
+	install -m 0644 libdnet.a $(libprefix)/$(libdir)/libdnet.a
+	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)/$(libdir)/$(SHAREDLIB)
+	ln -sf $(SHAREDLIB) $(libprefix)/$(libdir)/$(LIBNAME).so.$(MAJOR_VERSION)
+	ln -sf $(SHAREDLIB) $(libprefix)/$(libdir)/$(LIBNAME).so
+	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)/$(libdir)/$(LIBNAME).so
 
 	install -d $(manprefix)/man/man3
 	install -m 0644 $(MANPAGES3) $(manprefix)/man/man3
