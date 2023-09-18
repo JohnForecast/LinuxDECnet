@@ -109,9 +109,10 @@ Notes:
 		Fedora:
 		    Will only look in /lib64 for 64-bit static and dynamic libraries.
 
-	    ARM:
-		Debian:
-		    TBD
+	    ARM (Raspberry Pi):
+		Debian (RaspiOS):
+		    64-bit libraries are in /lib/aarch64-linux-gnu and
+		    /lib/aarch64-linux-musl but the OS will find them if they are in /lib
 
 		Fedora:
 		    TBD
