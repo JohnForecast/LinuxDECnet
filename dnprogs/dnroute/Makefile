@@ -23,10 +23,9 @@ install:
 	install -d $(manprefix)/man/man8
 #	install -m 0755 $(STRIPBIN) dnroute $(prefix)/sbin
 	install -m 0755 dneigh $(prefix)/sbin
-	ln -sf dneigh $(prefix)/sbin/dnetinfo
+#	ln -sf dneigh $(prefix)/sbin/dnetinfo
 #	install -m 0644 dnroute.8 $(manprefix)/man/man8
-	install -m 0644 dnetinfo.8 $(manprefix)/man/man8
-	ln -sf dnetinfo.8 $(manprefix)/man/man8/dneigh.8
+	install -m 0644 dneigh.8 $(manprefix)/man/man8
 
 clean:
 	rm -f $(DNROUTE) $(DNEIGH) *~ *.o netlink/*.o netlink/*.a
