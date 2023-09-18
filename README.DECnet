@@ -18,7 +18,7 @@ kernel code so could not be installed on kernel 6.1.x or later.
 Distributions tested:
 
 Minimum kernel supported:	4.19.0
-Maximum kernel supported:	6.1.21
+Maximum kernel supported:	6.4.15
 
 Tested distributions:
 
