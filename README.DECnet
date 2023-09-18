@@ -94,6 +94,76 @@ or
        you can install the packages manually and include "HAVE_PACKAGES=1" as an override.
 
 
+Notes:
+
+    1. Library locations
+
+	The location of 64-bit static and dynamic libraries seems to be left to the
+	individual distributions:
+
+	    X86_64:
+		Debian:
+		    Doesn't care. Is able to find 64-bit libraries in /lib and /lib64
+		    (which may be linked to /usr/lib and /usr/lib64).
+
+		Fedora:
+		    Will only look in /lib64 for 64-bit static and dynamic libraries.
+
+	    ARM:
+		Debian:
+		    TBD
+
+		Fedora:
+		    TBD
+
+	In order to have a single installation process, 64-bit libraries will now be
+	placed in /lib64 if that directory exists, otherwise they will be placed in /lib
+
+    2. Upgrading from RaspianDECnet to LinuxDECnet
+
+	Dues to the above change it is possible that, after installing LinuxDECnet,
+	libraries will exist in both /lib and /lib64. It is unclear what the priority
+	order would be so I would suggest deleting the following libraries from /lib:
+
+		/lib/libdnet.a
+		/lib/libdnet_daemon.so
+		/lib/libdnet_daemon.so.2
+		/lib/libdnet_daemon.so.2.43.1
+		/lib/libdnet-dap.a
+		/lib/libdnet-dap.so
+		/lib/libdnet-dap.so.2
+		/lib/libdnet-dap.so.46.0
+		/lib/libdnet.so
+		/lib/libdnet.so.2
+		/lib/libdnet.so.2.43.2
+		/lib/librms.a
+		/lib/librms.so
+		/lib/librms/so.2
+		/lib/librms/so.2.43.0
+		/lib/libvaxdata.a
+
+	You may also want to delete the kernel module:
+
+		/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko
+	or	/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko.xz
+
+	and remove your startup scripts or convert them to use the new kernel mode which
+	is located at:
+
+		/lib/modules/`uname -a`/extra/decnet3.ko.xz
+
+
+    3. SELinux
+
+	DECnet does not operate correctly in SELinux is in the enforcing mode (dnetd
+	will not be able to access sockets and incoming connections will fail).
+	DECnet will operate correctly if SELinux is in permissive mode or disabled. If
+	someone comes up with a suitable policy configuration to allow DECnet to run with
+	SELinux in the enforcing mode, I would be open to including it in the installation
+	procedure but, given the lack of modern security features (e.g. clear text
+	passwords) it is not clear to me that it is a worthwhile effort.
+
+
 Changes from previous Linux DECnet release:
 
     9/18/2023
@@ -102,7 +172,8 @@ Changes from previous Linux DECnet release:
     BuldAndInstall.sh is back at the top level of the directory hierarchy.
 
     Started cleanup of removing unneeded/unwanted components from the installation (e.g.
-    dnetinfo is no longer needed since this release only provides end-node support).
+    dnetinfo is no longer needed since this release only provides end-node support and
+    dneigh is sufficient for this case).
 
 
     9/9/2023
