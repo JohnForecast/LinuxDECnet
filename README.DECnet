@@ -90,41 +90,48 @@ or
        manager mechanism, you must load the linux headers for this kernel
        using this same mechanism and include "HAVE_HEADERS=1" as an override.
 
-    2. If, for any reason, you need BuildAndInstall.sh to avoid installing packages
-       you can install the packages manually and include "HAVE_PACKAGES=1" as an override.
+    2. If, for any reason, you need BuildAndInstall.sh to avoid installing
+       packages you can install the packages manually and include
+       "HAVE_PACKAGES=1" as an override.
 
 
 Notes:
 
     1. Library locations
 
-	The location of 64-bit static and dynamic libraries seems to be left to the
-	individual distributions:
+	The location of 64-bit static and dynamic libraries seems to be left
+        to the individual distributions:
 
 	    X86_64:
 		Debian:
-		    Doesn't care. Is able to find 64-bit libraries in /lib and /lib64
-		    (which may be linked to /usr/lib and /usr/lib64).
+		    Doesn't care. Is able to find 64-bit libraries in
+		    /lib and /lib64 (which may be linked to /usr/lib and
+		    /usr/lib64).
 
 		Fedora:
-		    Will only look in /lib64 for 64-bit static and dynamic libraries.
+		    Will only look in /lib64 for 64-bit static and dynamic
+		    libraries.
 
 	    ARM (Raspberry Pi):
 		Debian (RaspiOS):
 		    64-bit libraries are in /lib/aarch64-linux-gnu and
-		    /lib/aarch64-linux-musl but the OS will find them if they are in /lib
+		    /lib/aarch64-linux-musl but the OS will find them if
+		    they are in /lib
 
 		Fedora:
-		    TBD
+		    Will only look in /lib64 for 64-bit static and dynamic
+		    libraries.
 
-	In order to have a single installation process, 64-bit libraries will now be
-	placed in /lib64 if that directory exists, otherwise they will be placed in /lib
+	In order to have a single installation process, 64-bit libraries will
+	now be placed in /lib64 if that directory exists, otherwise they will
+	be placed in /lib
 
     2. Upgrading from RaspianDECnet to LinuxDECnet
 
-	Dues to the above change it is possible that, after installing LinuxDECnet,
-	libraries will exist in both /lib and /lib64. It is unclear what the priority
-	order would be so I would suggest deleting the following libraries from /lib:
+	Dues to the above change it is possible that, after installing
+	LinuxDECnet, libraries will exist in both /lib and /lib64. It is
+	unclear what the priority order would be so I would suggest deleting
+	the following libraries from /lib:
 
 		/lib/libdnet.a
 		/lib/libdnet_daemon.so
@@ -148,20 +155,21 @@ Notes:
 		/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko
 	or	/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko.xz
 
-	and remove your startup scripts or convert them to use the new kernel mode which
-	is located at:
+	and remove your startup scripts or convert them to use the new kernel
+	modulee which is located at:
 
 		/lib/modules/`uname -a`/extra/decnet3.ko.xz
 
 
     3. SELinux
 
-	DECnet does not operate correctly if SELinux is in the enforcing mode (dnetd
-	will not be able to access sockets and incoming connections will fail).
-	DECnet will operate correctly if SELinux is in permissive mode or disabled. If
-	someone comes up with a suitable policy configuration to allow DECnet to run with
-	SELinux in the enforcing mode, I would be open to including it in the installation
-	procedure but, given the lack of modern security features (e.g. encryption)
+	DECnet does not operate correctly if SELinux is in the enforcing mode
+	(dnetd will not be able to access sockets and incoming connections
+	will fail). DECnet will operate correctly if SELinux is in permissive
+	mode or disabled. If someone comes up with a suitable policy
+	configuration to allow DECnet to run with SELinux in the enforcing
+	mode, I would be open to including it in the installation procedure
+	but, given the lack of modern security features (e.g. encryption)
 	it is not clear to me that it is a worthwhile effort.
 
 
@@ -172,22 +180,23 @@ Changes from previous Linux DECnet release:
     Added installation support for Fedora distributions. X86_64 only for now.
     BuldAndInstall.sh is back at the top level of the directory hierarchy.
 
-    Started cleanup of removing unneeded/unwanted components from the installation (e.g.
-    dnetinfo is no longer needed since this release only provides end-node support and
-    dneigh is sufficient for this case).
+    Started cleanup of removing unneeded/unwanted components from the
+    installation (e.g. dnetinfo is no longer needed since this release only
+    provides end-node support and dneigh is sufficient for this case).
 
 
     9/9/2023
 
-    Cleaned up the logic which decides whether received messages are read to the end-of-message
-    flag (SOCK_SEQPACKET and interrupt messages for any socket type).
+    Cleaned up the logic which decides whether received messages are read to
+    the end-of-message flag (SOCK_SEQPACKET and interrupt messages for any
+    socket type).
 
-    Added a subset ncp implementation which supports all the functions provided by the local
-    nml. It also supports the "tell" command so that these requests may be directed to remote
-    systems.
+    Added a subset ncp implementation which supports all the functions
+    provided by the local nml. It also supports the "tell" command so that
+    these requests may be directed to remote systems.
 
-    BuildandInstall.sh has been moved to a "debian" directory to allow for the possibility of
-    supporting other distributions.
+    BuildandInstall.sh has been moved to a "debian" directory to allow for
+    the possibility of supporting other distributions.
 
 
     7/22/2023
