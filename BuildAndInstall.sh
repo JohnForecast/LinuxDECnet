@@ -106,7 +106,7 @@ check_supported_os() {
 		;;
 
 		fedora)
-		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel kernel-devel"
+		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel kernel-devel-$(uname -r)"
 		    OStype=fedora
 
 		    if [ -x ${DNF} ]; then
