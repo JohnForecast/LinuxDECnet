@@ -228,6 +228,8 @@ check_headers() {
 }
 
 check_installed_packages() {
+    echo "Checking required packages are installed..."
+
     case ${OStype} in
 	debian)
 	    if [ -x ${APTGET} -a -x ${DPKG} ]; then
