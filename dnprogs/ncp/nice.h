@@ -754,6 +754,10 @@
 #define NICE_P_N_ADDRESS        502             /* ADDRESS (DU-2) */
 #define NICE_P_N_INC_TIMER      510             /* INCOMING TIMER (DU-2) */
 #define NICE_P_N_OUT_TIMER      511             /* OUTGOING TIMER (DU-2) */
+#define NICE_P_N_INC_PROXY	522		/* INCOMING PROXY (C-1) */
+#define NICE_P_N_OUT_PROXY	523		/* OUTGOING PROXY (C-1) */
+#define NICE_P_N_PROXY_ENA	0		/*   - ENABLED */
+#define NICE_P_N_PROXY_DIS	1		/*   - DISABLED */
 #define NICE_P_N_ACTIVELINKS    600             /* ACTIVE LINKS (DU-2) */
 #define NICE_P_N_DELAY          601             /* DELAY (DU-2) */
 #define NICE_P_N_NSPVERSION     700             /* NSP VERSION */

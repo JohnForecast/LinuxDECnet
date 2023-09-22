@@ -275,6 +275,12 @@ static struct valueTable nodeSWtypeTable[] = {
   { 0, NULL }
 };
 
+static struct valueTable nodeProxyTable[] = {
+  VALUE(NICE_P_N_PROXY_ENA, "Enabled"),
+  VALUE(NICE_P_N_PROXY_DIS, "Disabled"),
+  { 0, NULL }
+};
+
 static struct valueTable nodeLWTable[] = {
   VALUE(NICE_P_N_LW_ZEROES, "Zeroes"),
   VALUE(NICE_P_N_LW_ONES, "Ones"),
@@ -344,6 +350,8 @@ struct nameTable nodeParamTable[] = {
   PARAMETER(NICE_P_N_ADDRESS, "Address", NULL),
   PARAMETER(NICE_P_N_INC_TIMER, "Incoming timer", NULL),
   PARAMETER(NICE_P_N_OUT_TIMER, "Outgoing timer", NULL),
+  PARAMETER(NICE_P_N_INC_PROXY, "Incoming proxy", nodeProxyTable),
+  PARAMETER(NICE_P_N_OUT_PROXY, "Outgoing proxy", nodeProxyTable),
   PARAMETER(NICE_P_N_ACTIVELINKS, "Active links", NULL),
   PARAMETER(NICE_P_N_DELAY, "Delay", NULL),
   PARAMETER(NICE_P_N_NSPVERSION, "NSP version", versionPrefixTable),
