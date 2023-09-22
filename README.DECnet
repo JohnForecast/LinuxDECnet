@@ -28,6 +28,8 @@ RaspiOS 2023-02-21, kernel 6.0.19 on AARCH64 (Raspberry Pi 3)
 RaspiOS 2023-05-03, kernel 6.1.21 on AARCH64 (Raspberry Pi 4B)
 Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.4.15 on X86_64 (ESXi 6.7u3 VM)
+Fedora 38, kernel 6.2.9 on AARCH64 (Raspberry Pi 4B, 8GB)
+
 
 Changes from RaspbianDECnet:
 
