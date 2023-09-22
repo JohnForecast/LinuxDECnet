@@ -304,6 +304,14 @@ static struct valueTable nodeRtypeTable[] = {
   { 0, NULL }
 };
 
+static struct valueTable nodeAccessTable[] = {
+  VALUE(NICE_P_N_ACCESS_NONE, "None"),
+  VALUE(NICE_P_N_ACCESS_INC, "Incoming"),
+  VALUE(NICE_P_N_ACCESS_OUT, "Outgoing"),
+  VALUE(NICE_P_N_ACCESS_BOTH, "Incoming and outgoing"),
+  { 0, NULL }
+};
+
 /*
  * Version prefix table
  */
@@ -383,6 +391,9 @@ struct nameTable nodeParamTable[] = {
   PARAMETER(NICE_P_N_MAXBUFFERS, "Maximum buffers", NULL),
   PARAMETER(NICE_P_N_BUFFERSIZE, "Buffer size", NULL),
   PARAMETER(NICE_P_N_SEGBUFFERSIZE, "Segment buffer size", NULL),
+  PARAMETER(NICE_P_N_ACCESS, "Default access", nodeAccessTable),
+  PARAMETER(NICE_P_N_PIPELINEQ, "Pipeline quota", NULL),
+  PARAMETER(NICE_P_N_ALIASMAXLINKS, "Alias maximum links", NULL),
   { 0, NULL, NULL }
 };
 
