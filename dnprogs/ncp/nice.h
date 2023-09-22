@@ -801,6 +801,7 @@
 #define NICE_P_N_MAXBUFFERS     930             /* MAXIMUM BUFFERS (DU-2) */
 #define NICE_P_N_BUFFERSIZE     931             /* BUFFER SIZE (DU-2) */
 #define NICE_P_N_SEGBUFFERSIZE  932             /* SEGMENT BUFFER SIZE (DU-2) */
+#define NICE_P_N_MAXPATHSPLITS	933		/* MAXIMUM PATH SPLITS (DU-1) */
 
 #define NICE_P_N_ACCESS		2731		/* ACCESS (C-1) */
 #define NICE_P_N_ACCESS_NONE	0		/*   - NO ACCESS PERMITTED */

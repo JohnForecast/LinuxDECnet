@@ -391,6 +391,7 @@ struct nameTable nodeParamTable[] = {
   PARAMETER(NICE_P_N_MAXBUFFERS, "Maximum buffers", NULL),
   PARAMETER(NICE_P_N_BUFFERSIZE, "Buffer size", NULL),
   PARAMETER(NICE_P_N_SEGBUFFERSIZE, "Segment buffer size", NULL),
+  PARAMETER(NICE_P_N_MAXPATHSPLITS, "Maximum path splits", NULL),
   PARAMETER(NICE_P_N_ACCESS, "Default access", nodeAccessTable),
   PARAMETER(NICE_P_N_PIPELINEQ, "Pipeline quota", NULL),
   PARAMETER(NICE_P_N_ALIASMAXLINKS, "Alias maximum links", NULL),
