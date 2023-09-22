@@ -200,7 +200,8 @@ static void name_address2Text(
 }
 
 /*
- * The parameter provided to param2Text() is only used by coded parameters:
+ * The "codedInfo" parameter provided to param2Text() is only used by coded
+ *  parameters:
  *
  * 1. Single coded value
  *
@@ -325,13 +326,15 @@ void param2Text(
 	  return;
 	}
 
-	while (vtable->name != NULL) {
-	  if (vtable->value == value)
-	    break;
-	  vtable++;
+	if (vtable != NULL) {
+	  while (vtable->name != NULL) {
+	    if (vtable->value == value)
+	      break;
+	    vtable++;
+	  }
 	}
 
-	if (vtable->name != NULL)
+	if ((vtable != NULL) && (vtable->name != NULL))
 	  strcat(buf, vtable->name);
 	else sprintf(buf, "0x%X", value);
       } else {
