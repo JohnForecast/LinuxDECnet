@@ -36,6 +36,7 @@
 #define PROC_DECNET_DEV         "/proc/net/decnet_dev"
 #define PROC_DECNET_CACHE       "/proc/net/decnet_cache"
 #define PROC_DECNET_NODES	"/proc/net/decnet_nodes"
+#define PROC_DECNET_PHASE	"/proc/net/decnet_phase"
 #define PROC_REVISION		"/proc/net/decnet_revision"
 #define PROC_DECNET             "/proc/net/decnet"
 #define PROC_ZERO_NODE		"/proc/net/decnet_zero_node"
@@ -103,6 +104,26 @@ static int get_value(
     fclose(file);
   }
   return 0;
+}
+
+/*
+ * Get the DECnet phase information. If the file does not exist assume
+ * Phase IV non-router.
+ */
+static uint8_t get_phase(void)
+{
+  FILE *file = fopen(PROC_DECNET_PHASE, "r");
+  uint8_t type = NICE_P_N_RTYPE_NRTR_IV;
+  char buf[128];
+
+  if (file) {
+    if (fgets(buf, sizeof(buf), file)) {
+      if (strcmp(buf, "IV Prime") == 0)
+	type = NICE_P_N_RTYPE_NRTR_IVP;
+    }
+    fclose(file);
+  }
+  return type;
 }
 
 /*
@@ -507,7 +528,7 @@ static void read_node_executor(
           NICEvalueDU1(2);
           NICEvalueDU1(0);
           NICEvalueDU1(0);
-        NICEparamC1(NICE_P_N_RTYPE, NICE_P_N_RTYPE_NRTR_IV);
+	NICEparamC1(NICE_P_N_RTYPE, get_phase());
         NICEparamDU2(NICE_P_N_MAXCIRCUITS, 1);
 
         if (get_value(PROC_SEGBUFSIZE, &segbufsize))

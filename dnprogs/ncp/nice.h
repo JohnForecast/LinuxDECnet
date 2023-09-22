@@ -784,6 +784,9 @@
 #define NICE_P_N_RTYPE_AREA     3               /*   - AREA */
 #define NICE_P_N_RTYPE_RTR_IV   4               /*   - ROUTING IV */
 #define NICE_P_N_RTYPE_NRTR_IV  5               /*   - NONROUTING IV */
+#define NICE_P_N_RTYPE_AREA_IVP	6		/*   - AREA IV PRIME */
+#define NICE_P_N_RTYPE_RTR_IVP	7		/*   - ROUTING IV PRIME */
+#define NICE_P_N_RTYPE_NRTR_IVP	8		/*   - NONROUTING IV PRIME */
 
 #define NICE_P_N_RTR_TIMER      910             /* ROUTING TIMER (DU-2) */
 #define NICE_P_N_SUBADDRESSES   911             /* SUBADDRESSES (CM-1/2) */

@@ -301,6 +301,9 @@ static struct valueTable nodeRtypeTable[] = {
   VALUE(NICE_P_N_RTYPE_AREA, "Area"),
   VALUE(NICE_P_N_RTYPE_RTR_IV, "Routing IV"),
   VALUE(NICE_P_N_RTYPE_NRTR_IV, "Nonrouting IV"),
+  VALUE(NICE_P_N_RTYPE_AREA_IVP, "Area IV Prime"),
+  VALUE(NICE_P_N_RTYPE_RTR_IVP, "Routing IV Prime"),
+  VALUE(NICE_P_N_RTYPE_NRTR_IVP, "Nonrouting IV Prime"),
   { 0, NULL }
 };
 
