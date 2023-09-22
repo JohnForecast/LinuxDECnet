@@ -389,7 +389,7 @@ void displayParam(
       char temp[64];
 
       sprintf(temp, "Parameter #%hu", entry & NICE_ID_PARAM_TYPE);
-      sprintf(buf, "%-25s =", temp);
+      sprintf(buf, "%-25s= ", temp);
     }
 
     param2Text(vtable, &buf[strlen(buf)], entry);
