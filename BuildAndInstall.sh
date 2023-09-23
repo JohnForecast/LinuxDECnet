@@ -36,6 +36,7 @@ PRINTF=/usr/bin/printf
 PWD=/bin/pwd
 RM=/bin/rm
 TRUE=/bin/true
+UNAME=/usr/bin/uname
 SYSTEMCTL=/usr/bin/systemctl
 
 # Debian tools
@@ -49,6 +50,8 @@ YUM=/usr/bin/yum
 
 Here=`${PWD}`
 Log=${Here}/Log
+
+CPUtype=`${UNAME} -m`
 
 DECnetDownload=1
 DECnetConfig=1
@@ -106,7 +109,7 @@ check_supported_os() {
 		;;
 
 		fedora)
-		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel kernel-devel-$(uname -r)"
+		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel"
 		    OStype=fedora
 
 		    if [ -x ${DNF} ]; then
@@ -223,6 +226,11 @@ check_headers() {
 	    ;;
 
 	fedora)
+	    if [ "${CPUtype}" = "aarch64" ]; then
+		PKGLIST="${PKGLIST} kernel-devel-$(uname -r)"
+	    else
+		PKGLIST="${PKGLIST} kernel-devel"
+	    fi
 	    ;;
     esac
 }
