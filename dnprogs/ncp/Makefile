@@ -24,7 +24,7 @@ install:
 	install -m 644 $(MANPAGES1) $(manprefix)/man/man1
 
 dep depend:
-	$(CC) $(CFLAGS) -MM *.c >,depnd 2>/dev/null
+	$(CC) $(CFLAGS) -MM *.c >.depend 2>/dev/null
 
 clean:
 	rm -f $(PROG1) *.o *.bak .depend
