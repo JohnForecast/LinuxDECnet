@@ -548,14 +548,16 @@ EOF
 	if [ -x ${SYSTEMCTL} ]; then
 	    ${SYSTEMCTL} status decnet3.service >/dev/null 2>&1
 	    if [ $? -ne 0 ]; then
-		for i in /etc/systemd/network/??-mac.link
-		do
-		    grep "OriginalName=${Interface}" $i >/dev/null 2>&1
-		    if [ $? -eq 0 ]; then
-			MACchange=1
-			break
-		    fi
-		done
+		if [ -d /etc/systemd/network ]; then
+		    for i in /etc/systemd/network/??-mac.link
+		    do
+		        grep "OriginalName=${Interface}" $i >/dev/null 2>&1
+		        if [ $? -eq 0 ]; then
+			    MACchange=1
+			    break
+		        fi
+		    done
+		fi
 
 		while ${TRUE} ; do
 		    echo "This system appears to be using systemd"
@@ -564,6 +566,13 @@ EOF
 		        echo "   Change the MAC address of ${Interface}"
 		    fi
 		    echo "    Start DECnet running on boot"
+		    if [ ${MACchange} -eq 0 ]; then
+			if [ ! -d /etc/systemd/network ]; then
+			    echo "NOTE: Answering 'yes' to this question will create"
+			    echo "      /etc/systemd/network"
+			fi
+		    fi
+
 		    read -p "Modify systemd settings (Yes/No)? [Yes] " Modify
 		    if [ -z "${Modify}" ]; then
 		        Modify=Yes
@@ -580,6 +589,10 @@ EOF
 
 		if [ "${Modify}" = "Yes" ]; then
 		    if [ ${MACchange} -eq 0 ]; then
+			if [ ! -d /etc/systemd/network ]; then
+			    ${MKDIR} /etc/systemd/network
+			fi
+
 		        for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09"
 		        do
 			    if [ ! -e /etc/systemd/network/${i}-mac.link ]; then
