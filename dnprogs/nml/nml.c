@@ -31,7 +31,7 @@
 #include <fcntl.h>
 #include "nice.h"
 
-#define IDENT_STRING            "DECnet for Linux"
+#define IDENT_STRING            "Linux DECnet"
 
 #define PROC_DECNET_DEV         "/proc/net/decnet_dev"
 #define PROC_DECNET_CACHE       "/proc/net/decnet_cache"
@@ -488,7 +488,14 @@ static void read_node_executor(
   node = getnodebyaddr((char *)&localaddr, sizeof(localaddr), PF_DECnet);
 
   uname(&un);
-  sprintf(ident, "%s V%s on %s", IDENT_STRING, un.release, un.machine);
+  sprintf(ident, "%s V%s on %s", IDENT_STRING, VERSION, un.machine);
+
+  /*
+   * Limit the length of the identification string according to the
+   * protocol specification.
+   */
+  if (strlen(ident) > 32)
+    ident[32] = '\0';
 
   physaddr[4] = localaddr & 0xFF;
   physaddr[5] = (localaddr >> 8) & 0xFF;
