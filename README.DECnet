@@ -1,6 +1,6 @@
-Note: This document describes the installation of DECnet support on Linux. Currently it
-supports releases derived from Debian and Fedora. Note that only a (very)
-limited number of distributions have been tested.
+Note: This document describes the installation of DECnet support on Linux.
+Currently it supports releases derived from Debian and Fedora. Note that only
+ a (very) limited number of distributions have been tested.
 
 The kit may be obtained by:
 
@@ -29,7 +29,7 @@ RaspiOS 2023-05-03, kernel 6.1.21 on AARCH64 (Raspberry Pi 4B)
 Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.4.15 on X86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.2.9 on AARCH64 (Raspberry Pi 4B, 8GB)
-
+Rocky Linux 9, kernel 5.14.0 on X86_64 (ESXi 6.7u3 VM) [with backport]
 
 Changes from RaspbianDECnet:
 
@@ -179,6 +179,23 @@ Notes:
 	If your system uses or requires Secure Boot, it must be disabled
 	otherwise loading the DECnet kernel module will be rejected. For
 	example, Rocky Linux 9 does this when run from ESXi 6.7.
+
+    5. Backports
+
+	Some distributions backport code from newer kernels to their
+	currently supported kernel. In most cases this does not affect the
+	DECnet code but sometimes it does and it requires source code
+	changes to fix. I will keep a list here of those backports which
+	can be supported with simple code changes:
+
+	1. Rocky Linux 9 (backport of per-cpu network memory allocation)
+
+	    In LinuxDECnet/kernel/dnet.c there are 2 references to
+	    'decnet_memory_per_cpu_fw_alloc' which are conditionalized on
+	    kernel version 6.0.0 or above. Change these conditionals to
+	    kernel version 5.14.0 (or whatever you are running) and
+	    re-install using the "Clean and rebuild using existing tree"
+	    option.
 
 
 Changes from previous Linux DECnet release:
