@@ -174,6 +174,12 @@ Notes:
 	but, given the lack of modern security features (e.g. encryption)
 	it is not clear to me that it is a worthwhile effort.
 
+    4. Secure Boot
+
+	If your system uses or requires Secure Boot, it must be disabled
+	otherwise loading the DECnet kernel module will be rejected. For
+	example, Rocky Linux 9 does this when run from ESXi 6.7.
+
 
 Changes from previous Linux DECnet release:
 
