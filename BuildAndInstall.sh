@@ -29,6 +29,7 @@ DEPMOD=/sbin/depmod
 EXPR=/usr/bin/expr
 GIT=/usr/bin/git
 GREP=/bin/grep
+IP=/usr/sbin/ip
 MAKE=/usr/bin/make
 MKDIR=/usr/bin/mkdir
 MV=/bin/mv
@@ -57,7 +58,6 @@ DECnetDownload=1
 DECnetConfig=1
 Pause=1
 
-MACchange=0
 Start=0
 
 Name=
@@ -201,7 +201,7 @@ return $?
 }
 
 set_default_interface() {
-    DefaultInterface=`ip link | ${GREP} -m1 BROADCAST | cut -d ' ' -f2 | tr -d ':'`
+    DefaultInterface=`${IP} link | ${GREP} -m1 BROADCAST | cut -d ' ' -f2 | tr -d ':'`
 }
 
 #
@@ -518,20 +518,23 @@ EOF
 
     DOCMD "${MKDIR} -p ${Here}/Startup/systemd"
 
-    NodeAddr=`${EXPR} \( ${Area} \* 1024 \) + ${Node}`
-    byte4=`${EXPR} ${NodeAddr} % 256`
-    byte5=`${EXPR} ${NodeAddr} / 256`
+    ${PRINTF} >/tmp/$$.service "[Unit]\n"
+    ${PRINTF} >>/tmp/$$.service "Description=Change MAC address for DECnet device\n"
+    ${PRINTF} >>/tmp/$$.service "Wants=network-pre.target\n"
+    ${PRINTF} >>/tmp/$$.service "Before=network-pre.target\n"
+    ${PRINTF} >>/tmp/$$.service "\n"
+    ${PRINTF} >>/tmp/$$.service "[Service]\n"
+    ${PRINTF} >>/tmp/$$.service "Type=oneshot\n"
+    ${PRINTF} >>/tmp/$$.service "ExecStart=${scripts_locn}/sbin/dnetChangeMAC\n"
+    ${PRINTF} >>/tmp/$$.service "\n"
+    ${PRINTF} >>/tmp/$$.service "[Install]\n"
+    ${PRINTF} >>/tmp/$$.service "WantedBy=multi-user.target\n"
 
-    ${PRINTF} >/tmp/$$.link "[Match]\n"
-    ${PRINTF} >>/tmp/$$.link "OriginalName=%s\n\n" ${Interface}
-    ${PRINTF} >>/tmp/$$.link "[Link]\n"
-    ${PRINTF} >>/tmp/$$.link "MACAddress=aa:00:04:00:%02x:%02x\n" ${byte4} ${byte5}
-    ${PRINTF} >>/tmp/$$.link "NamePolicy=kernel database onboard slot path\n"
-
-    DOCMD "${MV} /tmp/$$.link ${Here}/Startup/systemd/00-mac.link"
+    DOCMD "${MV} /tmp/$$.service ${Here}/Startup/systemd/DECnetMAC.service"
 
     ${PRINTF} >/tmp/$$.service "[Unit]\n"
-    ${PRINTF} >>/tmp/$$.service "Description=Load DECnet module and start"
+    ${PRINTF} >>/tmp/$$.service "Description=Load DECnet module and start\n"
+    ${PRINTF} >>/tmp/$$.service "After=network.target\n"
     ${PRINTF} >>/tmp/$$.service "\n"
     ${PRINTF} >>/tmp/$$.service "[Service]\n"
     ${PRINTF} >>/tmp/$$.service "Type=oneshot\n"
@@ -548,30 +551,11 @@ EOF
 	if [ -x ${SYSTEMCTL} ]; then
 	    ${SYSTEMCTL} status decnet3.service >/dev/null 2>&1
 	    if [ $? -ne 0 ]; then
-		if [ -d /etc/systemd/network ]; then
-		    for i in /etc/systemd/network/??-mac.link
-		    do
-		        grep "OriginalName=${Interface}" $i >/dev/null 2>&1
-		        if [ $? -eq 0 ]; then
-			    MACchange=1
-			    break
-		        fi
-		    done
-		fi
-
 		while ${TRUE} ; do
 		    echo "This system appears to be using systemd"
 		    echo "Do you want systemd to:"
-		    if [ ${MACchange} -eq 0 ]; then
-		        echo "   Change the MAC address of ${Interface}"
-		    fi
+		    echo "   Change the MAC address of ${Interface}"
 		    echo "    Start DECnet running on boot"
-		    if [ ${MACchange} -eq 0 ]; then
-			if [ ! -d /etc/systemd/network ]; then
-			    echo "NOTE: Answering 'yes' to this question will create"
-			    echo "      /etc/systemd/network"
-			fi
-		    fi
 
 		    read -p "Modify systemd settings (Yes/No)? [Yes] " Modify
 		    if [ -z "${Modify}" ]; then
@@ -588,22 +572,14 @@ EOF
 		done
 
 		if [ "${Modify}" = "Yes" ]; then
-		    if [ ${MACchange} -eq 0 ]; then
-			if [ ! -d /etc/systemd/network ]; then
-			    ${MKDIR} /etc/systemd/network
-			fi
+		    ${SYSTEMCTL} disable DECnetMAC.service >/dev/null 2>&1
+		    ${SYSTEMCTL} disable decnet3.service >/dev/null 2>&1
 
-		        for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09"
-		        do
-			    if [ ! -e /etc/systemd/network/${i}-mac.link ]; then
-			        ${CP} ${Here}/Startup/systemd/00-mac.link /etc/systemd/network/${i}-mac.link
-			        break
-			    fi
-		        done
-		    fi
+		    ${CP} ${Here}/Startup/systemd/DECnetMAC.service /etc/systemd/system
 		    ${CP} ${Here}/Startup/systemd/decnet3.service /etc/systemd/system
 		    ${SYSTEMCTL} daemon-reload
-		    ${SYSTEMCTL} enable decnet3.service
+		    ${SYSTEMCTL} enable DECnetMAC.service >/dev/null
+		    ${SYSTEMCTL} enable decnet3.service >/dev/null
 		fi
 	    fi
 	fi

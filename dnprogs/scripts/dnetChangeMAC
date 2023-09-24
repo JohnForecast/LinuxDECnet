@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ ${EUID} -ne 0 ]]; then
+    echo "You must be a root user to run this script" 2>&1
+    exit 1
+fi
+
+if [ -e /etc/decnet.conf ]; then
+    addr=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f2`
+    ifc=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f6`
+
+    area=`echo ${addr} | sed -n 's/\([0-9]*\).\([0-9]*\)/\1/p'`
+    node=`echo ${addr} | sed -n 's/\([0-9]*\).\([0-9]*\)/\2/p'`
+
+    [ -z "${area}" ] && area=0
+    [ -z "${node}" ] && node=0
+
+    if [ ${node} -le 1023 -a ${node} -ge 1 -a ${area} -le 63 -a ${area} -ge 1 ]; then
+	num=$((${area}*1024 + ${node}))
+	macaddr="`printf \"aa:00:04:00:%02x:%02x\" $((num%256)) $((num/256))`"
+
+	/usr/sbin/ip link set dev ${ifc} address ${macaddr}
+	exit 0
+    fi
+fi
+exit 1
+
