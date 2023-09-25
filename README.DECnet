@@ -17,7 +17,7 @@ kernel code so could not be installed on kernel 6.1.x or later.
 
 Distributions tested:
 
-Minimum kernel supported:	4.19.0
+Minimum kernel supported:	4.18.0
 Maximum kernel supported:	6.4.15
 
 Tested distributions:
@@ -49,7 +49,7 @@ Changes from RaspbianDECnet:
   - Minimize use of Linux kernel frameworks
 
 	Most of the problems with RaspbianDECnet between Linux versions
-	were changes to the kenel framework APIs. RaspbianDECnet used the
+	were changes to the kernel framework APIs. RaspbianDECnet used the
 	Destination Cache, Neighbour structures, flow idn infrastructure and
 	the routing infrastructure. LinuxDECnet does not use any of these
 	frameworks.
@@ -200,6 +200,12 @@ Notes:
 
 
 Changes from previous Linux DECnet release:
+
+    8/24/2023
+
+    Verified that AlmaLinux and RockyLinux (Both RHEL/Centos clones) work
+    correctly.
+
 
     9/18/2023
 
