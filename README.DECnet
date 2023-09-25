@@ -1,6 +1,6 @@
 Note: This document describes the installation of DECnet support on Linux.
 Currently it supports releases derived from Debian and Fedora. Note that only
- a (very) limited number of distributions have been tested.
+a (very) limited number of distributions have been tested.
 
 The kit may be obtained by:
 
@@ -30,6 +30,7 @@ Debian 12, kernel 6.1.0 on X86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.4.15 on X86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.2.9 on AARCH64 (Raspberry Pi 4B, 8GB)
 Rocky Linux 9, kernel 5.14.0 on X86_64 (ESXi 6.7u3 VM) [with backport]
+AlmaLinux 8.8, kernel 4.18.0 on X86_64 (ESXi 6.7u3)
 
 Changes from RaspbianDECnet:
 
