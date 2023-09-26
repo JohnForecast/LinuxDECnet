@@ -29,7 +29,6 @@ DEPMOD=/sbin/depmod
 EXPR=/usr/bin/expr
 GIT=/usr/bin/git
 GREP=/bin/grep
-IP=/usr/sbin/ip
 MAKE=/usr/bin/make
 MKDIR=/usr/bin/mkdir
 MV=/bin/mv
@@ -37,8 +36,17 @@ PRINTF=/usr/bin/printf
 PWD=/bin/pwd
 RM=/bin/rm
 TRUE=/bin/true
-UNAME=/usr/bin/uname
 SYSTEMCTL=/usr/bin/systemctl
+
+# ip and uname seem to move around - debian is at /usr/bin, ubuntu at /bin
+IP=/usr/sbin/ip
+UNAME=/usr/bin/uname
+if [ -x /bin/ip ]; then
+    IP=/bin/ip
+fi
+if [ -x /bin/uname ]; then
+    UNAME=/bin/uname
+fi
 
 # Debian tools
 APT=/usr/bin/apt
