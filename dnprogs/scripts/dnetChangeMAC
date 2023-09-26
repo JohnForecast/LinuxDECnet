@@ -19,7 +19,7 @@ if [ -e /etc/decnet.conf ]; then
 	num=$((${area}*1024 + ${node}))
 	macaddr="`printf \"aa:00:04:00:%02x:%02x\" $((num%256)) $((num/256))`"
 
-	/usr/sbin/ip link set dev ${ifc} address ${macaddr}
+	ip link set dev ${ifc} address ${macaddr}
 	exit 0
     fi
 fi

@@ -30,19 +30,26 @@ EXPR=/usr/bin/expr
 GIT=/usr/bin/git
 GREP=/bin/grep
 MAKE=/usr/bin/make
-MKDIR=/usr/bin/mkdir
 MV=/bin/mv
 PRINTF=/usr/bin/printf
 PWD=/bin/pwd
 RM=/bin/rm
 TRUE=/bin/true
-SYSTEMCTL=/usr/bin/systemctl
 
-# ip and uname seem to move around - debian is at /usr/bin, ubuntu at /bin
+# ip, mkdir, systemctl and uname seem to move around:
+#    - debian they are at /usr/bin, ubuntu at /bin
 IP=/usr/sbin/ip
+MKDIR=/usr/bin/mkdir
+SYSTEMCTL=/usr/bin/systemctl
 UNAME=/usr/bin/uname
 if [ -x /bin/ip ]; then
     IP=/bin/ip
+fi
+if [ -x /bin/mkdir ]; then
+    MKDIR=/bin/mkdir
+fi
+if [ -x /bin/systemctl ]; then
+    SYSTEMCTL=/bin/systemctl
 fi
 if [ -x /bin/uname ]; then
     UNAME=/bin/uname
