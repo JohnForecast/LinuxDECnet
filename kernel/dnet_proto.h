@@ -91,7 +91,7 @@ typedef struct __attribute__((__packed__)) rt_eth_end_hello {
         uint16_t        timer;
         uint8_t         mpd;
         uint8_t         datalen;
-        uint8_t         data[0];
+        uint8_t         data[2];
 } rt_eth_end_hello;
 
 /*

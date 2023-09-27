@@ -254,10 +254,10 @@ void dn_routing_tx_endnode_hello(
         uint8_t *dst = dn_IVprime ? dn_all_primertr : dn_all_routers;
         uint8_t flags = dn_IVprime ? RT_FLG_EHELLOP : RT_FLG_EHELLO;
         
-        if ((skb = dn_alloc_skb(NULL, sizeof(*msg) + 2, GFP_ATOMIC)) != NULL) {
+        if ((skb = dn_alloc_skb(NULL, sizeof(*msg), GFP_ATOMIC)) != NULL) {
                 skb->dev = dev;
 
-                msg = skb_put(skb, sizeof(*msg) + 2);
+                msg = skb_put(skb, sizeof(*msg));
                 msg->flags = RT_FLG_CONTROL | flags;
                 memcpy(msg->tiver, dn_eco_version, sizeof(msg->tiver));
                 dn_dn2eth(msg->id, decnet_address);
