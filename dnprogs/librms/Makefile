@@ -50,12 +50,12 @@ clean:
 
 install:
 	install -d $(prefix)/lib
-	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)/$(libdir)
-	install -m 0644 $(STATICLIB) $(libprefix)/$(libdir)
+	install -m 0644 $(STRIPBIN) $(SHAREDLIB) $(libprefix)$(libdir)
+	install -m 0644 $(STATICLIB) $(libprefix)$(libdir)
 	install -d $(prefix)/include
 	install -m 0644 $(INCLUDEFILES) $(libprefix)/include
-	ln -sf $(SHAREDLIB) $(libprefix)/$(libdir)/$(LIBNAME).so.$(MAJOR_VERSION)
-	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)/$(libdir)/$(LIBNAME).so
+	ln -sf $(SHAREDLIB) $(libprefix)$(libdir)/$(LIBNAME).so.$(MAJOR_VERSION)
+	ln -sf $(LIBNAME).so.$(MAJOR_VERSION) $(libprefix)$(libdir)/$(LIBNAME).so
 
 .SUFFIXES: .po
 
