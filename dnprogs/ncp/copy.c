@@ -29,13 +29,14 @@
 #include "node.h"
 
 #define DECNET_CONF	"/etc/decnet.conf"
+#define DECNET_TEMP	"/etc/decnet_XXXXXX"
 
 void copyCommand(void)
 {
   uint32_t result;
   uint8_t option = 0;
   uint16_t addr;
-  char executor[100];
+  char executor[100], tempname[sizeof(DECNET_TEMP) + 1];
   FILE *fp;
 
   if (tellvalid) {
@@ -143,8 +144,15 @@ void copyCommand(void)
       if (code == NICE_RET_ACCEPTED) {
         uint16_t detail;
 
-	if ((fp = fopen("/tmp/decnet.conf", "w")) == NULL) {
-	  fprintf(stderr, "Unable to create temporary file\n");
+	strcpy(tempname, DECNET_TEMP);
+
+	if (strlen(mktemp(tempname)) == 0) {
+	  fprintf(stderr, "Unable to create unique temporary file name\n");
+	  return;
+	}
+
+	if ((fp = fopen(tempname, "w")) == NULL) {
+	  fprintf(stderr, "Unable to create temporary file - %s \n", tempname);
 	  return;
 	}
 
@@ -207,8 +215,10 @@ void copyCommand(void)
 	/*
 	 * Move the new file into the correct location
 	 */
-	if ((status = system("mv -f /tmp/decnet.conf /etc")) != 0)
-	  fprintf(stderr, "Failed to move decnet.conf to /etc\n");
+	if (rename(tempname, DECNET_CONF) == -1) {
+	  perror("Failed to update " DECNET_CONF);
+	  fprintf(stderr, "Temporary file left as %s\n", tempname);
+	}
       } else fprintf(stderr, "Unexpected command status (%d)\n", code);
     } 
   } else fprintf(stderr, "copy - invalid command format\n");
