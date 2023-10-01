@@ -34,6 +34,7 @@ MV=/bin/mv
 PRINTF=/usr/bin/printf
 PWD=/bin/pwd
 RM=/bin/rm
+TR=/usr/bin/tr
 TRUE=/bin/true
 
 # ip, mkdir, systemctl and uname seem to move around:
@@ -389,13 +390,15 @@ if [ ${DECnetConfig} -eq 1 ]; then
     Node=${NodeNo}
 
     while ${TRUE} ; do
-	read -p "Enter your DECnet node name [${DefaultName}] : " Name
-	if [ -z "${Name}" ]; then
-	    Name=${DefaultName}
+	read -p "Enter your DECnet node name [${DefaultName}] : " MyName
+	if [ -z "${MyName}" ]; then
+	    MyName=${DefaultName}
 	fi
-	check_name ${Name}
+	check_name ${MyName}
 	if [ $? -eq 1 ]; then break; fi
     done
+
+    Name=`echo -n ${MyName} | ${TR} "[:lower:]" "[:upper:]"`
 
     while ${TRUE} ; do
 	read -p "Enter your Ethernet/Wireless interface name [${DefaultInterface}] : " Interface
@@ -429,6 +432,9 @@ if [ ${DECnetConfig} -eq 1 ]; then
             check_name ${remname}
             if [ $? -eq 1 ]; then break; fi
         done
+
+	remname=`echo -n ${remname} | ${TR} "[:lower:]" "[:upper"]"`
+
         printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" ${remaddr} ${remname}
     done
 fi
