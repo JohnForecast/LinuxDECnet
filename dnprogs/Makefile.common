@@ -19,16 +19,9 @@ manprefix=/usr/local
 #
 libdir=/lib
 
-machine := $(shell uname -m)
-
-ifeq ($(machine),x86_64)
-  ifneq ("$(wildcard $(libprefix)/lib64)","")
-    libdir=/lib64
-  endif
-endif
-
-ifeq ($(machine),aarch64)
-  ifneq ("$(wildcard $(libprefix)/lib64)","")
+ifneq ("$(wildcard $(libprefix)/lib64)", "")
+  $(shell /sbin/ldconfig -p | grep $(libprefix)/lib64 >/dev/null 2>&1)
+  ifeq ($(.SHELLSTATUS), 0)
     libdir=/lib64
   endif
 endif
