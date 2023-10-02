@@ -112,29 +112,11 @@ Notes:
 	The location of 64-bit static and dynamic libraries seems to be left
         to the individual distributions:
 
-	    X86_64:
-		Debian:
-		    Doesn't care. Is able to find 64-bit libraries in
-		    /lib and /lib64 (which may be linked to /usr/lib and
-		    /usr/lib64).
+	In order to have a single installation, "/sbin/ldconfig -p" will
+	be issued to obtain the entries in the ld.so cache. If any entries
+	are in /lib64 then we will use that directory otherwise we will use
+	/lib. 32-bit systems will continue to use /lib.
 
-		Fedora:
-		    Will only look in /lib64 for 64-bit static and dynamic
-		    libraries.
-
-	    ARM (Raspberry Pi):
-		Debian (RaspiOS):
-		    64-bit libraries are in /lib/aarch64-linux-gnu and
-		    /lib/aarch64-linux-musl but the OS will find them if
-		    they are in /lib
-
-		Fedora:
-		    Will only look in /lib64 for 64-bit static and dynamic
-		    libraries.
-
-	In order to have a single installation process, 64-bit libraries will
-	now be placed in /lib64 if that directory exists, otherwise they will
-	be placed in /lib
 
     2. Upgrading from RaspianDECnet to LinuxDECnet
 
@@ -182,11 +164,21 @@ Notes:
 	but, given the lack of modern security features (e.g. encryption)
 	it is not clear to me that it is a worthwhile effort.
 
+	If the decnet3 module is loaded but dnetd is not running this is
+	likely the problem. Use "sestatus" to determine the current status
+	of SELinux.
+
+
     4. Secure Boot
 
 	If your system uses or requires Secure Boot, it must be disabled
 	otherwise loading the DECnet kernel module will be rejected. For
 	example, Rocky Linux 9 does this when run from ESXi 6.7.
+
+	If the decnet3 module does not load and dnetd complains about files
+	in /proc/net being missing this is likely the problem. The solution
+	is machine (EFI) dependent.
+
 
     5. Backports
 
