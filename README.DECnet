@@ -25,7 +25,7 @@ Tested distributions:
 Debian 10, kernel 4.19.0 on x86_64 (ESXi 6.7u3 VM)
 Debian 11, kernel 5.10.0 on x86_64 (ESXi 6.7u3 VM)
 RaspiOS 2023-02-21, kernel 6.0.19 on aarch64 (Raspberry Pi 3)
-RaspiOS 2023-05-03, kernel 6.1.21 on aarch64 (Raspberry Pi 4B)
+RaspiOS 2023-05-03, kernel 6.1.21 on aarch64 (Raspberry Pi 4B 8GB)
 Debian 12, kernel 6.1.0 on x86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.4.15 on x86_64 (ESXi 6.7u3 VM)
 Fedora 38, kernel 6.2.9 on aarch64 (Raspberry Pi 4B, 8GB)
@@ -199,6 +199,15 @@ Notes:
 
 
 Changes from previous Linux DECnet release:
+
+
+    9/30/2023
+
+    Figured out how to programatically determine where 64-bit shared
+    libraries are stored. The location is not standardized across
+    distributions and sometimes is different between a base distribution
+    and derived distributions.
+
 
     8/24/2023
 
