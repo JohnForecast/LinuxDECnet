@@ -50,11 +50,11 @@ Changes from RaspbianDECnet:
 
   - Minimize use of Linux kernel frameworks
 
-	Most of the problems with keeping RaspbianDECnet running between Linux versions
-	were changes to the kernel framework APIs. RaspbianDECnet used the
-	Destination Cache, Neighbour structures, flow idn infrastructure and
-	the routing infrastructure. LinuxDECnet does not use any of these
-	frameworks.
+	Most of the problems with keeping RaspbianDECnet running between Linux
+	versions were changes to the kernel framework APIs. RaspbianDECnet
+	used the Destination Cache, Neighbour structures, flow idn
+	infrastructure and the routing infrastructure. LinuxDECnet does not
+	use any of these frameworks.
 
 
 Installation:
@@ -64,13 +64,14 @@ external module implementing the core DECnet protocols along with all the
 userland applications.
 
 NOTE: Make sure that the currently running kernel has an associated kernel
-      development package (kernel-headers on debian, raspberrypi-kernel headers on Raspbian
-      and RaspiOS and kernel-devel on fedora) available for installation otherwise the
-      script below will fail.
+      development package (kernel-headers on debian, raspberrypi-kernel-headers
+      on Raspbian and RaspiOS and kernel-devel on fedora) available for
+      installation otherwise the script below will fail.
 
-The build and installation can be automated by downloading the BuildAndInstall.sh script,
-making it executable and running it inside a newly created work directory. You must be
-running as root to execute this script.
+The build and installation can be automated by downloading the
+BuildAndInstall.sh script, making it executable and running it inside a
+newly created work directory. You must be running as root to execute this
+script.
 
 By default, BuildAndInstall.sh will download, build and install a decnet
 kernel module (decnet3.ko) and DECnet utilities tailored for the system it is
