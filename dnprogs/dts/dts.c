@@ -31,9 +31,11 @@
  * The requested test is passed in the connect optional data:
  *
  * Byte 0:              Test #
+ *			Bit 7 set requests DTR to display statistics
  * Byte 1:              Subtest/flags
  * Byte 2:              Flow control type (Data/Interrupt tests)
- * Byte 2:              Interrupt flow control value (always 1)                 * Byte 3:              Flow control value (Data test)
+ * Byte 2:              Interrupt flow control value (always 1)
+ * Byte 3:              Flow control value (Data test)
  * Byte 3:              Message length (Interrupt test)
  * Byte 4,5:            Unknown
  * Byte 6,7:            Message length (Data test)
