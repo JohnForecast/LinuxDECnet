@@ -87,6 +87,36 @@ if [[ ${EUID} -ne 0 ]]; then
     exit 1
 fi
 
+# Determine if SELinux is installed and running in "Enforcing" mode
+
+SESTATUS=`which sestatus`
+if [ ! -z "${SESTATUS} ]; then
+    ${SESTATUS} | grep "SELinux status" | grep "enforcing" >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	while ${TRUE} ; do
+	    echo "SELinux is installed on this system and running in 'Enforcing'"
+	    echo "DECnet will only be able run on this system if you change the"
+	    echo "mode to 'permissive' or 'disabled'"
+
+	    read -p "Do you want to continue (Yes/No)? [Yes] " Cont
+	    if [ -z "${Cont}" ]; then
+	        Cont=Yes
+	    fi
+
+	    case ${Cont} in
+	        [Yy]es|[Nn]o)
+		    ;;
+	    esac
+	    echo "Invalid Response"
+	    echo
+	done
+	
+	if [ "${Cont} = "No" -o "${Cont}" = "no" ]; then
+	    exit 0
+	fi	
+    fi
+fi
+
 #
 # Determine if we support this particular distribution
 #
@@ -584,7 +614,7 @@ EOF
 		    fi
 
 		    case ${Modify} in
-			Yes|No)
+			[Yy]es|[Nn]o)
 			    break
 			    ;;
 		    esac
@@ -592,7 +622,7 @@ EOF
 		    echo
 		done
 
-		if [ "${Modify}" = "Yes" ]; then
+		if [ "${Modify}" = "Yes" -o "${Modify}" = "yes" ]; then
 		    ${SYSTEMCTL} disable DECnetMAC.service >/dev/null 2>&1
 		    ${SYSTEMCTL} disable decnet3.service >/dev/null 2>&1
 
