@@ -90,30 +90,35 @@ fi
 # Determine if SELinux is installed and running in "Enforcing" mode
 
 SESTATUS=`which sestatus`
-if [ ! -z "${SESTATUS} ]; then
-    ${SESTATUS} | grep "SELinux status" | grep "enforcing" >/dev/null 2>&1
+if [ ! -z "${SESTATUS}" ]; then
+    ${SESTATUS} | ${GREP} "SELinux status" | ${GREP} "enabled" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-	while ${TRUE} ; do
-	    echo "SELinux is installed on this system and running in 'Enforcing'"
-	    echo "DECnet will only be able run on this system if you change the"
-	    echo "mode to 'permissive' or 'disabled'"
+	${SESTATUS} | ${GREP} "Current mode" | ${GREP} "enforcing" >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+	    while ${TRUE} ; do
+	        echo "SELinux is installed on this system and running in 'Enforcing' mode. DECnet"
+	        echo "will only be able run on this system if you change the mode to 'permissive'"
+	        echo "or 'disabled'"
+		echo
 
-	    read -p "Do you want to continue (Yes/No)? [Yes] " Cont
-	    if [ -z "${Cont}" ]; then
-	        Cont=Yes
-	    fi
+	        read -p "Do you want to continue (Yes/No)? [Yes] " Cont
+	        if [ -z "${Cont}" ]; then
+	            Cont=Yes
+	        fi
 
-	    case ${Cont} in
-	        [Yy]es|[Nn]o)
-		    ;;
-	    esac
-	    echo "Invalid Response"
-	    echo
-	done
+	        case ${Cont} in
+		    [Yy]es|[Nn]o)
+			break
+		        ;;
+	        esac
+	        echo "Invalid Response"
+	        echo
+	    done
 	
-	if [ "${Cont} = "No" -o "${Cont}" = "no" ]; then
-	    exit 0
-	fi	
+	    if [ "${Cont}" = "No" -o "${Cont}" = "no" ]; then
+	        exit 0
+	    fi	
+	fi
     fi
 fi
 
