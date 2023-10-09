@@ -362,8 +362,8 @@ static void dn_next_format_entry(
         
         seq_printf(seq, "%-7s %s%s%s   %02x    %02d  %07d %-8s\n",
                    dn_addr2asc(nextp->addr, buf),
-                   (iinfo == RT_II_LEVEL_1) ? "1" : "-",
-                   (iinfo == RT_II_LEVEL_2) ? "2" : "-",
+		   ((iinfo & RT_II_LEVEL_1) != 0) ? "1" : "-",
+		   ((iinfo & RT_II_LEVEL_2) != 0) ? "2" : "-",
                    "-",
                    0,
                    refcount_read(&nextp->refcount),
