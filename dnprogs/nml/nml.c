@@ -760,7 +760,8 @@ static void read_circuit_info(
 
       if ((how == NICE_READ_OPT_SUM) || (how == NICE_READ_OPT_STATUS)) {
         NICEparamC1(NICE_P_C_STATE, NICE_P_C_STATE_ON);
-        NICEparamNodeID(NICE_P_C_ADJNODE, router, routername);
+	if (router != 0)
+          NICEparamNodeID(NICE_P_C_ADJNODE, router, routername);
       }
 
       if (how == NICE_READ_OPT_STATUS)
