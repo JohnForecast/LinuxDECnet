@@ -103,6 +103,12 @@ void showNode(
 	    struct fields *fields = summaryFields;
 	    struct valueTable *vtable = NULL;
 
+	    if (NICEisEmpty()) {
+	      if ((code == NICE_RET_SUCCESS) && first)
+		printf("No infomation available\n\n");
+	      return;
+	    }
+
 	    if (*oneshot) {
 	      printf("    Node         State        Active  Delay   Circuit    Next Node\n");
 	      printf("                              Links\n\n");
