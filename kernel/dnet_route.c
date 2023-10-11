@@ -154,7 +154,7 @@ static int dn_routing_rx_long(
                         /*
                          * Update the nexthop cache.
                          */
-                        dn_next_update(cb->src, hdr->s_id, (cb->rt_flags & RT_FLG_IE) ? 1 : 0);
+                        dn_next_update(cb->src, eth_hdr(skb)->h_source, (cb->rt_flags & RT_FLG_IE) ? 1 : 0);
                 }
         }
 
