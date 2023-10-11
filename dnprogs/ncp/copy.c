@@ -142,17 +142,20 @@ void copyCommand(void)
        * Process a successful response
        */
       if (code == NICE_RET_ACCEPTED) {
+	int fd;
         uint16_t detail;
 
 	strcpy(tempname, DECNET_TEMP);
 
-	if (strlen(mktemp(tempname)) == 0) {
-	  fprintf(stderr, "Unable to create unique temporary file name\n");
+	if ((fd = mkstemp(tempname)) == -1) {
+	  fprintf(stderr, "Unable to create temporary file\n");
 	  return;
 	}
 
-	if ((fp = fopen(tempname, "w")) == NULL) {
-	  fprintf(stderr, "Unable to create temporary file - %s \n", tempname);
+	if ((fp = fdopen(fd, "w")) == NULL) {
+	  fprintf(stderr, "Error opening temporary file\n");
+	  unlink(tempname);
+	  close(fd);
 	  return;
 	}
 
