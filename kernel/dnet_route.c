@@ -100,7 +100,6 @@ static int dn_routing_rx_long(
 {
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         struct rt_long_hdr *hdr;
-        uint8_t *ethaddr;
         
         /*
          * Check for a long header + shortest NSP packet
@@ -131,8 +130,10 @@ static int dn_routing_rx_long(
         cb->hops = hdr->visit_ct & RT_VISIT_CT;
 
         if (skb->dev != LOOPDEVICE.dev) {
+        	uint8_t *ethaddr = eth_hdr(skb)->h_source;;
+                uint8_t onEthernet  = (cb->rt_flags & RT_FLG_IE) ? 1 : 0;
+
                 if (dn_IVprime) {
-                        uint8_t onEthernet  = (cb->rt_flags & RT_FLG_IE) ? 1 : 0;
                         
                         /*
                          * If this packet was sent to the "Unknown Destination"
@@ -144,18 +145,16 @@ static int dn_routing_rx_long(
                                         goto drop;
 
                         /*
-                         * Update the nexthop cache
+                         * Handle message received from more than 1 hop away.
                          */
-                        ethaddr = eth_hdr(skb)->h_source;
                         if (onEthernet && (cb->hops != 0))
                                 ethaddr = dn_unknown_dest;
-                        dn_next_update(cb->src, ethaddr, onEthernet);
-                } else {
-                        /*
-                         * Update the nexthop cache.
-                         */
-                        dn_next_update(cb->src, eth_hdr(skb)->h_source, (cb->rt_flags & RT_FLG_IE) ? 1 : 0);
                 }
+
+                /*
+                 * Update the nexthop cache.
+                 */
+                dn_next_update(cb->src, ethaddr, onEthernet);
         }
 
         /*
