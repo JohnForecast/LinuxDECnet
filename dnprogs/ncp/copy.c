@@ -19,6 +19,7 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <netdnet/dn.h>
@@ -213,6 +214,7 @@ void copyCommand(void)
 	    }
 	  }
 	}
+	fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	fclose(fp);
 
 	/*
