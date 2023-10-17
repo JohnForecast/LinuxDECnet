@@ -33,6 +33,8 @@ Fedora 38, kernel 6.5.5 on x86_64 (ESXi 6.7u3 VM)
 Rocky Linux 9, kernel 5.14.0 on x86_64 (ESXi 6.7u3 VM) [with backport]
 AlmaLinux 8.8, kernel 4.18.0 on x86_64 (ESXi 6.7u3)
 Ubuntu 18.0.4, kernel 5.4.0 on x86_64 (ESXi 6.7u3)
+RaspiOS 2023-10-10, kernel 6.1.0 on aarch64 (Raspberry Pi 4B 8GB)
+Ubuntu 23.10, kernel 6.5.0 on x86_64 (ESXi 6.7u3 VM)
 
 Changes from RaspbianDECnet:
 
