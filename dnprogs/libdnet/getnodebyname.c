@@ -151,11 +151,24 @@ struct nodeent *getnodebyname(const char *name)
 		       return &dp;
 		   }
 
-		   if (strcmp(nodename,name) == 0) 
+		   if (strcasecmp(nodename,name) == 0) 
 		   {
+			int i;
+
 			fclose(dnhosts);
 			if ( (naddr=dnet_addr(nodename)) == 0)
 					return 0;
+
+			/*
+			 * Convert nodename to upper case
+			 */
+			for (i = 0; i < sizeof(nodename); i++) {
+				if (islower(nodename[i]))
+					nodename[i] = toupper(nodename[i]);
+				if (nodename[i] == '\0')
+					break;
+			}
+
 			dp.n_addr=(unsigned char *)&naddr->a_addr; 
 			dp.n_length=2;
 			dp.n_name=nodename;		

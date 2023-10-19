@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 
@@ -95,7 +96,20 @@ struct nodeent *getnodebyaddr(const char *inaddr, int len, int family)
 		   }
 		   if (strcmp(nodeadr,asc_addr) == 0) 
 		   {
+			int i;
+
 			fclose(dnhosts);
+
+                        /*
+                         * Convert nodename to upper case
+                         */
+                        for (i = 0; i < sizeof(nodename); i++) {
+                                if (islower(nodename[i]))
+                                        nodename[i] = toupper(nodename[i]);
+                                if (nodename[i] == '\0')
+                                        break;
+                        }
+
 			memcpy(laddr,addr,len);
 			dp.n_addr=(unsigned char *)&laddr;
 			dp.n_length=2;		

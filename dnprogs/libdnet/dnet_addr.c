@@ -58,7 +58,7 @@ struct	dn_naddr	*dnet_addr(char *name)
 		       errno = ENOENT;
 		       return 0;
 		   }
-		   if (strcmp(nodename,name) == 0)
+		   if (strcasecmp(nodename,name) == 0)
 		   {
 			aux=nodeadr;
 			endptr=&aux;

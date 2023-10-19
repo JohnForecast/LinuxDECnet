@@ -22,6 +22,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "netdnet/dn.h"
 
@@ -52,8 +53,17 @@ int getnodename(char *name, size_t len)
 		   }
 		   if (strcmp(nodetag,"executor") == 0)
 		   {
+			int i = 0;
+
 			fclose(dnhosts);
-			strncpy(name, nodename, len);
+
+			memset(name, 0, len);
+			while ((i <= (len - 1)) && (nodename[i] != '\0')) {
+				if (islower(nodename[i]))
+					nodename[i] = toupper(nodename[i]);
+				name[i] = nodename[i];
+				i++;
+			}
 			return 0;
 		   }
 		   else

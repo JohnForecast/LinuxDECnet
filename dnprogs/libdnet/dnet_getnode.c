@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 
@@ -30,7 +31,7 @@ static char             asc_addr[8];
 struct getnode_struct
 {
     FILE *fp;
-    char node[32];
+    char node[80];
 };
 /*--------------------------------------------------------------------------*/
 void *dnet_getnode(void)
@@ -51,7 +52,7 @@ void *dnet_getnode(void)
 char *dnet_nextnode(void *g)
 {
     struct getnode_struct *gs = (struct getnode_struct *)g;
-    char line[256];
+    char line[80];
 
     if (feof(gs->fp)) return NULL;
 	
@@ -59,11 +60,22 @@ char *dnet_nextnode(void *g)
     if (fgets(line, sizeof(line), gs->fp))
     {
 	char *l = line + strspn(line, " \t"); // Span blanks
+	int i;
+
 	if (l[0] == '#') goto getloop;
 	    
 	if (sscanf(line,"%s%s%s%s\n",nodetag,nodeadr,nametag,nodename) != 4) goto getloop;
 
-	strcpy(gs->node, nodename);
+        /*
+         * Convert nodename to upper case
+         */
+        for (i = 0; i < sizeof(nodename); i++) {
+                if (islower(nodename[i]))
+                        nodename[i] = toupper(nodename[i]);
+		gs->node[i] = nodename[i];
+        	if (nodename[i] == '\0')
+                	break;
+        }
 	return gs->node;
     }
     else
