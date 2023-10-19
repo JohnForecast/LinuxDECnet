@@ -154,7 +154,7 @@ check_supported_os() {
 	do
 	    case ${os} in
 		raspbian|debian)
-		    PKGLIST="gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev"
+		    PKGLIST="xz-utils gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev"
 		    OStype=debian
 		    return 0
 		;;
