@@ -76,6 +76,8 @@ ifndef RELEASE
 	install -m 0644 pixmaps/*.xpm $(PIXMAPDIR)
 endif
 
+location:
+	$(info $(prefix))
 
 dep depend:	
 	$(CC) $(CFLAGS) -MM *.c >.depend 2>/dev/null

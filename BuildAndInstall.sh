@@ -571,6 +571,8 @@ EOF
     dnetd_locn=`make -s location | tr -d "\n"`
     cd ${Here}/LinuxDECnet/dnprogs/scripts
     scripts_locn=`make -s location | tr -d "\n"`
+    cd ${Here}/LinuxDECnet/dnprogs/phone
+    phoned_locn=`make -s location | tr -d "\n"`
 
     DOCMD "${MKDIR} -p ${Here}/Startup/systemd"
 
@@ -601,7 +603,21 @@ EOF
     ${PRINTF} >>/tmp/$$.service "[Install]\n"
     ${PRINTF} >>/tmp/$$.service "WantedBy=multi-user.target\n"
 
-    DOCMD "${MV} /tmp/$$.service $Here/Startup/systemd/decnet3.service"
+    DOCMD "${MV} /tmp/$$.service ${Here}/Startup/systemd/decnet3.service"
+
+    ${PRINTF} >/tmp/$$.service "[Unit]\n"
+    ${PRINTF} >>/tmp/$$.service "Description=Start phone daemon\n"
+    ${PRINTF} >>/tmp/$$.service "After=network-online.target\n"
+    ${PRINTF} >>/tmp/$$.service "\n"
+    ${PRINTF} >>/tmp/$$.service "[Service]\n"
+    ${PRINTF} >>/tmp/$$.service "Type=oneshot\n"
+    ${PRINTF} >>/tmp/$$.service "ExecStart=${phoned_locn}/sbin/phoned\n"
+    ${PRINTF} >>/tmp/$$.service "RemainAfterExit=true\n"
+    ${PRINTF} >>/tmp/$$.service "\n"
+    ${PRINTF} >>/tmp/$$.service "[Install]\n"
+    ${PRINTF} >>/tmp/$$.service "WantedBy=multi-user.target\n"
+
+    DOCMD "${MV} /tmp/$$.service ${Here}/Startup/systemd/phoned.service"
 
     if [ -d /etc/systemd ]; then
 	if [ -x ${SYSTEMCTL} ]; then
@@ -611,7 +627,8 @@ EOF
 		    echo "This system appears to be using systemd"
 		    echo "Do you want systemd to:"
 		    echo "   Change the MAC address of ${Interface}"
-		    echo "    Start DECnet running on boot"
+		    echo "   Start DECnet running on boot"
+		    echo "   Start the phone daemon running"
 
 		    read -p "Modify systemd settings (Yes/No)? [Yes] " Modify
 		    if [ -z "${Modify}" ]; then
@@ -630,12 +647,15 @@ EOF
 		if [ "${Modify}" = "Yes" -o "${Modify}" = "yes" ]; then
 		    ${SYSTEMCTL} disable DECnetMAC.service >/dev/null 2>&1
 		    ${SYSTEMCTL} disable decnet3.service >/dev/null 2>&1
+		    ${SYSTEMCTL} disable phoned.service >/dev/null 2>&1
 
 		    ${CP} ${Here}/Startup/systemd/DECnetMAC.service /etc/systemd/system
 		    ${CP} ${Here}/Startup/systemd/decnet3.service /etc/systemd/system
+		    ${CP} ${Here}/Startup/systemd/phoned.service /etc/systemd/system
 		    ${SYSTEMCTL} daemon-reload
-		    ${SYSTEMCTL} enable DECnetMAC.service >/dev/null
-		    ${SYSTEMCTL} enable decnet3.service >/dev/null
+		    ${SYSTEMCTL} enable DECnetMAC.service >/dev/null 2>&1
+		    ${SYSTEMCTL} enable decnet3.service >/dev/null 2>&1
+		    ${SYSTEMCTL} enable phoned.service >/dev/null 2>&1
 		fi
 	    fi
 	fi
