@@ -391,7 +391,7 @@ static void draw_title(WINDOW *window)
     mvwprintw(window, 1,0,"%c", Switch_Hook_Char);
 
     wattrset(window, A_DIM | COLOR_PAIR(COLOR_WHITE));
-    mvwprintw(window, 3,0,"");
+    mvwprintw(window, 3,0,"%s", "");
 
     wmove(window, 3, 0);
     wattrset(window, A_BOLD | COLOR_PAIR(COLOR_WHITE));
