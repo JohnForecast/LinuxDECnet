@@ -468,7 +468,7 @@ if [ ${DECnetConfig} -eq 1 ]; then
             if [ $? -eq 1 ]; then break; fi
         done
 
-	remname=`echo -n ${remname} | ${TR} "[:lower:]" "[:upper"]"`
+	remname=`echo -n ${remname} | ${TR} "[:lower:]" "[:upper:]"`
 
         printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" ${remaddr} ${remname}
     done
