@@ -201,6 +201,37 @@ Notes:
 	    re-install using the "Clean and rebuild using existing tree"
 	    option.
 
+    6. Bridging
+
+	If you want to use a bridge as your network interface for DECnet you
+	have to perform some additional configuration steps. Since bridging
+	is a purely software structure, systemd does not know to wait for the
+	bridge to become available before starting the network. There are
+	a couple of work arounds depending on what is available in your
+	configuration:
+
+	1. Delay loading DECnet for some time to allow the bridge to load.
+
+	   Add the following line to /etc/systemd/system/decnet3.service
+	   before the existing ExecStartPre= line.
+
+		ExecStartPre=/bin/sleep 5
+
+	   You can try adjusting the sleep time up or down.
+
+	2. Use /etc/network/interfaces to create the bridge
+
+	   Include the following line in the bridge configuration so that
+	   the MAC address is set correctly from when the bridge is created.
+	   (See https://www.powerdog.com/addrconv.cgi for calculating the
+	   address):
+
+		bridge_hw=aa:00:04:00:xx:yy
+
+	   Note that you may still get an error from DECnetMAC.service
+	   that the bridge does not exist. You can always disable
+	   DECnetMAC.service with systemctl since it is no longer needed.
+
 
 Changes from previous Linux DECnet release:
 
