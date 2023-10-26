@@ -504,6 +504,13 @@ void showCommand(
 	}
 
 	/*
+	 * If present, skip over any associated error message
+	 */
+	if (!NICEisEmpty())
+	  if (!NICEskipAI())
+	    return;
+
+	/*
 	 * Print the header line. We use node identifier formats here but
 	 * other entities use similar values.
 	 */
@@ -555,6 +562,12 @@ void showCommand(
 	      cmdError("show/list", code);
 	      return;
 	    }
+
+	    /*
+	     * Skip over any associated error message
+	     */
+	    if (!NICEskipAI())
+	      return;
 
 	    (showDispatch[entity])(code, option, infoType, format, displayEntity, blkno == 0, &oneshot);
 	    displayEntity = FALSE;

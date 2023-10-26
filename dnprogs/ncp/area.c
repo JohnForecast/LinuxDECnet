@@ -56,11 +56,23 @@ void showArea(
   uint8_t *oneshot
 )
 {
-  uint8_t fmt, area;
+  uint8_t id, idfmt, fmt, area;
   char entity[32];
   uint16_t entry;
   struct fields *fields;
   struct valueTable *vtable = NULL;
+
+  /*
+   * Skip over the returned entity id and check the entity specifies an
+   * area address.
+   */
+  if (!NICEget1(&id) || !NICEget1(&idfmt))
+    return;
+
+  if (idfmt != NICE_AFMT_ADDRESS) {
+    fprintf(stderr, "Area format is not 0 (area)\n");
+    return;
+  }
 
   /*
    * Get the area address from the input buffer

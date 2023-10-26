@@ -65,22 +65,10 @@ void showNode(
   uint8_t id, idfmt, executor = FALSE;
 
   /*
-   * Skip over any error message
-   */
-  if (!NICEskipAI())
-    return;
-
-  /*
-   * Verify that the returned entity id is for nodes and this entity
-   * specifies a node address.
+   * Skip over returned entity and check the entity specifies a node address.
    */
   if (!NICEget1(&id) || !NICEget1(&idfmt))
     return;
-
-  if (id != NICE_ENT_NODE) {
-    fprintf(stderr, "Entity ID is not 0 (node)\n");
-    return;
-  }
 
   if (idfmt != NICE_NFMT_ADDRESS) {
     fprintf(stderr, "Node format is not 0 (Node address)\n");
