@@ -556,12 +556,6 @@ void showCommand(
 	      return;
 	    }
 
-	    /*
-	     * Skip over the "error detail" and "error message" fields
-	     */
-	    if (!NICEget2(&detail) || !NICEskipAI())
-	      return;
-
 	    (showDispatch[entity])(code, option, infoType, format, displayEntity, blkno == 0, &oneshot);
 	    displayEntity = FALSE;
 	    blkno++;
