@@ -236,6 +236,11 @@ Notes:
 Changes from previous Linux DECnet release:
 
 
+    10/27/23
+
+    Fix number of issues in ncp when talking to NML in pyDECnet
+
+
     9/30/2023
 
     Figured out how to programatically determine where 64-bit shared
