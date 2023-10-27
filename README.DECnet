@@ -238,6 +238,11 @@ Changes from previous Linux DECnet release:
 
     10/27/23
 
+    Change HWaddress to Next-hop in dneigh output
+
+
+    10/26/23
+
     Fix number of issues in ncp when talking to NML in pyDECnet
 
 

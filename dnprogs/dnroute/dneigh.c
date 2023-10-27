@@ -68,24 +68,6 @@ char * get_node_name (char * address) {
  return address;
 }
 
-char * get_ether_address (int area, int node) {
- static struct ether_addr * ee;
- static char hwa[20];
-
- snprintf(hwa, 20, "AA:00:04:00:%.2X:%.2X", node & 0xFF, (area << 2) + (node >> 8));
-
- if ( numeric )
-  return hwa;
-
- if ( (ee = ether_aton(hwa)) == NULL )
-  return hwa;
-
- ether_ntohost(hwa, ee); // we ignore errors here as in error case hwa is not modifyed
-                         // and we still have the MAC address in it
-
- return hwa;
-}
-
 char * get_hwtype (char * dev) {
  int sock;
  struct ifreq ifr;
@@ -116,14 +98,14 @@ char * get_hwtype (char * dev) {
 }
 
 int proc_file (FILE * fh) {
- char buf[1024];
- char * flags = buf+128;
- char * dev   = buf+512;
+ char buf[128];
+ char flags[8];
+ char dev[32];
+ char hwa[32];
  int state;
  int use;
  int blocksize;
  int area, node;
- char * hwa;
 
  if ( fgets(buf, 1024, fh) == NULL ) {
   fprintf(stderr, "Error: can not read banner from file\n");
@@ -135,16 +117,12 @@ int proc_file (FILE * fh) {
   return -1;
  }
 
- while (fscanf(fh, "%s %s %02d    %02d  %07d %s\n",
-                   buf, flags, &state, &use, &blocksize, dev
-                   ) == 6) {
+ while (fscanf(fh, "%s %s %02d    %02d  %07d %s %s\n",
+                   buf, flags, &state, &use, &blocksize, dev, hwa
+                   ) == 7) {
   if ( sscanf(buf, "%d.%d", &area, &node) == 2 ) {
-   hwa = get_ether_address(area, node);
-  } else {
-   hwa = "?";
+    printf("%-24s %-7s %-19s %-6s %-10i %s\n", get_node_name(buf), get_hwtype(dev), hwa, flags, blocksize, dev);
   }
-
-  printf("%-24s %-7s %-19s %-6s %-10i %s\n", get_node_name(buf), get_hwtype(dev), hwa, flags, blocksize, dev);
  }
 
  return 0;
@@ -262,7 +240,7 @@ int main (int argc, char * argv[]) {
   return 2;
  }
 
- printf("Node                     HWtype  HWaddress           Flags  MTU        Iface\n");
+ printf("Node                     HWtype  Next-Hop            Flags  MTU        Iface\n");
  proc_file(fh);
 
  fclose(fh);

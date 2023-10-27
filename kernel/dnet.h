@@ -261,6 +261,17 @@ static inline void dn_dn2eth(
   ethaddr[5] = addr >> 8;
 }
 
+static inline char *dn_eth2asc(
+  uint8_t *ethaddr,
+  char *buf
+)
+{
+	sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
+		 ethaddr[0], ethaddr[1], ethaddr[2],
+		 ethaddr[3], ethaddr[4], ethaddr[5]);
+	return buf;
+}
+
 /*
  * Is the receive side of the socket congested? If the buffer space
  * consumed by receive buffers is > 50% of the receive buffer space set by

@@ -354,13 +354,13 @@ static void dn_next_format_entry(
   struct dn_next_entry *nextp
 )
 {
-        char buf[DN_ASCBUF_LEN];
+        char buf[DN_ASCBUF_LEN], eth[18];
         uint8_t iinfo = 0;
 
         if (nextp == ETHDEVICE.router)
                 iinfo = ETHDEVICE.iinfo & RT_II_RTR_MASK;
         
-        seq_printf(seq, "%-7s %s%s%s   %02x    %02d  %07d %-8s\n",
+        seq_printf(seq, "%-7s %s%s%s   %02x    %02d  %07d %-8s %s\n",
                    dn_addr2asc(nextp->addr, buf),
 		   ((iinfo & RT_II_LEVEL_1) != 0) ? "1" : "-",
 		   ((iinfo & RT_II_LEVEL_2) != 0) ? "2" : "-",
@@ -368,7 +368,8 @@ static void dn_next_format_entry(
                    0,
                    refcount_read(&nextp->refcount),
                    nextp->blksize,
-                   dn_devices[nextp->deviceIndex].dev->name);
+                   dn_devices[nextp->deviceIndex].dev->name,
+		   dn_eth2asc(nextp->nexthop, eth));
 }
 
 static struct dn_next_entry *dn_next_get_first(
