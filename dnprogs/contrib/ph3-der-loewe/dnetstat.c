@@ -139,6 +139,7 @@ int proc_file (FILE * fh) {
  char conid[8] = {0,0,0,0,0,0,0,0}, *lid, *rid;
  char * lbuf = buf, * rbuf = buf + 512;
  char * dir = ""; // max be "UNI" or "BI", "IN", "OUT"
+ char * sta;
  int unused;
 
  if ( fgets(buf, 1024, fh) == NULL ) {
@@ -186,7 +187,8 @@ int proc_file (FILE * fh) {
    immed[0] = 0;
   }
 
-  sprintf(out, "decnet %-24s %-24s %-3s %-13s %s", lbuf, rbuf, dir, state_ktou(state, &dir), immed);
+  sta = state_ktou(state, &dir);
+  sprintf(out, "decnet %-24s %-24s %-3s %-13s %s", lbuf, rbuf, dir, sta, immed);
  }
  puts(out);
 

@@ -239,6 +239,7 @@ Changes from previous Linux DECnet release:
     10/27/23
 
     Change HWaddress to Next-hop in dneigh output
+    Fix dnetstat so that it correctly fills in the "Dir" field
 
 
     10/26/23
