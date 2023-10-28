@@ -188,7 +188,9 @@ int proc_file (FILE * fh) {
   }
 
   sta = state_ktou(state, &dir);
-  sprintf(out, "decnet %-24s %-24s %-3s %-13s %s", lbuf, rbuf, dir, sta, immed);
+  sprintf(out, "decnet local:  %-24s %-3s %-13s %s", lbuf, dir, sta, immed);
+  puts(out);
+  sprintf(out, "       remote: %-24s", rbuf);
  }
  puts(out);
 
@@ -225,7 +227,7 @@ int main (int argc, char * argv[]) {
 //      |Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
 //      |decnet *::29                    *::0                         LISTEN       IMMED
  printf("Active DECnet sockets (servers and established)\n");
- printf("Proto  Local Address            Foreign Address          Dir State         Accept mode\n");
+ printf("Proto  Local/Remote Addresses           Dir State         Accept mode\n");
  proc_file(fh);
 
  fclose(fh);
