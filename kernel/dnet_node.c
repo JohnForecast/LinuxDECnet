@@ -80,7 +80,7 @@ struct dn_node_entry *dn_node_lookup(
 }
 
 /*
- * Release reference on a node entry. If timedout if non-zero, the logical
+ * Release reference on a node entry. If timedout is non-zero, the logical
  * link was terminated due to a communications failure and we should cancel
  * this node entry by timing it out.
  */
@@ -329,6 +329,11 @@ int __init dn_node_init(void)
                 spin_lock_init(&dn_node_db[i].lock);
                 dn_node_db[i].chain = NULL;
         }
+
+	timer_setup(&dn_node_timer, dn_node_timeout, 0);
+	dn_node_timer.expires = jiffies + (HZ / 2);
+	add_timer(&dn_node_timer);
+
 #ifdef CONFIG_PROC_FS
         proc_create_seq_private("decnet_nodes", 0444, init_net.proc_net,
                                 &dn_node_seq_ops,
@@ -340,6 +345,8 @@ int __init dn_node_init(void)
 
 void __exit dn_node_cleanup(void)
 {
+	del_timer(&dn_node_timer);
+
         /*** Flush node db entries ***/
 #ifdef CONFIG_PROC_FS
         remove_proc_entry("decnet_nodes", init_net.proc_net);

@@ -417,6 +417,16 @@ void dn_sk_destruct(
 {
         struct dn_scp *scp = DN_SK(sk);
 
+	if (scp->nextEntry != NULL) {
+		dn_next_release(scp->nextEntry);
+		scp->nextEntry = NULL;
+	}
+
+	if (scp->nodeEntry != NULL) {
+		dn_node_release(scp->nodeEntry, 0);
+		scp->nodeEntry = NULL;
+	}
+
         skb_queue_purge(&scp->data.xmit_queue);
         skb_queue_purge(&scp->other.xmit_queue);
         
