@@ -59,13 +59,6 @@ void showCircuit(
   uint16_t entry;
   struct fields *fields;
   struct valueTable *vtable;
-  uint8_t idfmt;
-
-  /*
-   * Skip over the returned entity id and format.
-   */
-  if (!NICEget1(&idfmt))
-    return;
 
   /*
    * Get the circuit name from the input buffer
