@@ -232,6 +232,22 @@ Notes:
 	   that the bridge does not exist. You can always disable
 	   DECnetMAC.service with systemctl since it is no longer needed.
 
+Kernel module versions
+
+    The current version can be obtained from:
+
+	cat /proc/net/decnet_revision
+
+    The kernel module version number is updated when the DECnet kernel module
+    has been changed:
+
+    3.0.0	Original release
+
+    3.0.1	/proc/net/decnet_neigh includes the next hop MAC address
+
+    3.0.2	Kernel hang fixed when scanning the node database for an
+		entry needing deletions.
+
 
 Changes from previous Linux DECnet release:
 
