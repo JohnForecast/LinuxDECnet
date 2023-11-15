@@ -62,12 +62,12 @@ void showNode(
 {
   uint16_t nodeaddress;
   char length, nodename[NICE_MAXNODEL+1], entity[32];
-  uint8_t id, idfmt, executor = FALSE;
+  uint8_t idfmt, executor = FALSE;
 
   /*
-   * Skip over returned entity and check the entity specifies a node address.
+   * Check the entity specifies a node address.
    */
-  if (!NICEget1(&id) || !NICEget1(&idfmt))
+  if (!NICEget1(&idfmt))
     return;
 
   if (idfmt != NICE_NFMT_ADDRESS) {
@@ -223,7 +223,7 @@ void showNode(
 		  printf("\n%s = ", table->name);
 		else printf("\nParameter #%u = ", entry & NICE_ID_PARAM_TYPE);
 		param2Text(vtable, buf, entry);
-		printf(buf);
+		printf("%s", buf);
 	      } else {
                 param2Text(vtable, buf, entry);
                 printf("%*s", fields->width, buf);

@@ -56,17 +56,16 @@ void showArea(
   uint8_t *oneshot
 )
 {
-  uint8_t id, idfmt, fmt, area;
+  uint8_t idfmt, fmt, area;
   char entity[32];
   uint16_t entry;
   struct fields *fields;
   struct valueTable *vtable = NULL;
 
   /*
-   * Skip over the returned entity id and check the entity specifies an
-   * area address.
+   * Check the entity specifies an area address.
    */
-  if (!NICEget1(&id) || !NICEget1(&idfmt))
+  if (!NICEget1(&idfmt))
     return;
 
   if (idfmt != NICE_AFMT_ADDRESS) {

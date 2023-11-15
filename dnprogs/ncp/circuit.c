@@ -59,12 +59,12 @@ void showCircuit(
   uint16_t entry;
   struct fields *fields;
   struct valueTable *vtable;
-  uint8_t id, idfmt;
+  uint8_t idfmt;
 
   /*
    * Skip over the returned entity id and format.
    */
-  if (!NICEget1(&id) || !NICEget1(&idfmt))
+  if (!NICEget1(&idfmt))
     return;
 
   /*
@@ -172,7 +172,7 @@ done:
 	      printf("\n%s = ", table->name);
 	    else printf("\nParameter #%u = ", entry & NICE_ID_PARAM_TYPE);
 	    param2Text(vtable, buf, entry);
-	    printf(buf);
+	    printf("%s", buf);
 	  } else {
 	    param2Text(vtable, buf, entry);
 	    printf("%*s", fields->width, buf);

@@ -136,7 +136,7 @@ void displayCtr(
     }
 
     if (table->name != NULL)
-      printf(table->name);
+      printf("%s", table->name);
     else printf("Counter #%u", entry & NICE_ID_CTR_TYPE);
 
     if (((entry & NICE_ID_CTR_BITMAP) != 0) && (counter32 != 0)) {
@@ -495,6 +495,7 @@ void showCommand(
       NICEflush();
 
       if ((len = NICEread()) > 0) {
+	uint16_t detail;
 	int8_t code;
 
 	NICEget1((uint8_t *)&code);
@@ -506,9 +507,10 @@ void showCommand(
 	/*
 	 * If present, skip over any associated error message
 	 */
-	if (!NICEisEmpty())
-	  if (!NICEskipAI())
-	    return;
+	if (code != NICE_RET_ACCEPTED)
+	  if (!NICEisEmpty())
+	    if (!NICEget2(&detail))
+	      return;
 
 	/*
 	 * Print the header line. We use node identifier formats here but
@@ -548,7 +550,6 @@ void showCommand(
 	 * Process a successful response
 	 */
 	if (code == NICE_RET_ACCEPTED) {
-	  uint16_t detail;
 	  uint16_t blkno = 0;
 
 	  while (code != NICE_RET_DONE) {
@@ -564,9 +565,9 @@ void showCommand(
 	    }
 
 	    /*
-	     * Skip over any associated error message
+	     * Skip over error detail
 	     */
-	    if (!NICEskipAI())
+	    if (!NICEget2(&detail))
 	      return;
 
 	    (showDispatch[entity])(code, option, infoType, format, displayEntity, blkno == 0, &oneshot);
