@@ -43,8 +43,9 @@ struct dn_node_entry *dn_node_lookup(
         uint16_t hash = addr & dn_node_hash_mask;
         struct dn_node_hash_bucket *bucket = &dn_node_db[hash];
         dn_node_entry *entry;
+	unsigned long flags;
 
-        spin_lock(&bucket->lock);
+        spin_lock_irqsave(&bucket->lock, flags);
         if ((entry = bucket->chain) != NULL) {
                 do {
                         if (entry->addr == addr) {
@@ -74,7 +75,7 @@ struct dn_node_entry *dn_node_lookup(
 
         if (entry != NULL)
                 refcount_inc(&entry->refcount);
-        spin_unlock(&bucket->lock);
+        spin_unlock_irqrestore(&bucket->lock, flags);
 
         return entry;
 }
@@ -89,12 +90,14 @@ void dn_node_release(
   int timedout
 )
 {
-        spin_lock(&dn_node_db[entry->hash].lock);
+	unsigned long flags;
+
+        spin_lock_irqsave(&dn_node_db[entry->hash].lock, flags);
         entry->timeout = jiffies + (CACHE_TIMEOUT * HZ);
         refcount_dec(&entry->refcount);
         if (timedout && (refcount_read(&entry->refcount) == 1))
                 entry->timeout = jiffies - 1;
-        spin_unlock(&dn_node_db[entry->hash].lock);
+        spin_unlock_irqrestore(&dn_node_db[entry->hash].lock, flags);
 }
 
 /*
@@ -125,22 +128,24 @@ static void dn_node_scan(
         for (i = 0; i <= dn_node_hash_mask; i++) {
                 struct dn_node_hash_bucket *bucket = &dn_node_db[i];
 
-                spin_lock(&bucket->lock);
-                ppe = &bucket->chain;
+		if (bucket->chain != NULL) {
+                	spin_lock(&bucket->lock);
+                	ppe = &bucket->chain;
 
-                while (*ppe != NULL) {
-                        dn_node_entry *nodep = *ppe;
+                	while (*ppe != NULL) {
+                        	dn_node_entry *nodep = *ppe;
 
-                        if (refcount_read(&nodep->refcount) == 1) {
-                                if (forced || time_after(jiffies, nodep->timeout)) {
-                                        *ppe = nodep->next;
-                                        if (!forced)
-                                                /*** Log event ***/;
-                                        kfree(nodep);
-                                } else ppe = &nodep->next;
-                        }
-                }
-                spin_unlock(&bucket->lock);
+                        	if (refcount_read(&nodep->refcount) == 1) {
+                                	if (forced || time_after(jiffies, nodep->timeout)) {
+                                        	*ppe = nodep->next;
+                                        	if (!forced)
+                                                	/*** Log event ***/;
+                                        	kfree(nodep);
+                                	} else ppe = &nodep->next;
+                        	} else ppe = &nodep->next;
+                	}
+                	spin_unlock(&bucket->lock);
+		}
         }
 }
 
