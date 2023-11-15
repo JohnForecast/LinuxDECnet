@@ -310,6 +310,7 @@ void NICEnodeEntity(
   size_t len = nodename ? strlen(nodename) : 0;
   int i;
 
+  outbuf[outptr++] = NICE_NFMT_ADDRESS;
   outbuf[outptr++] = nodeaddress & 0xFF;
   outbuf[outptr++] = (nodeaddress >> 8) & 0xFF;
 
@@ -343,7 +344,7 @@ void NICEareaEntity(
   uint8_t area
 )
 {
-  outbuf[outptr++] = 0;
+  outbuf[outptr++] = NICE_AFMT_ADDRESS;
   outbuf[outptr++] = area;
 
   entptr = outptr;
@@ -442,8 +443,6 @@ void NICEsuccessResponse(void)
 
   outbuf[outptr++] = 0;			/* Error detail */
   outbuf[outptr++] = 0;
-
-  outbuf[outptr++] = 0;			/* Error message */
 }
 
 /*
