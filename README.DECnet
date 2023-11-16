@@ -252,6 +252,12 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    11/15/23
+
+    Fix CPU hang when scanning for a node database entry to delete.
+    Clean up NCP/NICE protocol exchange
+
+
     10/27/23
 
     Change HWaddress to Next-hop in dneigh output
