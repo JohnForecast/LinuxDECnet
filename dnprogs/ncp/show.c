@@ -505,12 +505,17 @@ void showCommand(
 	}
 
 	/*
-	 * If present, skip over any associated error message
+	 * If present, skip over error detail and error message
 	 */
-	if (code != NICE_RET_ACCEPTED)
+	if (code != NICE_RET_ACCEPTED) {
 	  if (!NICEisEmpty())
 	    if (!NICEget2(&detail))
 	      return;
+
+	  if (!NICEisEmpty())
+	    if (!NICEskipAI())
+	      return;
+	}
 
 	/*
 	 * Print the header line. We use node identifier formats here but
@@ -565,9 +570,9 @@ void showCommand(
 	    }
 
 	    /*
-	     * Skip over error detail
+	     * Skip over error detail and error message
 	     */
-	    if (!NICEget2(&detail))
+	    if (!NICEget2(&detail) || !NICEskipAI())
 	      return;
 
 	    (showDispatch[entity])(code, option, infoType, format, displayEntity, blkno == 0, &oneshot);

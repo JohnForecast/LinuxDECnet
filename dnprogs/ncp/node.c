@@ -62,18 +62,7 @@ void showNode(
 {
   uint16_t nodeaddress;
   char length, nodename[NICE_MAXNODEL+1], entity[32];
-  uint8_t idfmt, executor = FALSE;
-
-  /*
-   * Check the entity specifies a node address.
-   */
-  if (!NICEget1(&idfmt))
-    return;
-
-  if (idfmt != NICE_NFMT_ADDRESS) {
-    fprintf(stderr, "Node format is not 0 (Node address)\n");
-    return;
-  }
+  uint8_t executor = FALSE;
 
   /*
    * Get the node address and possible node name from the input buffer
