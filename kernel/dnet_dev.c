@@ -51,6 +51,13 @@ void dn_dev_timer(
 {
         struct dn_device *device = from_timer(device, t, timer);
 
+	/*
+	 * If we have been asked to unregister this device, shut down the
+	 * timer
+	 */
+	if (device->dev == NULL)
+		return;
+
         if (device->t3) {
                 if (--device->t3 == 0) {
                         if (decnet_address)
@@ -101,6 +108,33 @@ int dn_dev_unknown_mcast(
 
         return 0;
 }
+
+/*
+ * Handle device event callback
+ */
+static int dn_dev_event(
+  struct notifier_block *unused,
+  unsigned long event,
+  void *ptr
+)
+{
+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+
+	if (!net_eq(dev_net(dev), &init_net))
+		return NOTIFY_DONE;
+
+	if (ETHDEVICE.dev == dev) {
+		if (event == NETDEV_UNREGISTER) {
+			ETHDEVICE.dev = NULL;
+			dev_put(dev);
+		}
+	}
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block dn_dev_notifier = {
+	.notifier_call = dn_dev_event
+};
 
 /*
  * Display which DECnet Phase we are currently running
@@ -372,6 +406,8 @@ int __init dn_dev_init(void)
                 	add_timer(&ETHDEVICE.timer);
 		}
         }
+
+	register_netdevice_notifier(&dn_dev_notifier);
 
 #ifdef CONFIG_PROC_FS
         proc_create_single("decnet_phase", 0444, init_net.proc_net, &dn_phase_show);

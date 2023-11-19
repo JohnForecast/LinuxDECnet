@@ -183,9 +183,10 @@ int dn_routing_rcv(
         uint8_t padlen = 0;
         
         /*
-         * Discard messages if we don't have an address set yet.
+         * Discard messages if we don't have an address set yet or we are in
+	 * the process of unregistering the ethernet device..
          */
-        if (decnet_address == 0) {
+        if ((decnet_address == 0) || (ETHDEVICE.dev == NULL)) {
                 kfree_skb(skb);
                 return 0;
         }
@@ -302,6 +303,14 @@ int dn_routing_tx_long(
         int err, headroom;
         uint8_t *macAddr = dn_devices[nextp->deviceIndex].macAddr;
         
+	/*
+	 * If we are unregistering the ethernet device, discard the packet
+	 */
+	if (ETHDEVICE.dev == NULL) {
+		kfree_skb(skb);
+		return 0;
+	}
+
         skb->dev = dev = dn_devices[nextp->deviceIndex].dev;
         
         headroom = dev->hard_header_len + sizeof(struct rt_long_hdr) + 3;

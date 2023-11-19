@@ -248,8 +248,18 @@ Kernel module versions
     3.0.2	Kernel hang fixed when scanning the node database for an
 		entry needing deletions.
 
+    3.0.3	Fixed hang seen on Raspberry Pi Bookworm reboot requests.
+
 
 Changes from previous Linux DECnet release:
+
+
+    11/19/23
+
+    Request device notifier callbacks. Hanlde NETDEV_UNREGISTER callback
+    which is sent on reboot requests and release the lock on the ethernet or
+    wireless device. This fixes a hang seen on the Raspberry Pi Bookworm
+    releaze during reboots.
 
 
     11/15/23
