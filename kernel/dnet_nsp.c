@@ -1589,7 +1589,7 @@ void dn_nsp_xmt_ci(
         struct nsp_ci *msg;
         struct dn_skb_cb *cb;
         struct sockaddr_dn *saddr;
-        uint8_t aux, menuver, type = 1;
+        uint8_t aux, menuver = 0, type = 1;
         gfp_t allocation = msgflg == NSP_MSG_CI ? sk->sk_allocation : GFP_ATOMIC;
         struct sk_buff *skb = dn_alloc_skb(sk, 200, allocation);
 
@@ -1616,9 +1616,14 @@ void dn_nsp_xmt_ci(
          * ("Linux") so that the remote system is happy.
          */
         saddr = scp->addr.sdn_objnamel != 0 ? &scp->addr : &dummyname;
-        skb_put(skb, dn_sockaddr2username(saddr, skb_tail_pointer(skb), 2));
+        skb_put(skb, dn_sockaddr2username(saddr, skb_tail_pointer(skb), 1));
 
-        menuver = NSP_MENU_ACC | NSP_MENU_USR;
+	if ((scp->accessdata.acc_userl != 0) ||
+	    (scp->accessdata.acc_passl != 0) ||
+	    (scp->accessdata.acc_accl != 0))
+		menuver |= NSP_MENU_ACC;
+	if (scp->conndata_out.opt_optl != 0)
+		menuver |= NSP_MENU_USR;
         if (scp->peer.sdn_flags & SDF_PROXY)
                 menuver |= NSP_MENU_PROXY;
         if (scp->peer.sdn_flags & SDF_UICPROXY)
@@ -1626,25 +1631,28 @@ void dn_nsp_xmt_ci(
 
         skb_put_u8(skb, menuver);
 
-        aux = scp->accessdata.acc_userl;
-        skb_put_u8(skb, aux);
-        if (aux > 0)
-                skb_put_data(skb, scp->accessdata.acc_user, aux);
+	if ((menuver & NSP_MENU_ACC) != 0) {
+        	aux = scp->accessdata.acc_userl;
+        	skb_put_u8(skb, aux);
+        	if (aux > 0)
+                	skb_put_data(skb, scp->accessdata.acc_user, aux);
 
-        aux = scp->accessdata.acc_passl;
-        skb_put_u8(skb, aux);
-        if (aux > 0)
-                skb_put_data(skb, scp->accessdata.acc_pass, aux);
+        	aux = scp->accessdata.acc_passl;
+        	skb_put_u8(skb, aux);
+        	if (aux > 0)
+                	skb_put_data(skb, scp->accessdata.acc_pass, aux);
 
-        aux = scp->accessdata.acc_accl;
-        skb_put_u8(skb, aux);
-        if (aux > 0)
-                skb_put_data(skb, scp->accessdata.acc_acc, aux);
+        	aux = scp->accessdata.acc_accl;
+        	skb_put_u8(skb, aux);
+        	if (aux > 0)
+                	skb_put_data(skb, scp->accessdata.acc_acc, aux);
+	}
 
-        aux = le16_to_cpu(scp->conndata_out.opt_optl);
-        skb_put_u8(skb, aux);
-        if (aux > 0)
+	if ((menuver & NSP_MENU_USR) != 0) {
+        	aux = le16_to_cpu(scp->conndata_out.opt_optl);
+		skb_put_u8(skb, aux);
                 skb_put_data(skb, scp->conndata_out.opt_data, aux);
+	}
         
         cb->rt_flags = RT_FLG_RQR;
 

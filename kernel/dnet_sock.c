@@ -381,10 +381,7 @@ struct sock *dn_alloc_sock(
                 scp->conndata_out.opt_optl = 0;
                 memset(&scp->discdata_in, 0, sizeof(scp->discdata_in));
                 memset(&scp->discdata_out, 0, sizeof(scp->discdata_out));
-                scp->accessdata.acc_accl = 5;
-                memcpy(scp->accessdata.acc_acc, "Linux", 5);
-                scp->accessdata.acc_passl = 0;
-                scp->accessdata.acc_userl = 0;
+		memset(&scp->accessdata, 0, sizeof(scp->accessdata));
         
                 scp->snd_window = NSP_MIN_WINDOW;
         
