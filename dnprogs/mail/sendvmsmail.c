@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <syslog.h>
 #include <signal.h>
 #include <errno.h>
@@ -43,6 +44,47 @@
 #include <netdnet/dn.h>
 #include "configfile.h"
 
+/*
+ * Optional data
+ */
+struct __attribute__((__packed__)) mail11opt {
+    uint8_t                     version;
+#define MAIL11_VERSION          3
+    uint8_t                     eco;
+    uint8_t                     customer_eco;
+    uint8_t                     os;
+#define MAIL11_OS_RSXMP         6
+#define MAIL11_OS_VMS           7
+#define MAIL11_OS_LINUX         18
+    uint32_t                    options;
+#define MAIL11_OPTION_NOTIFIED  0x00000001
+    uint32_t                    flags;
+#define MAIL11_FLAG_WANT_BLOCK  0x00000001
+#define MAIL11_FLAG_ACC_BLOCK   0x00000002
+#define MAIL11_FLAG_WANT_ADD    0x00000004
+#define MAIL11_FLAG_ACC_ADD     0x00000008
+#define MAIL11_FLAG_WANT_CC     0x00000010
+#define MAIL11_FLAG_ACC_CC      0x00000020
+#define MAIL11_FLAG_WANT_ID     0x00000040
+#define MAIL11_FLAG_ACC_ID      0x00000080
+#define MAIL11_FLAG_WANT_FOR    0x00000100
+#define MAIL11_FLAG_ACC_FOR     0x00000200
+    uint8_t                     rfm;
+#define MAIL11_RFM_VAR		2
+    uint8_t                     rat;
+#define MAIL11_RAT_CR		2
+    uint8_t                     org;
+#define MAIL11_ORG_REL		0
+    uint8_t                     spare;
+} mail11optin, mail11optout = {
+    MAIL11_VERSION, 0, 0, MAIL11_OS_LINUX,
+    0, 0,
+    MAIL11_RFM_VAR, MAIL11_RAT_CR, MAIL11_ORG_REL,
+    0 
+};
+
+int v3 = 0;
+
 /* Prototypes */
 int parse_header(char **to, char **subject, char **from, char **real_from);
 int mail_error(char *to, char *name, char *subject, char *error);
@@ -55,6 +97,20 @@ int main(int argc, char *argv[])
     char *subject  = NULL;
     char *from     = NULL;
     char *reply_to = NULL;
+    int opt;
+
+    while ((opt = getopt(argc, argv, "3h")) != -1) {
+	switch (opt) {
+	    case '3':
+		v3 = 1;
+		break;
+
+	    case 'h':
+	    default:
+		fprintf(stderr, "Usage: %s [-3] [-h]\n", argv[0]);
+		exit(EXIT_FAILURE);  
+	}
+    }
 
     openlog("sendvmsmail", LOG_PID, LOG_DAEMON);
     read_configfile();
@@ -264,7 +320,9 @@ int open_socket(char *node)
     char                *local_user;
     int                  i;
     struct sockaddr_dn   sockaddr;
+#if 0
     struct accessdata_dn accessdata;
+#endif
 
     if ((sockfd=socket(AF_DECnet,SOCK_SEQPACKET,DNPROTO_NSP)) == -1)
     {
@@ -277,6 +335,48 @@ int open_socket(char *node)
 	return -1;
     }
 
+    if (v3) {
+	struct optdata_dn optdata;
+
+	memset(&optdata, 0, sizeof(optdata));
+	optdata.opt_optl = sizeof(optdata.opt_data);
+	memcpy(optdata.opt_data, &mail11optout, optdata.opt_optl);
+
+	if (setsockopt(sockfd, DNPROTO_NSP, DSO_CONDATA, &optdata, sizeof(optdata)) < 0)
+	    return -1;
+
+	memset(&sockaddr, 0, sizeof(sockaddr));
+	sockaddr.sdn_family = AF_DECnet;
+	sockaddr.sdn_objnum = MAIL_OBJECT;
+	sockaddr.sdn_nodeaddrl = 0x02;
+	memcpy(sockaddr.sdn_nodeaddr, np->n_addr, sockaddr.sdn_nodeaddrl);
+
+	if (connect(sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) >= 0) {
+	    socklen_t len = sizeof(optdata);
+
+	    if (getsockopt(sockfd, DNPROTO_NSP, DSO_CONDATA, &optdata, &len) >= 0) {
+		if ((len == sizeof(optdata)) &&
+		    (optdata.opt_optl == sizeof(optdata.opt_data)))
+		    return sockfd;
+	    }
+	}
+
+	/*
+	 * If we failed to connect using mail11v3 logic, fall back to the
+	 * orginal logic.
+	 */
+	close(sockfd);
+	v3 = 0;
+
+	if ((sockfd=socket(AF_DECnet,SOCK_SEQPACKET,DNPROTO_NSP)) == -1)
+            return -1;
+    }
+
+#if 0
+    /*
+     * This causes problems with access control on VMS V7.3 so we'll comment
+     * it out for now.
+     */
     memset(&accessdata, 0, sizeof(accessdata));
 
     // Try very hard to get the local username
@@ -297,9 +397,8 @@ int open_socket(char *node)
     
     if (setsockopt(sockfd,DNPROTO_NSP,SO_CONACCESS,&accessdata,
 		   sizeof(accessdata)) < 0)
-    {
 	 return -1;
-    }
+#endif
 
     memset(&sockaddr, 0, sizeof(sockaddr));
     sockaddr.sdn_family    = AF_DECnet;
@@ -311,9 +410,7 @@ int open_socket(char *node)
 
     if (connect(sockfd, (struct sockaddr *)&sockaddr,
 		sizeof(sockaddr)) < 0)
-    {
 	return -1;
-    }
 
     return sockfd;
 }

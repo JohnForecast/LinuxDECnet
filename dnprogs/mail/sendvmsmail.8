@@ -1,4 +1,4 @@
-.TH SENDVMSMAIL 8 "January 15 2001" "DECnet utilities"
+.TH SENDVMSMAIL 8 "November 29 2023" "DECnet utilities"
 
 .SH NAME
 sendvmsmail \- mail forwarder for DECnet
@@ -12,6 +12,12 @@ System. It should be the default destination of the "vmsmail" user. The usual wa
 is to create a .forward file in that user's home directory with the following contents:
 
 | /usr/sbin/sendvmsmail
+
+By default, sendvmsmail will use an older version of the mail-11 protocol. If
+you wish to use the latest version, mail11v3, add a "-3" switch to the above
+command:
+
+| /usr/sbin/sendvmsmail -3
 
 .SH SEE ALSO
 .BR vmsmaild "(8), " dnetd "(8), " dnetd.conf "(5)
