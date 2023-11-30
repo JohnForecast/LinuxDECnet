@@ -254,12 +254,18 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    11/29/23
+
+    Fix connection logic in sendvmsmail which would mess with OpenVMS V7.3
+    login.
+
+
     11/19/23
 
-    Request device notifier callbacks. Hanlde NETDEV_UNREGISTER callback
+    Request device notifier callbacks. Handle NETDEV_UNREGISTER callback
     which is sent on reboot requests and release the lock on the ethernet or
     wireless device. This fixes a hang seen on the Raspberry Pi Bookworm
-    releaze during reboots.
+    release during reboots.
 
 
     11/15/23
