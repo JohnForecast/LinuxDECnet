@@ -120,6 +120,12 @@ static int dn_routing_rx_long(
                 goto drop;
         cb->dst = dn_eth2dn(hdr->d_id);
 
+	/*
+	 * Discard this packet if it is not explicitly addressed to this node
+	 */
+	if (cb->dst != decnet_address)
+		goto drop;
+
         /*
          * Source address
          */

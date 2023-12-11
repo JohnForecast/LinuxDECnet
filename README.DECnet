@@ -220,8 +220,16 @@ Kernel module versions
 
     3.0.3	Fixed hang seen on Raspberry Pi Bookworm reboot requests.
 
+    3.0.4	Verify the destination address of unicast messages is the
+		node address of this node.
+
 
 Changes from previous Linux DECnet release:
+
+
+    12/11/23
+
+    Check the destination address of unicast messages.
 
 
     12/10/23
