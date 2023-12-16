@@ -291,6 +291,7 @@ int main(int argc, char *argv[])
             case dap_config_message::OS_ULTRIX:
             case dap_config_message::OS_ULTRIX11:
             case dap_config_message::OS_LINUX:
+	    case dap_config_message::OS_PYDECNET:
                 strcat(dirname, "*");
                 break;
 

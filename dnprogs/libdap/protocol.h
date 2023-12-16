@@ -255,7 +255,8 @@ class dap_config_message: public dap_message
     static const int OS_WIN_NT  = 26;
     static const int OS_WIN_95  = 27;
 
-    static const int OS_LINUX   = 192;          // User-defined range
+    static const int OS_PYDECNET= 192;          // User-defined range
+    static const int OS_LINUX   = 193;
   
     // File systems
     static const int FS_ILLEGAL = 0;

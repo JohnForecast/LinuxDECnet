@@ -227,6 +227,13 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    12/16/23
+
+    This code and PyDECnet chose the same OS type code for DAP (192). Change
+    this code to use 193 to make sure there is no possible conflict. Update
+    user code version to 3.2.
+
+
     12/11/23
 
     Check the destination address of unicast messages.
