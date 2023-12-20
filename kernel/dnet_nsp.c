@@ -1700,18 +1700,18 @@ int dn_nsp_xmt_timeout(
 {
         struct dn_scp *scp = DN_SK(sk);
 
-        if (scp->persist_count-- != 0) {
-                Count_timeouts(scp->nodeEntry);
-                dn_nsp_xmt_socket(sk);
-                return 0;
-        }
-        scp->persist = 0;
-        sk->sk_err = EHOSTUNREACH;
-        scp->state = DN_NC;
-        sk->sk_state = DNET_CLOSE;
+	/*
+	 * If there is a pending transmit, increment the count of timeouts
+	 * and try to retransmit the message.
+	 */
+	if ((skb_peek(&scp->other.xmit_queue) != NULL) ||
+	    (skb_peek(&scp->data.xmit_queue) != NULL)) {
+		Count_timeouts(scp->nodeEntry);
+		dn_nsp_xmt_socket(sk);
+		return 0;
+	}
 
-        if (!sock_flag(sk, SOCK_DEAD))
-                sk->sk_state_change(sk);
+        scp->persist = 0;
         return 0;
 }
 
