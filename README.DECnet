@@ -227,6 +227,16 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    12/20/23
+
+    Clean up data message retransmission logic.
+
+    Don't use data message with delayed ACKs in computing round trip time.
+
+    Clean up processing of inbound linkservice messages (previously they
+    were simply discarded).
+
+
     12/16/23
 
     This code and PyDECnet chose the same OS type code for DAP (192). Change
