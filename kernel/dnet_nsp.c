@@ -216,7 +216,8 @@ static int dn_nsp_check_xmt_q(
                          * open the window a little further.
                          */
                         if (xmit_count == 1) {
-                                if (dn_equal(segnum, acknum)) {
+                                if ((cb2->ack_delay == 0) &&
+				    dn_equal(segnum, acknum)) {
                                         uint32_t delay = acktime - pkttime;
                                 
                                         dn_node_update_delay(scp->nodeEntry, delay);
@@ -684,50 +685,43 @@ int dn_nsp_rcv_ls(
         fcval = *ptr;
 
         if (seq_next(scp->other.num_rcv, segnum)) {
-                switch (lsflags) {
-                        case NSP_FCVAL_DATA:
-                                switch (lsflags & NSP_FCMOD_MASK) {
-                                        case NSP_FCMOD_NOC:
-                                                if (fcval < 0) {
-                                                        unsigned char pfcval = -fcval;
+		if ((lsflags & NSP_FCVAL_DATA) != 0) {
+                        switch (lsflags & NSP_FCMOD_MASK) {
+				case NSP_FCMOD_NOC:
+					if (fcval < 0) {
+						unsigned char pfcval = -fcval;
 
-                                                        if ((scp->data.flowrem > pfcval) &&
-                                                            (fctype == NSP_FCOPT_MSG)) {
-                                                                scp->data.flowrem -= pfcval;
-                                                        }
-                                                } else if (fcval > 0) {
-                                                        scp->data.flowrem += fcval;
-                                                        wakeup = 1;
-                                                }
-                                                break;
+						if ((scp->data.flowrem > pfcval) &&
+						    (fctype == NSP_FCOPT_MSG)) {
+							scp->data.flowrem -= pfcval;
+						}
+					} else if (fcval > 0) {
+						scp->data.flowrem += fcval;
+						wakeup = 1;
+					}
+					break;
                                                 
-                                        case NSP_FCMOD_NOSND:
-                                                scp->data.flowrem_sw = DN_DONTSEND;
-                                                break;
+				case NSP_FCMOD_NOSND:
+					scp->data.flowrem_sw = DN_DONTSEND;
+					break;
                                                 
-                                        case NSP_FCMOD_SND:
-                                                scp->data.flowrem_sw = DN_SEND;
-                                                dn_nsp_xmt_socket(sk);
-                                                wakeup = 1;
-                                                break;
+				case NSP_FCMOD_SND:
+					scp->data.flowrem_sw = DN_SEND;
+					dn_nsp_xmt_socket(sk);
+					wakeup = 1;
+					break;
                                                 
-                                        default:
-                                                goto drop;
-                                }
-                                seq_add(&scp->other.num_rcv, 1);
-                                break;
+				default:
+					goto drop;
+			}
+		} else {
+			if (fcval > 0) {
+				scp->other.flowrem += fcval;
+				wakeup = 1;
+			}
+		}
                                 
-                        case NSP_FCVAL_INTR:
-                                if (fcval > 0) {
-                                        scp->other.flowrem += fcval;
-                                        wakeup = 1;
-                                }
-                                seq_add(&scp->other.num_rcv, 1);
-                                break;
-                                
-                        default:
-                                goto drop;
-                }
+		seq_add(&scp->other.num_rcv, 1);
 
                 if (wakeup && !sock_flag(sk, SOCK_DEAD))
                         sk->sk_state_change(sk);
@@ -1351,6 +1345,7 @@ static inline unsigned int dn_nsp_clone_xmt(
         unsigned int ret = 0;
 
         if ((skb2 = skb_clone(skb, gfp)) != NULL) {
+		struct dn_skb_cb *cb2 = DN_SKB_CB(skb2);
                 struct dn_scp *scp = DN_SK(sk);
                 unsigned long persist = dn_nsp_persist(scp);
                 
@@ -1359,7 +1354,12 @@ static inline unsigned int dn_nsp_clone_xmt(
                 cb->stamp = jiffies;
                 cb->deadline = cb->stamp + persist;
 
-                cb->ack_delay = 0;
+		/*
+		 * Disable delayed ack if this is a retransmit
+		 */
+		if (ret > 1)
+			cb2->ack_delay = 0;
+
                 skb2->sk = sk;
                 skb2->destructor = dn_nsp_null_destructor;
 
