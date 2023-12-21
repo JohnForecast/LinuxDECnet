@@ -210,23 +210,24 @@ static int dn_nsp_check_xmt_q(
                          */
                         WARN_ON(xmit_count == 0);
 
-                        /*
-                         * If the packet has only been sent once, we can use
-                         * it to update the round-trip estimate and also
-                         * open the window a little further.
-                         */
-                        if (xmit_count == 1) {
-                                if ((cb2->ack_delay == 0) &&
-				    dn_equal(segnum, acknum)) {
-                                        uint32_t delay = acktime - pkttime;
-                                
-                                        dn_node_update_delay(scp->nodeEntry, delay);
-                                }
+			/*
+			 * If the packet was orginally sent without the delay
+			 * ack option, we can use it to update the round-trip
+			 * estimate.
+			 */
+			if (cb2->ack_delay == 0) {
+				uint32_t delay = acktime - pkttime;
 
-                                if (!oth)
-                                        if (scp->snd_window < decnet_maxWindow)
-                                                scp->snd_window++;
-                        }
+				dn_node_update_delay(scp->nodeEntry, delay);
+			}
+
+			/*
+			 * Open the window a little further if this is a
+			 * data ack.
+			 */
+			if (!oth)
+				if (scp->snd_window < decnet_maxWindow)
+					scp->snd_window++;
 
                         /*
                          * If this packet is the last one to be acknowledged

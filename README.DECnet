@@ -223,8 +223,15 @@ Kernel module versions
     3.0.4	Verify the destination address of unicast messages is the
 		node address of this node.
 
+    3.0.5	Fix bugs found when trying to transfer large files to VMS
+
 
 Changes from previous Linux DECnet release:
+
+
+    12/21/23
+
+    Let retransmitted messages participate in computing the round trip delay.
 
 
     12/20/23
