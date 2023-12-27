@@ -250,7 +250,8 @@ int dn_username2sockaddr(
 
 /*
  * Allocate an skb for message transmission. If sk != NULL the skb will
- * be associated with a socket.
+ * be associated with a socket. The "64" should be sufficient for NSP,
+ * routing and ethernet headers.
  */
 struct sk_buff *dn_alloc_skb(
   struct sock *sk,
@@ -261,7 +262,7 @@ struct sk_buff *dn_alloc_skb(
         struct sk_buff *skb;
         int hdr = 64;
 
-        if ((skb= alloc_skb(size + hdr, pri)) != NULL) {
+        if ((skb = alloc_skb(size + hdr, pri)) != NULL) {
                 skb->protocol = htons(ETH_P_DNA_RT);
                 skb->pkt_type = PACKET_OUTGOING;
 

@@ -206,7 +206,7 @@ dn_next_entry *dn_next_update_and_hold(
         if (nextp != NULL) {
                 nextp->onEthernet = onEthernet;
                 if ((nextp != ETHDEVICE.router) && onEthernet)
-                  nextp->blksize = ETHDEVICE.blksize;
+                	nextp->blksize = ETHDEVICE.blksize;
                 refcount_inc(&nextp->refcount);
         }
         
