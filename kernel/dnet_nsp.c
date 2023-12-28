@@ -189,6 +189,8 @@ static int dn_nsp_check_xmt_q(
                 segnum = cb2->segnum;
                 
                 if (dn_before_or_equal(segnum, acknum)) {
+			uint8_t delayed = cb2->ack_delay;
+
                         /*
                          * A packet is being acknowledged so wakeup the
                          * sending process.
@@ -199,7 +201,8 @@ static int dn_nsp_check_xmt_q(
                         xmit_count = cb2->xmit_count;
 
                         /*
-                         * Remove the ack'd packet and free it
+                         * Remove the ack'd packet and free it. Don't reference
+			 * skb2 or cb2 after this point
                          */
                         skb_unlink(skb2, q);
                         kfree_skb(skb2);
@@ -215,7 +218,7 @@ static int dn_nsp_check_xmt_q(
 			 * ack option, we can use it to update the round-trip
 			 * estimate.
 			 */
-			if (cb2->ack_delay == 0) {
+			if (delayed == 0) {
 				uint32_t delay = acktime - pkttime;
 
 				dn_node_update_delay(scp->nodeEntry, delay);
@@ -244,7 +247,19 @@ static int dn_nsp_check_xmt_q(
          * the persist timer.
          */
         if (skb2 != (struct sk_buff *)q) {
-                unsigned long delta = DN_SKB_CB(skb2)->deadline - jiffies;
+		unsigned long deadline = (unsigned long)(DN_SKB_CB(skb2)->deadline);
+                unsigned long delta = deadline - jiffies;
+
+		/*
+		 * If the deadline for this message has already passed,
+		 * force the delay to 1 tick so the retransmission will
+		 * happen at the next timeout and try to retransmit it as
+		 * soon as possible.
+		 */
+		if (time_after_eq(jiffies, deadline)) {
+			delta = 1;
+			try_retrans = 1;
+		}
 
                 if ((scp->persist == 0) || (delta < scp->persist))
                         scp->persist = delta;
@@ -855,7 +870,19 @@ int dn_nsp_rcv_cc(
                 scp->info_rem = cb->info;
                 scp->segsize_rem = cb->segsize;
 
-                scp->segsize_rem = dn_eth2segsize(scp->nextEntry);
+		/*
+		 * If the Connect Confirm message was received with the
+		 * Intra-Ethernet bit clear, revert to the "SEGMENT BUFFER
+		 * SIZE" parameter since traffic will be going off ethernet.
+		 */
+		if ((cb->rt_flags & RT_FLG_IE) == 0)
+			scp->segsize_rem =
+			  decnet_segbufsize - NSP_MAX_DATAHDR;
+
+		/*
+		 * Update the local segment size in case it has changed.
+		 */
+		scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
 
                 if (skb->len > 0) {
                         uint16_t dlen = *skb->data;
@@ -1281,31 +1308,20 @@ static uint16_t *dn_nsp_mk_ack_hdr(
 /*
  * Build a data/interrupt message header
  */
-static uint16_t *dn_nsp_mk_data_hdr(
+static void dn_nsp_mk_data_hdr(
   struct sock *sk,
   struct sk_buff *skb,
   int oth
 )
 {
-        struct dn_scp *scp = DN_SK(sk);
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         uint16_t *ptr = dn_nsp_mk_ack_hdr(sk, skb, cb->nsp_flags, NSP_MAX_DATAHDR, oth);
+	uint16_t segnum = cb->segnum;
 
-        if (unlikely(oth)) {
-                cb->segnum = scp->other.num;
-                seq_add(&scp->other.num, 1);
-        } else {
-                cb->segnum = scp->data.num;
-                seq_add(&scp->data.num, 1);
-        }
+	if ((cb->ack_delay != 0) && !oth)
+		segnum |= NSP_ACK_DELAY;
 
-        if (unlikely(oth) || (cb->ack_delay == 0)) {
-                *ptr++ = cpu_to_le16(cb->segnum);
-        } else {
-                *ptr++ = cpu_to_le16(cb->segnum | NSP_ACK_DELAY);
-        }
-
-        return ptr;
+	*ptr++ = cpu_to_le16(segnum);
 }
 
 /*
@@ -1337,7 +1353,8 @@ void dn_nsp_xmt(
  */
 static inline unsigned int dn_nsp_clone_xmt(
   struct sk_buff *skb,
-  gfp_t gfp
+  gfp_t gfp,
+  int oth
 )
 {
         struct sock *sk = skb->sk;
@@ -1363,6 +1380,11 @@ static inline unsigned int dn_nsp_clone_xmt(
 
                 skb2->sk = sk;
                 skb2->destructor = dn_nsp_null_destructor;
+
+		/*
+		 * Back-build an NSP header
+		 */
+		dn_nsp_mk_data_hdr(sk, skb2, oth);
 
                 dn_nsp_xmt(skb2);
 
@@ -1395,7 +1417,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win = dn_nsp_clone_xmt(skb, GFP_ATOMIC);
+                reduce_win = dn_nsp_clone_xmt(skb, GFP_ATOMIC, 1);
         }
         
         if (reduce_win || (scp->data.flowrem_sw != DN_SEND))
@@ -1407,7 +1429,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win += dn_nsp_clone_xmt(skb, GFP_ATOMIC);
+                reduce_win += dn_nsp_clone_xmt(skb, GFP_ATOMIC, 0);
         }
         /*
          * If we re-transmitted one of these messages, cut the window in
@@ -1449,13 +1471,21 @@ void dn_nsp_queue_xmt(
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
         cb->xmit_count = 0;
-        dn_nsp_mk_data_hdr(sk, skb, oth);
 
-        /*** Slow start? ***/
+	/*
+	 * Slow start: If we have been idle for more than one RTT, then
+	 * reset window to min size.
+	 */
+	if ((jiffies - scp->stamp) > scp->nodeEntry->delay)
+		scp->snd_window = NSP_MIN_WINDOW;
 
-        if (oth)
+        if (oth) {
+		cb->segnum = scp->other.num;
+		seq_add(&scp->other.num, 1);
                 skb_queue_tail(&scp->other.xmit_queue, skb);
-        else {
+        } else {
+		cb->segnum = scp->data.num;
+		seq_add(&scp->data.num, 1);
                 skb_queue_tail(&scp->data.xmit_queue, skb);
 
                 /*
@@ -1465,7 +1495,7 @@ void dn_nsp_queue_xmt(
                 if (scp->data.flowrem_sw != DN_SEND)
                         return;
         }
-        dn_nsp_clone_xmt(skb, gfp);
+        dn_nsp_clone_xmt(skb, gfp, oth);
 }
 
 /*
