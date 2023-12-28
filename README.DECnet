@@ -225,8 +225,15 @@ Kernel module versions
 
     3.0.5	Fix bugs found when trying to transfer large files to VMS
 
+    3.0.6	More bugs found when transferring large files to VMS
+
 
 Changes from previous Linux DECnet release:
+
+
+    12/28/23
+
+    More bug fixes for ack handling and message retransmission
 
 
     12/21/23
