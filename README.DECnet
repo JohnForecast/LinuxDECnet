@@ -227,8 +227,15 @@ Kernel module versions
 
     3.0.6	More bugs found when transferring large files to VMS
 
+    3.0.7	Fix data corruption bug when receiving segmented packets
+
 
 Changes from previous Linux DECnet release:
+
+
+    12/30/23
+
+    Fix message reassembly bug which would lead to data corruption
 
 
     12/28/23

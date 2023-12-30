@@ -1477,21 +1477,24 @@ static int dn_recvmsg(
                                 skb_pull(skb, chunk);
                 }
 
-		if ((skb->len == 0) ||
-		    (((flags & MSG_PEEK) == 0) &&
-		     (copied >= target) &&
-		     (msg_framing != 0))) {
-                        skb_unlink(skb, queue);
-                        kfree_skb(skb);
+		/*
+		 * Decide if we need to unlink and free this skb
+		 */
+		if ((flags & MSG_PEEK) == 0) {
+			if ((skb->len == 0) ||
+			     ((copied == size) && (msg_framing != 0))) {
+                        	skb_unlink(skb, queue);
+                        	kfree_skb(skb);
 
-                        if ((flags & MSG_OOB) != 0) {
-                                dn_nsp_sched_pending(sk, DN_PEND_INTR);
-                        } else {
-                                if ((scp->data.flowloc_sw == DN_DONTSEND) &&
-                                    !dn_congested(sk)) {
-                                        scp->data.flowloc_sw = DN_SEND;
-                                        dn_nsp_sched_pending(sk, DN_PEND_SW);
-                                }
+                        	if ((flags & MSG_OOB) != 0) {
+                                	dn_nsp_sched_pending(sk, DN_PEND_INTR);
+                        	} else {
+                                	if ((scp->data.flowloc_sw == DN_DONTSEND) &&
+                                    	     !dn_congested(sk)) {
+                                        	scp->data.flowloc_sw = DN_SEND;
+                                        	dn_nsp_sched_pending(sk, DN_PEND_SW);
+                                	}
+				}
                         }
                 }
 
@@ -1501,8 +1504,9 @@ static int dn_recvmsg(
                 if ((flags & MSG_OOB) != 0)
                         break;
 
-                if (copied >= target)
-                        break;
+		if (sock->type == SOCK_STREAM)
+                	if (copied >= target)
+                        	break;
         }
 
         rv = copied;
