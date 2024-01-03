@@ -1,68 +1,80 @@
-Create a bridge on Debian, RaspiOS Bookworm
-—————————————————————----------------------
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh18700\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
-1. Install the following packages:
-
-	bridge-utils
-	iproute2
-	uml-utilities
-	libvdeplug-dev
-	vde2
-
-2. Create a bridge called “br0” and insert “eth0” as a bridge slave:
-
-	nmcli con add type bridge ifname br0 con-name br0 ipv4.method manual ipv4.addresses aa.bb.cc.dd/nn ipv4.gateway ee.ff.gg.hh ipv4.dns ii.jj.kk.ll
-	nmcli con mod br0 bridge.multicast-snooping false bridge.stp false
-
-	To disable IPv6:
-
-	nmcli con mod br0 ipv6.method disabled
-
-	If you are going to run DECnet on this system, you will need to change the MAC address:
-
-	nmcli con mod br0 bridge.mac aa:00:04:00:xx.yy
-
-	and also edit /etc/systemd/system/decnet3.service so that it waits for the bridge device to become
-	available before loading the kernel module:
-
-	Change:
-
-		After=network.target
-
-	To:
-
-		Wants=sys-devices-virtual-net-br0.device
-		After=sys-devices-virtual-net-br0.device
-
-	nmcli con add type bridge-slave ifname eth0 master br0
-	nmcli con del “eth0”; nmcli con reload “br0”
-
-3. If you want to add a VDE switch to the bridge:
-
-	nmcli con add type tun ifname tap0 con-name tap0 mode tap owner 0 ip4 0.0.0.0/24
-	nmcli con add type bridge-slave ifname tap0 master br0
-
-	Create a systemd service file (/etc/systemd/system/vde.service) containing:
-
-		[Unit]
-		Description=Create vde_switch
-		Wants=network-online.target
-		After=network-online.target
-
-		[Service]
-		Type=oneshot
-		ExecStart=/usr/bin/vde_switch -t tap0 -s /tmp/vde.ctl -M /tmp/vde.mgmt -mod 666 -d
-		RemainAfterExit=true
-
-		[Install]
-		WantedBy=multi-user.target
-
-	and enable the service:
-
-	systemctl enable vde.service
-
-
-	NOTE: The command line syntax for vde_switch has recently changed. If you have an older version,
-		 you may need to use:
-
-		ExecStart=/usr/bin/vde_switch -t tap0 -s /tmp/vde.ctl -m 666 -M /tmp/vde.mgmt —mgmtmode 666 -d
+\f0\fs24 \cf0 Create a bridge on Debian, RaspiOS Bookworm\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+1. Install the following packages:\
+\
+	iproute2\
+	uml-utilities\
+\
+	If you want to add a VDE switch to the bridge:\
+\
+		libvdeplug-dev\
+		vde2\
+\
+2. Create a bridge called \'93br0\'94  with a static IPv4 address and insert \'93eth0\'94 as a bridge slave:\
+\
+	nmcli con add type bridge ifname br0 con-name br0 ipv4.method manual ipv4.addresses aa.bb.cc.dd/nn ipv4.gateway ee.ff.gg.hh ipv4.dns ii.jj.kk.ll\
+	nmcli con mod br0 bridge.multicast-snooping false bridge.stp false\
+\
+	If you wish to disable IPv6:\
+\
+		nmcli  con mod br0 ipv6.method disable\
+\
+	If you wish to run DECnet on this system, you will need to change the MAC address:\
+\
+		nmcli con mod br0 bridge.mac aa:00:04:00:xx:yy\
+\
+		and also edit /etc/systemd/system/decnet3.service so that it waits for the bridge device\
+		to become available before loading the decnet kernel module:\
+\
+		Change:\
+\
+			After=network.target\
+\
+		To:\
+\
+			Wants=sys-devices-virtual-net-br0.device\
+			After=sys-devices-virtual-net-br0.device\
+\
+	Add eth0 to the bridge:\
+\
+		nmcli con add type bridge-slave ifname eth0 master br0\
+\
+	Reboot\
+\
+\
+3. If you want to add a VDE switch to the bridge:\
+\
+	Create a systemd service file (/etc/systemd/system/vde.service) containing:\
+\
+		[Unit]\
+		Description=Create vde_switch\
+		Wants=sys-devices-virtual-net-br0.device\
+		After=sys-devices-virtual-net-br0.device\
+\
+		[Service]\
+		Type=oneshot\
+		ExecStart=/usr/bin/vde_switch -t tap0 -s /tmp/vde.ctl -M /tmp/vde.mgmt \'97mgmtmode 666 -d\
+		ExecStart=nmcli con add type bridge-slave ifname tap0 master br0\
+		ExecStart=ip link set tap0 up\
+		RemainAfterExit=true\
+\
+		[Install]\
+		WantedBy=multi-user.target\
+\
+	and enable the service:\
+\
+	systemctl enable vde.service\
+\
+	NOTE: The command line syntax for vde_switch has recently changed. If you have an older version,\
+		 you may need to use:\
+\
+	ExecStart=/usr/bin/vde_switch -t tap0 -s /tmp/vde.ctl -m 666 -M /tmp/vde.mgmt \'97mgmtmode 666 -d\
+}
