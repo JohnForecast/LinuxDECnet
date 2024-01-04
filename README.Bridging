@@ -55,7 +55,7 @@ Create a bridge on Debian, RaspiOS Bookworm
 		[Service]
 		Type=oneshot
 		ExecStart=/usr/bin/vde_switch -t tap0 -s /tmp/vde.ctl -m 666 M /tmp/vde.mgmt —mgmtmode 666 -d
-		ExecStart=nmcli con add type bridge-slave ifname tap0 master br0
+		ExecStart=ip link set tap0 master br0
 		ExecStart=ip link set tap0 up
 		RemainAfterExit=true
 
