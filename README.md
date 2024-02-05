@@ -1,5 +1,5 @@
 # LinuxDECnet
-DECnet for Linux updated to run on latest Linux kernel (After DECnet code was removed from kertnel 6.1)
+DECnet for Linux updated to run on latest Linux kernel (After DECnet code was removed from kernel 6.1)
 
 
 README.DECnet
