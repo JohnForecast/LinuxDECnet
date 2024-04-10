@@ -18,7 +18,7 @@ kernel code so could not be installed on kernel 6.1.x or later.
 Distributions tested:
 
 Minimum kernel supported:	4.18.0
-Maximum kernel supported:	6.5.5
+Maximum kernel supported:	6.6.20
 
 Tested distributions:
 
@@ -231,6 +231,13 @@ Kernel module versions
 
 
 Changes from previous Linux DECnet release:
+
+
+    4/10/24
+
+    Fix dnlogin so that character echoing obeys the current setting of the
+    NORMAL-ECHO characteristics (fixes double echoing of characters). Update
+    user code version to 3.3.
 
 
     12/30/23

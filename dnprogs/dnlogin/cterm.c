@@ -218,7 +218,8 @@ static int cterm_process_start_read(char *buf, int len)
         if (debug & 2) DEBUG_CTERM("Q=%d timeout = %d, EE=%d, ZZ=%d\n", Q, timeout, EE, ZZ);
 
         if (flags & 4) tty_clear_typeahead();
-        if (flags & 0x800) tty_set_noecho();
+        if ((flags & 0x800) || (han_char.normal_echo == FALSE))
+                tty_set_noecho();
 
         // CC not happy with this last clause but editors seem to need it.
         if (flags & 0x8 &&
