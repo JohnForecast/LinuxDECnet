@@ -255,14 +255,18 @@ int tty_discard()
         return discard;
 }
 
-void tty_format_cr()
+int tty_format_cr()
 {
         char lf = '\n';
 
         DEBUG_TTY("format_cr, last char was %x\n", last_char);
 
         if (last_char == '\r')
+	{
                 tty_write(&lf, 1);
+		return 1;
+	}
+	return 0;
 }
 
 void tty_set_noecho()

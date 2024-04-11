@@ -81,7 +81,7 @@ static const char *hosttype[] = {
         "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
         "", "",
         "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-        "Unix-dni"
+        "Unix-dni", "Linux"
 };
 
 
@@ -104,7 +104,7 @@ static int send_bindaccept(void)
                 {
                         FOUND_MSG_BINDACCEPT,
                         2,4,0,          /* Version triplet */
-                        7,0,            /* OS = VMS */
+                        193,0,          /* OS = Linux */
                         0,0,0,0,        /* Empty rev string */
                         0,0,0,0,
                         0,0,            /* No logical terminal ID */

@@ -221,13 +221,9 @@ static int cterm_process_start_read(char *buf, int len)
         if ((flags & 0x800) || (han_char.normal_echo == FALSE))
                 tty_set_noecho();
 
-        // CC not happy with this last clause but editors seem to need it.
-        if (flags & 0x8 &&
-            buf[ptr+term_len] != '\n' && buf[ptr+term_len+1] != '\n' && eoprompt)
-        {
-                DEBUG_CTERM("format CR: char1=%x, char2=%x, eoprompt=%d\n", buf[ptr+term_len], buf[ptr+term_len+1], eoprompt);
-                tty_format_cr();
-        }
+	if (flags & 0x8)
+		if (tty_format_cr())
+			skip_next_lf = 1;
 
         if (ZZ==1) tty_set_terminators(buf+ptr, term_len);
         if (ZZ==2) tty_set_default_terminators();

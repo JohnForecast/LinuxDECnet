@@ -46,7 +46,7 @@ extern void tty_set_discard(int onoff);
 extern int  tty_set_escape_proc(int onoff);
 extern void tty_set_uppercase(int onoff);
 extern void tty_allow_edit(int onoff);
-extern void tty_format_cr(void);
+extern int  tty_format_cr(void);
 extern int  tty_get_input_count(void);
 extern int  tty_discard(void);
 

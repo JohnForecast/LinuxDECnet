@@ -233,6 +233,18 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    4/11/24
+
+    dnlogin changes:
+	1. Change OS type in the BindAccept response so that it no longer
+	   claims to be VMS. Use a unique value after "Unix-dni".
+
+	2. Fix Start-Read with the "formatting" flag set so that it no longer
+	   causes input lines to be overwritten.
+
+    Update user code version to 3.4.
+
+
     4/10/24
 
     Fix dnlogin so that character echoing obeys the current setting of the
