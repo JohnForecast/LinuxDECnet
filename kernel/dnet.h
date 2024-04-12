@@ -33,7 +33,7 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.7"
+#define DNET_REVISION   "3.0.8"
 
 struct dn_scp;
 

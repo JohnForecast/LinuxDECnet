@@ -136,8 +136,8 @@ static int dn_routing_rx_long(
         cb->hops = hdr->visit_ct & RT_VISIT_CT;
 
         if (skb->dev != LOOPDEVICE.dev) {
-        	uint8_t *ethaddr = eth_hdr(skb)->h_source;
                 uint8_t onEthernet  = (cb->rt_flags & RT_FLG_IE) ? 1 : 0;
+		uint8_t *ethaddr = onEthernet ? hdr->s_id : eth_hdr(skb)->h_source;
 
                 if (dn_IVprime) {
                         

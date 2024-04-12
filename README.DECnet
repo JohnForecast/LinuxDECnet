@@ -229,8 +229,19 @@ Kernel module versions
 
     3.0.7	Fix data corruption bug when receiving segmented packets
 
+    3.0.8	Fix inbound handling of data packets with the intra-ethernet
+		bit set
+
 
 Changes from previous Linux DECnet release:
+
+
+    4/12/24
+
+    Fix handling of data packets with the intra-ethernet bit set in the route
+    header. The result of this was inbound connections would always use the
+    designated router for all outbound messages resulting in very low
+    performance.
 
 
     4/11/24
