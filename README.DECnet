@@ -232,8 +232,18 @@ Kernel module versions
     3.0.8	Fix inbound handling of data packets with the intra-ethernet
 		bit set
 
+    3.0.9	Fix handling of inbound link service messages when the
+		remote system uses segment or message flow control
 
 Changes from previous Linux DECnet release:
+
+
+    5/2/24
+
+    Fix handling of inbound link service messages when the remote system
+    uses segment or message flow control. The result was that all such
+    messages were discarded and the logical link would hang. The most common
+    case would be communicating with RSX systems.
 
 
     4/12/24

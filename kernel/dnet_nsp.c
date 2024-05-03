@@ -701,7 +701,7 @@ int dn_nsp_rcv_ls(
         fcval = *ptr;
 
         if (seq_next(scp->other.num_rcv, segnum)) {
-		if ((lsflags & NSP_FCVAL_DATA) != 0) {
+		if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_DATA) {
                         switch (lsflags & NSP_FCMOD_MASK) {
 				case NSP_FCMOD_NOC:
 					if (fcval < 0) {
@@ -731,9 +731,11 @@ int dn_nsp_rcv_ls(
 					goto drop;
 			}
 		} else {
-			if (fcval > 0) {
-				scp->other.flowrem += fcval;
-				wakeup = 1;
+			if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_INTR) {
+				if (fcval > 0) {
+					scp->other.flowrem += fcval;
+					wakeup = 1;
+				}
 			}
 		}
                                 
