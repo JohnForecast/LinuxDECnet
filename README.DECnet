@@ -235,7 +235,15 @@ Kernel module versions
     3.0.9	Fix handling of inbound link service messages when the
 		remote system uses segment or message flow control
 
+    3.0.10	Remove timeout check when trying to allocate a node entry
+
+
 Changes from previous Linux DECnet release:
+
+
+    5/3/24
+
+    Remove timeout check when allocating a node entry
 
 
     5/2/24

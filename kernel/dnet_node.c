@@ -50,10 +50,9 @@ struct dn_node_entry *dn_node_lookup(
                 do {
                         if (entry->addr == addr) {
                                 /*
-                                 * Ignore this entry if it has timed out
+				 * Reuse an existing entry.
                                  */
-                                if (time_after(jiffies, entry->timeout))
-                                        break;
+				break;
                         }
                 } while ((entry = entry->next) != NULL);
         }
