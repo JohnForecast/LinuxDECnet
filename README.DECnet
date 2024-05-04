@@ -241,6 +241,12 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    5/4/24
+
+    Change default setting for the MIRROR object to not require
+    user authentication.
+
+
     5/3/24
 
     Remove timeout check when allocating a node entry
