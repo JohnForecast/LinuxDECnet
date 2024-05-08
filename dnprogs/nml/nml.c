@@ -35,6 +35,7 @@
 
 #define PROC_DECNET_DEV         "/proc/net/decnet_dev"
 #define PROC_DECNET_CACHE       "/proc/net/decnet_cache"
+#define PROC_DECNET_COST	"/proc/net/decnet_cost"
 #define PROC_DECNET_NODES	"/proc/net/decnet_nodes"
 #define PROC_DECNET_PHASE	"/proc/net/decnet_phase"
 #define PROC_REVISION		"/proc/net/decnet_revision"
@@ -751,6 +752,8 @@ static void read_circuit_info(
   unsigned char how
 )
 {
+  int cost;
+
   switch (how) {
     case NICE_READ_OPT_SUM:
     case NICE_READ_OPT_STATUS:
@@ -770,6 +773,8 @@ static void read_circuit_info(
 
       if (how == NICE_READ_OPT_CHAR) {
         NICEparamC1(NICE_P_C_TYPE, NICE_P_C_TYPE_ETHER);
+	if (get_value(PROC_DECNET_COST, &cost))
+	  NICEparamDU1(NICE_P_C_COST, cost);
         NICEparamDU2(NICE_P_C_HELLO, hellotmr);
         NICEparamDU2(NICE_P_C_LISTEN, listentmr);
       }

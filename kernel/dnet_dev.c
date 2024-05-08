@@ -201,6 +201,18 @@ static int dn_revision_show(
         return 0;
 }
 
+/*
+ * Display the cost associated with the ethernet device
+ */
+static int dn_cost_show(
+  struct seq_file *seq,
+  void *v
+)
+{
+	seq_printf(seq, "%-3u\n", DNET_COST);
+	return 0;
+}
+
 module_param(dn_nodeaddr, charp, 0);
 MODULE_PARM_DESC(dn_nodeaddr, "The DECnet address of this machine as a string");
 
@@ -413,6 +425,7 @@ int __init dn_dev_init(void)
         proc_create_single("decnet_phase", 0444, init_net.proc_net, &dn_phase_show);
         proc_create_single("decnet_dev", 0444, init_net.proc_net, &dn_dev_show);
         proc_create_single("decnet_revision", 0444, init_net.proc_net, &dn_revision_show);
+	proc_create_single("decnet_cost", 0444, init_net.proc_net, &dn_cost_show);
 #endif
         
         if (rc)
@@ -426,5 +439,6 @@ void __exit dn_dev_exit(void)
         remove_proc_entry("decnet_phase", NULL);
         remove_proc_entry("decnet_dev", NULL);
         remove_proc_entry("decnet_revision", NULL);
+	remove_proc_entry("decnet_cost", NULL);
 #endif
 }

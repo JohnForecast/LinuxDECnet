@@ -35,6 +35,12 @@
  */
 #define DNET_REVISION   "3.0.10"
 
+/*
+ * Define the cost to be returned by network management for the ethernet
+ * device.
+ */
+#define DNET_COST	3
+
 struct dn_scp;
 
 #include <net/sock.h>

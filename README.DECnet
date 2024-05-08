@@ -241,6 +241,15 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    5/8/24
+
+    Add line cost to the circuit characteristics response from dnetnml. It is
+    currently hard-wired to 3 but it would be easy to make it settable if
+    required.
+
+    Update user code version to 3.5
+
+
     5/4/24
 
     Change default setting for the MIRROR object to not require
