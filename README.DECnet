@@ -241,6 +241,16 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    5/28/24
+
+    Add support for "loop" command to both NCP and DNETNML. NCP supports
+    "LOOP NODE", "LOOP CIRCUIT" and "LOOP LINE" so these function can be
+    used in commands issued to remote systems (e.g. VMS, RSX etc) while
+    DNETNML only supports "LOOP LINE".
+
+    Update user code version to 3.6
+
+
     5/8/24
 
     Add line cost to the circuit characteristics response from dnetnml. It is

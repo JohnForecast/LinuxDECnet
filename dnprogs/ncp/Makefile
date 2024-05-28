@@ -6,7 +6,7 @@ include ../Makefile.common
 PROG1=ncp
 MANPAGES1=ncp.1
 PROG1OBJS=ncp.o tables.o show.o nice.o network.o line.o node.o logging.o \
-  circuit.o module.o area.o zero.o copy.o
+  circuit.o module.o area.o zero.o copy.o loop.o params.o
 LIBS=-lreadline -lhistory
 
 all: $(PROG1)

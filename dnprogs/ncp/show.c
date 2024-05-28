@@ -500,7 +500,7 @@ void showCommand(
 
 	NICEget1((uint8_t *)&code);
 	if (code < 0) {
-	  cmdError("show/list", code);
+	  cmdError("show/list", code, NULL);
 	  return;
 	}
 
@@ -565,7 +565,7 @@ void showCommand(
 
 	    NICEget1((uint8_t *)&code);
 	    if (code < 0) {
-	      cmdError("show/list", code);
+	      cmdError("show/list", code, NULL);
 	      return;
 	    }
 

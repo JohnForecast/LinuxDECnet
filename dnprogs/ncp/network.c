@@ -115,6 +115,46 @@ int netConnect(void)
 }
 
 /*
+ * Parse access control keyword parameters
+ */
+char *parseAccessCtrl(
+  struct accessdata_dn *access
+)
+{
+  while (idx < args) {
+    if (vmatch(wds[idx], "user") == 0) {
+      idx++;
+      if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
+	return "username too long";
+      access->acc_userl = strlen(wds[idx]);
+      memcpy(access->acc_user, wds[idx], access->acc_userl);
+      idx++;
+      continue;
+    }
+    if (vmatch(wds[idx], "password") == 0) {
+      idx++;
+      if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
+	return "password too long";
+      access->acc_passl = strlen(wds[idx]);
+      memcpy(access->acc_pass, wds[idx], access->acc_passl);
+      idx++;
+      continue;
+    }
+    if (vmatch(wds[idx], "account") == 0) {
+      idx++;
+      if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
+	return "account too long";
+      access->acc_accl = strlen(wds[idx]);
+      memcpy(access->acc_acc, wds[idx], access->acc_accl);
+      idx++;
+      continue;
+    }
+    break;
+  }
+  return NULL;
+}
+
+/*
  * Parse a nodename/node address with optional access control information.
  * Both DECnet-VMS syntax:
  *
@@ -131,8 +171,10 @@ int netConnect(void)
  *	USER user-id
  *	PASSWORD password
  *	ACCOUNT account
+ *
+ * Returns NULL for success otherwise a pointer to a suitable error message
  */
-static int parseRemote(
+char *parseRemote(
   uint16_t *addr,
   struct accessdata_dn *access
 )
@@ -144,7 +186,7 @@ static int parseRemote(
 #define STATE_DONE	5
   int state = STATE_NODE, n0 = 0, n1 = 0;
   char *str = wds[idx];
-  char sep, term, name[8];
+  char sep, term, name[8], *result;
   uint16_t area = 0, node, valid = 0;
 
   memset(access, 0, sizeof(struct accessdata_dn));
@@ -157,7 +199,7 @@ static int parseRemote(
 	    (str[n0] != '\'') && (str[n0] != '/') &&
 	    (str[n0] != '\0')) {
 	  if (n1 >= (sizeof(name) - 1))
-	    return 0;
+	    return "node name too long";
 
 	  name[n1++] = str[n0++];
 	} else {
@@ -184,7 +226,7 @@ static int parseRemote(
 	    default:
 	      n0++;
 	      if (str[n0++] != ':')
-		return 0;
+		return "invalid character";
 	      state = STATE_DONE;
 	      break;
 	  }
@@ -196,7 +238,7 @@ static int parseRemote(
 	    (str[n0] != '\0') &&
 	    (str[n0] != (term ? term : ':'))) {
 	  if (n1 >= (DN_MAXACCL - 1))
-	    return 0;
+	    return "username too long";
 
 	  access->acc_user[n1++] = str[n0++];
 	} else {
@@ -208,7 +250,7 @@ static int parseRemote(
 	  } else {
 	    if (str[n0++] == ':')
 	      if (str[n0] != ':')
-		return 0;
+		return "invalid character";
 	    state = STATE_DONE;
 	  }
 	}
@@ -219,7 +261,7 @@ static int parseRemote(
 	    (str[n0] != '\0') &&
 	    (str[n0] != (term ? term : ':'))) {
 	  if (n1 >= (DN_MAXACCL - 1))
-	    return 0;
+	    return "password too long";
 
 	  access->acc_pass[n1++] = str[n0++];
 	} else {
@@ -231,7 +273,7 @@ static int parseRemote(
 	  } else {
 	    if (str[n0++] == ':')
 	      if (str[n0] != ':')
-		return 0;
+		return "invalid character";
 	    state = STATE_DONE;
 	  }
 	}
@@ -242,7 +284,7 @@ static int parseRemote(
 	    (str[n0] != '\0') &&
 	    (str[n0] != (term ? term : ':'))) {
 	  if (n1 >= (DN_MAXACCL - 1))
-	    return 0;
+	    return "account too long";
 
 	  access->acc_acc[n1++] = str[n0++];
 	} else {
@@ -254,7 +296,7 @@ static int parseRemote(
 	  } else {
 	    if (str[n0++] == ':')
 	      if (str[n0] != ':')
-		return 0;
+		return "invalid character";
 	    state = STATE_DONE;
 	  }
 	}
@@ -267,36 +309,8 @@ static int parseRemote(
 
   idx++;
 
-  while (idx < args) {
-    if (vmatch(wds[idx], "user") == 0) {
-      idx++;
-      if ((strlen(wds[idx]) >= DN_MAXACCL) || (idx >= args))
-	return 0;
-      access->acc_userl = strlen(wds[idx]);
-      memcpy(access->acc_user, wds[idx], access->acc_userl);
-      idx;
-      continue;
-    }
-    if (vmatch(wds[idx], "password") == 0) {
-      idx++;
-      if ((strlen(wds[idx]) >= DN_MAXACCL) || (idx >= args))
-	return 0;
-      access->acc_passl = strlen(wds[idx]);
-      memcpy(access->acc_pass, wds[idx], access->acc_passl);
-      idx;
-      continue;
-    }
-    if (vmatch(wds[idx], "account") == 0) {
-      idx++;
-      if ((strlen(wds[idx]) >= DN_MAXACCL) || (idx >= args))
-	return 0;
-      access->acc_accl = strlen(wds[idx]);
-      memcpy(access->acc_acc, wds[idx], access->acc_accl);
-      idx;
-      continue;
-    }
-    break;
-  }
+  if ((result = parseAccessCtrl(access)) != NULL)
+    return result;
 
   /*
    * Now we need to determine whether the node was specified as an address
@@ -336,7 +350,7 @@ static int parseRemote(
       if (*str == 0) {
 	if ((node <= 1023) && (area <= 63)) {
 	  *addr = (area << 10) | node;
-	  return 1;
+	  return NULL;
 	}
       }
     }
@@ -351,7 +365,7 @@ notaddr:
 
     while (*str != 0) {
       if (!isalnum(*str))
-	return 0;
+	return "invalid character in node name";
       if (isalpha(*str)) {
 	valid = 1;
 	*str = toupper(*str);
@@ -364,28 +378,32 @@ notaddr:
 
       if ((dp = getnodebyname(name)) != NULL) {
 	memcpy(addr, dp->n_addr, sizeof(uint16_t));
-	return 1;
+	return NULL;
       }
     }
   }
-  return 0;
+  return "node name not in database";
 }
 
-int parseForTell(void)
+char *parseForTell(void)
 {
-  if (parseRemote(&telladdr, &tellaccess)) {
+  char *status;
+
+  if ((status = parseRemote(&telladdr, &tellaccess)) == NULL) {
     tellvalid = 1;
-    return 1;
+    return NULL;
   }
-  return 0;
+  return status;
 }
 
-int parseForSetexec(void)
+char* parseForSetexec(void)
 {
-  if (parseRemote(&setexecaddr, &setexecaccess)) {
+  char *status;
+
+  if ((status = parseRemote(&setexecaddr, &setexecaccess)) == NULL) {
     setexecvalid = 1;
-    return 1;
+    return NULL;
   }
-  return 0;
+  return status;
 }
 

@@ -375,7 +375,7 @@ void NICEvalueDU2(
  */
 void NICEformatResponse(void)
 {
-  char imf[3] = { NICE_RET_INVALID, 0, 0 };
+  uint8_t imf[3] = { NICE_RET_INVALID, 0, 0 };
 
   write(sock, imf, sizeof(imf));
 }
@@ -385,7 +385,7 @@ void NICEformatResponse(void)
  */
 void NICEunsupportedResponse(void)
 {
-  char unsupp[3] = { NICE_RET_UNRECOG, 0, 0 };
+  uint8_t unsupp[3] = { NICE_RET_UNRECOG, 0, 0 };
 
   write(sock, unsupp, sizeof(unsupp));
 }
@@ -395,7 +395,7 @@ void NICEunsupportedResponse(void)
  */
 void NICEtoolongResponse(void)
 {
-  char toolong[3] = { NICE_RET_TOOLONG, 0, 0 };
+  uint8_t toolong[3] = { NICE_RET_TOOLONG, 0, 0 };
 
   write(sock, toolong, sizeof(toolong));
 }
@@ -404,13 +404,69 @@ void NICEtoolongResponse(void)
  * Generate an "Unrecognized component" error response
  */
 void NICEunrecognizedComponentResponse(
-  char component
+  uint8_t component
 )
 {
-  char unrecog[3] = { NICE_RET_BADCOMPONENT, 0, 0 };
+  uint8_t unrecog[3] = { NICE_RET_BADCOMPONENT, 0, 0 };
 
   unrecog[1] = component;
-  write(sock, &unrecog, sizeof(unrecog));
+  write(sock, unrecog, sizeof(unrecog));
+}
+
+/*
+ * Generate an "Unrecognized parameter type" error response
+ */
+void NICEunrecognizedParameterTypeResponse(
+  uint16_t param
+)
+{
+  uint8_t unrecog[3] = { NICE_RET_BADPARAM, 0, 0 };
+
+  unrecog[1] = param & 0xFF;
+  unrecog[2] = (param >> 8) & 0xFF;
+  write(sock, unrecog, sizeof(unrecog));
+}
+
+/*
+ * Generate an "Invalid parameter value" error response
+ */
+void NICEinvalidParameterValueResponse(
+  uint16_t param
+)
+{
+  uint8_t invalid[3] = { NICE_RET_BADVALUE, 0, 0 };
+
+  invalid[1] = param & 0xFF;
+  invalid[2] = (param >> 8) & 0xFF;
+  write(sock, invalid, sizeof(invalid));
+}
+
+/*
+ * Generate a "Mirror link disconnected" error response
+ */
+void NICEmirrorLinkDisconnectedResponse(
+  uint16_t detail
+)
+{
+  uint8_t mirdisc[3] = { NICE_RET_DISCONNECT, 0, 0 };
+
+  mirdisc[1] = detail & 0xFF;
+  mirdisc[2] = (detail >> 8) & 0xFF;
+  write(sock, mirdisc, sizeof(mirdisc));
+}
+
+/*
+ * Generate a "Mirror connect failed" error response
+ */
+void NICEmirrorConnectFailedResponse(
+  uint16_t detail
+)
+{
+  uint8_t mirconn[3] = { NICE_RET_CONNECTERR, 0, 0 };
+
+  mirconn[1] = detail & 0xFF;
+  mirconn[2] = (detail >> 8) & 0xFF;
+  write(sock, mirconn, sizeof(mirconn));
 }
 
 /*
@@ -418,9 +474,19 @@ void NICEunrecognizedComponentResponse(
  */
 void NICEoperationFailureResponse(void)
 {
-  char opfail[3] = { NICE_RET_OPFAIL, 0, 0 };
+  uint8_t opfail[3] = { NICE_RET_OPFAIL, 0, 0 };
 
-  write(sock, &opfail, sizeof(opfail));
+  write(sock, opfail, sizeof(opfail));
+}
+
+/*
+ * Generate a "Bad loopback response" error response
+ */
+void NICEbadLoopbackResponse(void)
+{
+  uint8_t badloop[3] = { NICE_RET_BADRESPONSE, 0, 0 };
+
+  write(sock, badloop, sizeof(badloop));
 }
 
 /*
@@ -428,7 +494,7 @@ void NICEoperationFailureResponse(void)
  */
 void NICEacceptedResponse(void)
 {
-  char accepted = NICE_RET_ACCEPTED;
+  uint8_t accepted = NICE_RET_ACCEPTED;
 
   write(sock, &accepted, sizeof(accepted));
 }
@@ -450,7 +516,7 @@ void NICEsuccessResponse(void)
  */
 void NICEdoneResponse(void)
 {
-  char done = NICE_RET_DONE;
+  uint8_t done = NICE_RET_DONE;
 
   write(sock, &done, sizeof(done));
 }
@@ -477,6 +543,14 @@ int NICEread(void)
   }
 
   return inlen;
+}
+
+/*
+ * Check that there is some data available in the inbound buffer
+ */
+int NICEdataAvailable(void)
+{
+  return inlen != 0;
 }
 
 /*
@@ -510,8 +584,8 @@ int NICEget2(
 }
 
 int NICEgetAI(
-  char *len,
-  char *buf,
+  uint8_t *len,
+  uint8_t *buf,
   int maxlen
 )
 {

@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
+#include <errno.h>
 #include <syslog.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -30,6 +32,8 @@
 #include <netdnet/dnetdb.h>
 #include <fcntl.h>
 #include "nice.h"
+
+extern int verbosity;
 
 #define IDENT_STRING            "Linux DECnet"
 
@@ -195,8 +199,9 @@ static void get_router(void)
               strncpy(routername, dp->n_name, sizeof(routername));
 
           }
-          dnetlog(LOG_DEBUG, "Router is %u.%u (%s) on %s\n",
-                  (router >> 10) & 0x3F, router & 0x3FF, routername, circuit);
+	  if (verbosity > 0)
+            dnetlog(LOG_DEBUG, "Router is %u.%u (%s) on %s\n",
+                    (router >> 10) & 0x3F, router & 0x3FF, routername, circuit);
         }
         break;
       }
@@ -696,12 +701,12 @@ static void read_node_multi(
  * Process read information requests about nodes
  */
 static void read_node(
-  unsigned char option,
-  unsigned char entity
+  uint8_t option,
+  uint8_t entity
 )
 {
   uint16_t addr;
-  char length, name[NICE_MAXNODEL + 1];
+  uint8_t length, name[NICE_MAXNODEL + 1];
 
   scan_links();
   build_nexthop_table();
@@ -716,7 +721,7 @@ static void read_node(
     NICEbackup(sizeof(uint8_t));
     memset(name, 0, sizeof(name));
     if (NICEgetAI(&length, name, NICE_MAXNODEL))
-      read_node_single(0, name, option & NICE_READ_OPT_TYPE);
+      read_node_single(0, (char *)name, option & NICE_READ_OPT_TYPE);
     return;
   }
 
@@ -791,11 +796,11 @@ static void read_circuit_info(
  * Process read information requests about circuits
  */
 static void read_circuit(
-  unsigned char option,
-  unsigned char entity
+  uint8_t option,
+  uint8_t entity
 )
 {
-  char length, name[NICE_MAXCIRCUITL + 1];
+  uint8_t length, name[NICE_MAXCIRCUITL + 1];
 
   if ((signed char)entity > 0) {
     /*
@@ -804,7 +809,7 @@ static void read_circuit(
     NICEbackup(sizeof(uint8_t));
     memset(name, 0, sizeof(name));
     if (NICEgetAI(&length, name, NICE_MAXCIRCUITL)) {
-      if (strcasecmp(name, circuit) == 0)
+      if (strcasecmp((char *)name, circuit) == 0)
         read_circuit_info(option & NICE_READ_OPT_TYPE);
       else NICEunrecognizedComponentResponse(NICE_ENT_CIRCUIT);
     }
@@ -891,7 +896,8 @@ static void read_information(void)
   if (NICEget1(&option) && NICEget1(&entity)) {
     NICEacceptedResponse();
 
-    dnetlog(LOG_DEBUG, "read: option=0x%02x, entity=%d\n", option, entity);
+    if (verbosity > 0)
+      dnetlog(LOG_DEBUG, "read: option=0x%02x, entity=%d\n", option, entity);
 
     switch (option & NICE_READ_OPT_ENTITY) {
       case NICE_ENT_NODE:
@@ -983,12 +989,12 @@ static void zero_node_all(void)
  * Process zero counters for a single or all (known) nodes.
  */
 static void zero_node(
-  unsigned char option,
-  unsigned char entity
+  uint8_t option,
+  uint8_t entity
 )
 {
   uint16_t addr;
-  char length, name[NICE_MAXNODEL + 1];
+  uint8_t length, name[NICE_MAXNODEL + 1];
 
   if (revision[0] >= 3)
     load_node_info();
@@ -1000,7 +1006,7 @@ static void zero_node(
     NICEbackup(sizeof(uint8_t));
     memset(name, 0, sizeof(name));
     if (NICEgetAI(&length, name, NICE_MAXNODEL))
-      zero_node_single(0, name);
+      zero_node_single(0, (char *)name);
     return;
   }
 
@@ -1032,7 +1038,8 @@ static void zero_counters(void)
   if (NICEget1(&option) && NICEget1(&entity)) {
     NICEacceptedResponse();
 
-    dnetlog(LOG_DEBUG, "zero: option=0x%02x, entity=%d\n", option, entity);
+    if (verbosity > 0)
+      dnetlog(LOG_DEBUG, "zero: option=0x%02x, entity=%d\n", option, entity);
 
     switch (option & NICE_ZERO_OPT_ENTITY) {
       case NICE_ENT_NODE:
@@ -1043,6 +1050,246 @@ static void zero_counters(void)
 	break;
     }
     NICEdoneResponse();
+  }
+}
+
+/*
+ * Perform a loop node test.
+ */
+static int loopNode(
+  uint16_t addr,
+  struct accessdata_dn *access,
+  uint16_t count,
+  uint16_t length,
+  uint8_t with
+)
+{
+  int lsock = -1;
+  uint16_t i, remmax;
+  uint8_t sndbuf[NICE_LOOP_MAX_LEN + 1], rcvbuf[NICE_LOOP_MAX_LEN + 1];
+  struct sockaddr_dn saddr;
+  struct optdata_dn opt;
+  socklen_t optlen = sizeof(struct optdata_dn);
+  uint16_t detail = NICE_MIR_DET_UNREACHABLE;
+
+  if (verbosity > 1)
+    dnetlog(LOG_DEBUG, "loop: node %u.%u, count=%u, length=%u, with=%u\n",
+	    (addr >> 10) & 0xFF, addr & 0x3FF, count, length, with);
+
+  memset(&saddr, 0, sizeof(struct sockaddr_dn));
+  saddr.sdn_family = AF_DECnet;
+  saddr.sdn_objnum = DNOBJECT_MIRROR;
+  saddr.sdn_nodeaddrl = sizeof(addr);
+  memcpy(saddr.sdn_nodeaddr, &addr, sizeof(addr));
+
+  if ((lsock = socket(PF_DECnet, SOCK_SEQPACKET, DNPROTO_NSP)) >= 0) {
+    if (access)
+      if (setsockopt(lsock, DNPROTO_NSP, DSO_CONACCESS, access, sizeof(*access)) < 0)
+	goto fail;
+
+    if (connect(lsock, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
+      if (errno == ECONNREFUSED) {
+	struct optdata_dn rejdata;
+	socklen_t rejlen = sizeof(struct optdata_dn);
+
+	if (getsockopt(lsock, DNPROTO_NSP, DSO_CONDATA, &rejdata, &rejlen) == 0) {
+	  switch (rejdata.opt_status) {
+	    case DNSTAT_ACCCONTROL:
+	      detail = NICE_MIR_DET_ACCESS;
+	      break;
+
+	    case DNSTAT_NORESPONSE:
+	      detail = NICE_MIR_DET_NORESP;
+	      break;
+	  }
+	}
+      }
+
+      NICEmirrorConnectFailedResponse(detail);
+      close(lsock);
+      return -1;
+    }
+
+    if ((getsockopt(lsock, DNPROTO_NSP, DSO_CONDATA, &opt, &optlen) < 0) ||
+	(opt.opt_optl != sizeof(uint16_t))) {
+      NICEoperationFailureResponse();
+      close(lsock);
+      return -1;
+    }
+
+    remmax = (opt.opt_data[1] << 8) | opt.opt_data[0];
+    if (length > remmax) {
+      NICEinvalidParameterValueResponse(NICE_P_N_LL);
+      close(lsock);
+      return -1;
+    }
+
+    sndbuf[0] = NICE_LOOP_FUNC_SEND;
+    rcvbuf[0] = NICE_LOOP_FUNC_SUCCESS;
+
+    switch (with) {
+      case NICE_P_N_LW_ZEROES:
+	memset(&sndbuf[1], 0, length);
+	break;
+
+      case NICE_P_N_LW_ONES:
+	memset(&sndbuf[1], 0xFF, length);
+	break;
+
+      case NICE_P_N_LW_MIXED:
+	srandom((unsigned int)time(NULL));
+	for (i = 0; i < length; i++)
+	  sndbuf[i + 1] = random() & 0xFF;
+	break;
+    }
+
+    while ((count-- != 0) && (rcvbuf[0] == NICE_LOOP_FUNC_SUCCESS)) {
+      ssize_t result;
+
+      if ((result = write(lsock, sndbuf, length + 1)) != (length + 1)) {
+	struct optdata_dn discdata;
+	socklen_t disclen = sizeof(struct optdata_dn);
+
+	if (getsockopt(lsock, DNPROTO_NSP, DSO_DISDATA, &discdata, &disclen) ==  0) {
+	  switch (discdata.opt_status) {
+	    case DNSTAT_MANAGEMENT:
+	      detail = NICE_MIR_DET_MGMTABORT;
+	      break;
+
+	    case DNSTAT_ABORTOBJECT:
+	      detail = NICE_MIR_DET_ABORT;
+	      break;
+
+	    case DNSTAT_FAILED:
+	      detail = NICE_MIR_DET_FAILED;
+	      break;
+	  }
+	  NICEmirrorLinkDisconnectedResponse(detail);
+	  close(lsock);
+	  return -1;
+	}
+	goto fail;
+      }
+      if (((result = read(lsock, rcvbuf, length + 1)) != (length + 1)) ||
+	  (rcvbuf[0] != NICE_LOOP_FUNC_SUCCESS) ||
+	  (memcmp(&rcvbuf[1], &sndbuf[1], length) != 0)) {
+	NICEbadLoopbackResponse();
+	close(lsock);
+	return -1;
+      }
+    }
+    close(lsock);
+    return 0;
+  }
+fail:
+  NICEoperationFailureResponse();
+  if (lsock >= 0)
+    close(lsock);
+  return -1;
+}
+
+/*
+ * Process test requests
+ */
+static void test(void)
+{
+  uint8_t option, format, with = NICE_P_N_LW_MIXED;
+  uint16_t param;
+  uint16_t count = NICE_LOOP_DEF_COUNT, length = NICE_LOOP_DEF_LEN;
+
+  if (NICEget1(&option)) {
+    if (verbosity > 0)
+      dnetlog(LOG_DEBUG, "loop: option=0x%02x\n", option);
+
+    if ((option & 0x03) == NICE_LOOP_OPT_NODE) {
+      struct accessdata_dn access, *accp = NULL;
+      uint8_t nodename[6];
+      uint16_t addr;
+
+      memset(&access, 0, sizeof(struct accessdata_dn));
+      memset(&nodename, 0, sizeof(nodename));
+
+      if (!NICEget1(&format) ||
+	  (format > sizeof(nodename))) {
+	NICEformatResponse();
+	return;
+      }
+
+      /*
+       * The node may be specified as a node address or node name
+       */
+      if (format > 0) {
+	uint8_t i;
+	struct nodeent *dp;
+
+	for (i = 0; i < format; i++)
+	  if (!NICEget1(&nodename[i])) {
+	    NICEformatResponse();
+	    return;
+	  }
+
+	if ((dp = getnodebyname((char *)nodename)) == NULL) {
+	  NICEmirrorConnectFailedResponse(NICE_MIR_DET_NONAME);
+	  return;
+	}
+	memcpy(&addr, dp->n_addr, sizeof(uint16_t));
+      } else {
+	if (!NICEget2(&addr)) {
+	  NICEformatResponse();
+	  return;
+	}
+      }
+
+      if ((option & NICE_LOOP_OPT_ACCESS) != 0) {
+	accp = &access;
+
+	if (!NICEgetAI(&access.acc_userl, access.acc_user, DN_MAXACCL) ||
+	    !NICEgetAI(&access.acc_passl, access.acc_pass, DN_MAXACCL) ||
+	    !NICEgetAI(&access.acc_accl, access.acc_acc, DN_MAXACCL))
+	  return;
+      }
+
+      while (NICEdataAvailable()) {
+	if (!NICEget2(&param))
+	  return;
+
+	switch (param) {
+	  case NICE_P_N_LC:
+	    if (!NICEget2(&count))
+	      return;
+	    break;
+
+	  case NICE_P_N_LL:
+	    if (!NICEget2(&length))
+	      return;
+	    if (length > NICE_LOOP_MAX_LEN) {
+	      NICEinvalidParameterValueResponse(NICE_P_N_LL);
+	      return;
+	    }
+	    break;
+
+	  case NICE_P_N_LW:
+	    if (!NICEget1(&with))
+	      return;
+	    if ((with != NICE_P_N_LW_ZEROES) &&
+		(with != NICE_P_N_LW_ONES) &&
+		(with != NICE_P_N_LW_MIXED)) {
+	      NICEinvalidParameterValueResponse(NICE_P_N_LW);
+	      return;
+	    }
+	    break;
+
+	  default:
+	    NICEunrecognizedParameterTypeResponse(param);
+	    return;
+	}
+      }
+
+      if (loopNode(addr, accp, count, length, with) == 0) {
+	NICEsuccessResponse();
+	NICEflush();
+      }
+    } else NICEunsupportedResponse();
   }
 }
 
@@ -1068,7 +1315,7 @@ void process_request(
 
   for (;;) {
     int status = NICEread();
-    unsigned char func;
+    uint8_t func;
 
     if ((status == -1) || (status == 0))
       break;
@@ -1085,10 +1332,13 @@ void process_request(
 	  else NICEunsupportedResponse();
 	  break;
 
+        case NICE_FC_TEST:                      /* Test */
+	  test();
+	  break;
+
         case NICE_FC_DLL:                       /* Request down-line load */
         case NICE_FC_ULD:                       /* Request up-line dump */
         case NICE_FC_BOOT:                      /* Trigger bootstrap */
-        case NICE_FC_TEST:                      /* Test */
         case NICE_FC_CHANGE:                    /* Change parameter */
         case NICE_FC_SYS:                       /* System specific function */
         default:

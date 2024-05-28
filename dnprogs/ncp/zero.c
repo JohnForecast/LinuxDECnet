@@ -108,7 +108,7 @@ void zeroCommand(void)
 
 	NICEget1((uint8_t *)&code);
 	if (code < 0) {
-	  cmdError("zero", code);
+	  cmdError("zero", code, NULL);
 	  return;
 	}
       } else fprintf(stderr, "NICEread() error return (%d)\n", len);

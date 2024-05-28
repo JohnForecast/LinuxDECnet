@@ -35,6 +35,7 @@
 void copyCommand(void)
 {
   uint32_t result;
+  char *status;
   uint8_t option = 0;
   uint16_t addr;
   char executor[100], tempname[sizeof(DECNET_TEMP) + 1];
@@ -86,8 +87,8 @@ void copyCommand(void)
      * Parse the node name or address.
      */
     if (idx < args) {
-      if (!parseForTell()) {
-	fprintf(stderr, "Invalid node name or address\n");
+      if ((status = parseForTell()) != NULL) {
+	fprintf(stderr, "copy - %s\n", status);
 	return;
       }
     } else {
@@ -134,7 +135,7 @@ void copyCommand(void)
       if ((len = NICEread()) > 0) {
 	NICEget1((uint8_t *)&code);
 	if (code < 0) {
-	  cmdError("copy", code);
+	  cmdError("copy", code, NULL);
 	  return;
 	}
       }
@@ -184,7 +185,7 @@ void copyCommand(void)
 	    break;
 
 	  if (code < 0) {
-	    cmdError("copy", code);
+	    cmdError("copy", code, NULL);
 	    fclose(fp);
 	    return;
 	  }

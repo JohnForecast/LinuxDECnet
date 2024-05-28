@@ -52,6 +52,11 @@
 #define NICE_ZERO_OPT_READZERO	0x80		/* Read and Zero */
 #define NICE_ZERO_OPT_ENTITY	0x07		/* Entity field */
 
+#define NICE_LOOP_OPT_NODE	0x00		/* Node type loop test */
+#define NICE_LOOP_OPT_LINE	0x01		/* Line loop test */
+#define NICE_LOOP_OPT_CIRCUIT	0x03		/* Circuit loop test */
+#define NICE_LOOP_OPT_ACCESS	0x80		/* Access control included */
+
 /*
  * Entity type numbers
  */
@@ -235,7 +240,7 @@
 #define NICE_P_C_PSTATE_DYING   3               /*   - DYING */
 #define NICE_P_C_PSTATE_DEAD    4               /*   - DEAD */
 
-#define NICE_P_C_PSSTATE        1011            /* POLLING SUNSTATE (C-1) */
+#define NICE_P_C_PSSTATE        1011            /* POLLING SUBSTATE (C-1) */
 #define NICE_P_C_PSSTATE_ACT    0               /*   - ACTIVE */
 #define NICE_P_C_PSSTATE_INACT  1               /*   - INACTIVE */
 #define NICE_P_C_PSSTATE_DYING  2               /*   - DYING */
@@ -914,6 +919,27 @@
 #define NICE_DETAIL_MGMT_ABO	15		/* Abort by management */
 #define NICE_DETAIL_LOC_SHUTDN	16		/* Local node shut down */
 
+/*
+ * Mirror link error detail
+ */
+#define NICE_MIR_DET_NONAME       0             /* No node name set */
+#define NICE_MIR_DET_INVNAME      1             /* Invalid node name format */
+#define NICE_MIR_DET_UNRECNAME    2             /* Unrecognized node name */
+#define NICE_MIR_DET_UNREACHABLE  3             /* Node unreachable */
+#define NICE_MIR_DET_RESOURCE     4             /* Network resources */
+#define NICE_MIR_DET_REJBYOBJ     5             /* Rejected by object */
+#define NICE_MIR_DET_INVOBJ       6             /* Invalid object name format */
+#define NICE_MIR_DET_UNRECOBJ     7             /* Unrecognized object */
+#define NICE_MIR_DET_ACCESS       8             /* Access control rejected */
+#define NICE_MIR_DET_OBJBUSY      9             /* Object too busy */
+#define NICE_MIR_DET_NORESP      10             /* No response from object */
+#define NICE_MIR_DET_REMSHUT     11             /* Remote node shut down */
+#define NICE_MIR_DET_FAILED      12             /* Node or object failed */
+#define NICE_MIR_DET_DISC        13             /* Disconnect by object */
+#define NICE_MIR_DET_ABORT       14             /* Abort by object */
+#define NICE_MIR_DET_MGMTABORT   15             /* Abort by management */
+#define NICE_MIR_DET_LOCALSHUT   16             /* Local node shut down */
+
 extern void NICEinit(void);
 extern void NICEsock(int);
 extern void NICEclose(void);
@@ -921,6 +947,8 @@ extern void NICEflush(void);
 extern void NICEput1(uint8_t);
 extern void NICEput2(uint16_t);
 extern void NICEputString(char *);
+extern void NICEputBytes(uint8_t, uint8_t *);
+extern void NICEputBlob(uint8_t, uint8_t *);
 extern void NICEparamDU1(uint16_t, uint8_t);
 extern void NICEparamDU2(uint16_t, uint16_t);
 extern void NICEparamAIn(uint16_t, char *);

@@ -706,3 +706,90 @@ struct table copyEntitiesTable = {
   copyEntities, sizeof(copyEntities) / sizeof(struct element)
 };
 
+/*
+ * Loop entities
+ *
+ * Result values:
+ *	Byte 0: Entity type (0 - 5)
+ *	Byte 1: Identifier format
+ *	Byte 2: Loop option
+ *	Byte 3:
+ */
+static struct element loopEntities[] = {
+  { "circuit",
+     PACK4(0, NICE_LOOP_OPT_CIRCUIT, NICE_SFMT_STRING, NICE_ENT_CIRCUIT) },
+  { "line",
+     PACK4(0, NICE_LOOP_OPT_LINE, NICE_SFMT_STRING, NICE_ENT_LINE) },
+  { "executor",
+     PACK4(0, NICE_LOOP_OPT_NODE, NICE_NFMT_EXECUTOR, NICE_ENT_NODE) },
+  { "node",
+     PACK4(0, NICE_LOOP_OPT_NODE, NICE_NFMT_ADDRESS, NICE_ENT_NODE) },
+};
+
+struct table loopEntitiesTable = {
+  loopEntities, sizeof(loopEntities) / sizeof(struct element)
+};
+
+static struct element loopHelp[] = {
+  { "transmit", NICE_P_N_LH_TRANSMIT },
+  { "receive", NICE_P_N_LH_RECEIVE },
+  { "full", NICE_P_N_LH_FULL },
+};
+
+static struct table loopHelpTable = {
+  loopHelp, sizeof(loopHelp) / sizeof(struct element)
+};
+
+static struct element loopWith[] = {
+  { "zeroes", NICE_P_N_LW_ZEROES },
+  { "ones", NICE_P_N_LW_ONES },
+  { "mixed", NICE_P_N_LW_MIXED },
+};
+
+static struct table loopWithTable = {
+  loopWith, sizeof(loopWith) / sizeof(struct element)
+};
+
+/*
+ * Loop circuit parameters
+ */
+static struct paramElement loopCircuitParams[] = {
+  { "assistant node", NICE_P_N_LAN, parseNodename, NULL },
+  { "assistant physical address", NICE_P_N_LAPA, parseMAC, NULL },
+  { "count", NICE_P_N_LC, parseDU2, NULL },
+  { "help", NICE_P_N_LH, parseC1, &loopHelpTable },
+  { "length", NICE_P_N_LL, parseDU2, NULL },
+  { "node", NICE_P_N_LN, parseNodename, NULL },
+  { "physical address", NICE_P_N_PA, parseMAC, NULL },
+  { "with", NICE_P_N_LW, parseC1, &loopWithTable },
+};
+
+struct paramTable loopCircuitParamTable = {
+  loopCircuitParams, sizeof(loopCircuitParams) / sizeof(struct paramElement)
+};
+
+/*
+ * Loop line parameters
+ */
+static struct paramElement loopLineParams[] = {
+  { "count", NICE_P_N_LC, parseDU2, NULL },
+  { "length", NICE_P_N_LL, parseDU2, NULL },
+  { "with", NICE_P_N_LW, parseC1, &loopWithTable },
+};
+
+struct paramTable loopLineParamTable = {
+  loopLineParams, sizeof(loopLineParams) / sizeof(struct paramElement)
+};
+
+/*
+ * Loop node parameters
+ */
+static struct paramElement loopNodeParams[] = {
+  { "count", NICE_P_N_LC, parseDU2, NULL },
+  { "length", NICE_P_N_LL, parseDU2, NULL },
+  { "with", NICE_P_N_LW, parseC1, &loopWithTable },
+};
+
+struct paramTable loopNodeParamTable = {
+  loopNodeParams, sizeof(loopNodeParams) / sizeof(struct paramElement)
+};

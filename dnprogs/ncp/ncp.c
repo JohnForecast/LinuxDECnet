@@ -35,7 +35,8 @@ int idx, args;
 
 int done = 0;
 
-extern void showCommand(int), zeroCommand(void), copyCommand(void);
+extern void showCommand(int), zeroCommand(void), copyCommand(void),
+	     loopCommand(void);
 
 static char *fileerror[] = {
   "Permanent database",
@@ -70,11 +71,12 @@ static char *mirrorerror[] = {
 
 void cmdError(
   char *cmd,
-  int8_t code
+  int8_t code,
+  struct paramTable *params
 )
 {
   char *error = NULL, *error2 = NULL, errorText[64];
-  int16_t detail;
+  int16_t detail = 0;
   uint8_t msg[256];
 
   msg[0] = '\0';
@@ -108,6 +110,22 @@ void cmdError(
 
     case NICE_RET_BADPARAM:
       error = "Unrecognized parameter type";
+
+param_error:
+      if ((detail != 0) && (detail != 65535)) {
+	if (params != NULL) {
+	  uint32_t i;
+
+	  for (i = 0; i < params->count; i++)
+	    if (params->entries[i].id == detail) {
+	      error2 = params->entries[i].words;
+	      goto param_done;
+	    }
+	}
+	error2 = errorText;
+	sprintf(errorText, "Parameter #%u", detail);
+      }
+param_done:
       break;
 
     case NICE_RET_BADVERSION:
@@ -154,7 +172,7 @@ void cmdError(
 
     case NICE_RET_BADVALUE:
       error = "Invalid parameter value";
-      break;
+      goto param_error;
 
     case NICE_RET_PROTOERR:
       error = "Line protocol error";
@@ -188,11 +206,11 @@ void cmdError(
 
     case NICE_RET_NOTAPPLIC:
       error = "Parameter not applicable";
-      break;
+      goto param_error;
 
     case NICE_RET_TOOLONG:
       error = "Parameter value too long";
-      break;
+      goto param_error;
 
     case NICE_RET_HWFAIL:
       error = "Hardware failure";
@@ -216,7 +234,7 @@ void cmdError(
 
     case NICE_RET_MISSING:
       error = "Parameter missing";
-      break;
+      goto param_error;
 
     case NICE_RET_DONE:
       return;
@@ -270,7 +288,7 @@ uint32_t tablefind(
 	goto nomatch;
 
       offset++;
-    } while ((match = index(match, ' ')) != NULL);
+    } while ((match = strchr(match, ' ')) != NULL);
 
     /*
      * Skip over the words we just matched
@@ -288,6 +306,7 @@ nomatch:
 static void process(void)
 {
   uint32_t cmd;
+  char *status;
 
   NICEinit();
 
@@ -297,8 +316,8 @@ static void process(void)
     idx++;
 
     if (idx < args) {
-      if (!parseForTell()) {
-        fprintf(stderr, "Invalid node name or address\n");
+      if ((status = parseForTell()) != NULL) {
+	fprintf(stderr, "tell - %s\n", status);
         return;
       }
     } else {
@@ -332,6 +351,10 @@ static void process(void)
 
 	case CMD_ZERO:
 	  zeroCommand();
+	  break;
+
+	case CMD_LOOP:
+	  loopCommand();
 	  break;
 
 	default:

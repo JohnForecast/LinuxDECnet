@@ -80,6 +80,31 @@ struct valueTable {
   char			*name;
 };
 
+/*
+ * Parameter parse table structures
+ */
+struct paramElement {
+  char			*words;
+  uint16_t		id;
+  char			*(*parser)(void *);
+  void			*arg;
+};
+
+struct paramTable {
+  struct paramElement	*entries;
+  uint32_t		count;
+};
+
+struct minmaxU {
+  unsigned long		min;
+  unsigned long		max;
+};
+
+struct minmax {
+  long			min;
+  long			max;
+};
+
 extern int idx, args;
 extern char *wds[];
 
@@ -98,21 +123,36 @@ extern struct nameTable circuitParamTable[];
 
 extern struct table zeroEntitiesTable;
 
+extern struct table loopEntitiesTable;
+
 extern struct table copyEntitiesTable;
+
+extern struct paramTable loopCircuitParamTable;
+extern struct paramTable loopLineParamTable;
+extern struct paramTable loopNodeParamTable;
 
 extern int vmatch(char *, char *);
 extern uint32_t tablefind(struct table *);
 
 extern int netConnect(void);
 extern uint8_t tellvalid;
-extern int parseForTell(void);
-extern int parseForSetexec(void);
+extern char *parseForTell(void);
+extern char *parseForSetexec(void);
+extern char *parseRemote(uint16_t *, struct accessdata_dn *);
+extern char *parseAccessCtrl(struct accessdata_dn *);
+
+extern int parseTablefind(struct paramTable *);
+extern char *parseC1(void *);
+extern char *parseDU1(void *);
+extern char *parseDU2(void *);
+extern char *parseMAC(void *);
+extern char *parseNodename(void *);
 
 extern void displayCtr(struct nameTable *);
 extern void param2Text(void *, char *, uint16_t);
 extern void displayParam(struct nameTable *);
 
-extern void cmdError(char *, int8_t);
+extern void cmdError(char *, int8_t, struct paramTable *);
 
 #endif
 

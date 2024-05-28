@@ -90,7 +90,7 @@ void NICEput2(
 }
 
 /*
- * Write a string preceeded by the length to the coutbound buffer
+ * Write a string preceeded by the length to the outbound buffer
  */
 void NICEputString(
   char *value
@@ -99,6 +99,34 @@ void NICEputString(
   outbuf[outptr++] = strlen(value);
   memcpy((char *)&outbuf[outptr], value, strlen(value));
   outptr += strlen(value);
+}
+
+/*
+ * Write a counted byte array to the outbound buffer
+ */
+void NICEputBytes(
+  uint8_t count,
+  uint8_t *bytes
+)
+{
+  outbuf[outptr++] = count;
+  if (count != 0) {
+    memcpy((char *)&outbuf[outptr], bytes, count);
+    outptr += count;
+  }
+}
+
+/*
+ * Write an arbitrary sized block to the output buffer (limited to a max of
+ * 255 bytes
+ */
+void NICEputBlob(
+  uint8_t count,
+  uint8_t *bytes
+)
+{
+  memcpy((char *)&outbuf[outptr], bytes, count);
+  outptr += count;
 }
 
 /*
