@@ -39,7 +39,8 @@ void loopCommand(void)
   if ((result = tablefind(&loopEntitiesTable)) != 0) {
     uint8_t option, entity, format;
     uint16_t mode;
-    char *status, *ident = NULL;
+    char *name, *status, *ident = NULL;
+    int type;
     uint16_t addr = 0;
     struct accessdata_dn access;
     struct paramTable *params = &loopNodeParamTable;
@@ -75,10 +76,11 @@ void loopCommand(void)
 	  fprintf(stderr, "loop - %s\n", status);
 	  return;
 	}
+	type = PARSE_ADDRESS;
 	goto common;
 
       case (NICE_ENT_NODE << 8) | NICE_NFMT_ADDRESS:
-	if ((status = parseRemote(&addr, &access)) != NULL) {
+	if ((status = parseRemote(&addr, &name, &type, &access)) != NULL) {
 	  fprintf(stderr, "loop - %s\n", status);
 	  return;
 	}
@@ -97,8 +99,10 @@ void loopCommand(void)
       /*
        * NODE entity (includes EXECUTOR)
        */
-      NICEput1(NICE_NFMT_ADDRESS);
-      NICEput2(addr);
+      if (type == PARSE_ADDRESS) {
+	NICEput1(NICE_NFMT_ADDRESS);
+	NICEput2(addr);
+      } else NICEputString(name);
 
       if ((option & NICE_LOOP_OPT_ACCESS) != 0) {
 	NICEputBytes(access.acc_userl, access.acc_user);

@@ -241,6 +241,15 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    5/29/24
+
+    Fix the "LOOP NODE" command so that if the target node is specified
+    by name, pass the name in the NICE request so that the executor can
+    perform the name ==> address mapping.
+
+    Update user code version to 3.7
+
+
     5/28/24
 
     Add support for "loop" command to both NCP and DNETNML. NCP supports

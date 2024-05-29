@@ -172,10 +172,26 @@ char *parseAccessCtrl(
  *	PASSWORD password
  *	ACCOUNT account
  *
+ * If the input was a node name, rather then a node address, a pointer to
+ * a static character array of the node name is returned via the "name"
+ * parameter otherwise NULL is returned. "name" may be NULL if this
+ * functionality is not required.
+ *
+ * The type of the input is returned via the "type" argument:
+ *
+ *	PARSE_UNKNOWN	- Unknown type (typical if an error is detected)
+ *	PARSE_ADDRESS	- Node address
+ *	PARSE_NAME	- Node name
+ *	PARSE_NONAME	- Node name with no address mapping
+ *
+ * "type" may be NULL if this functionality is not required.
+ *
  * Returns NULL for success otherwise a pointer to a suitable error message
  */
 char *parseRemote(
   uint16_t *addr,
+  char **name,
+  int *type,
   struct accessdata_dn *access
 )
 {
@@ -186,11 +202,17 @@ char *parseRemote(
 #define STATE_DONE	5
   int state = STATE_NODE, n0 = 0, n1 = 0;
   char *str = wds[idx];
-  char sep, term, name[8], *result;
+  char sep, term, *result;
   uint16_t area = 0, node, valid = 0;
+  static char nodename[8];
+
+  if (name != NULL)
+    *name = NULL;
+  if (type != NULL)
+    *type = PARSE_UNKNOWN;
 
   memset(access, 0, sizeof(struct accessdata_dn));
-  memset(name, 0, sizeof(name));
+  memset(nodename, 0, sizeof(nodename));
 
   while (state != STATE_DONE) {
     switch (state) {
@@ -198,10 +220,10 @@ char *parseRemote(
 	if ((str[n0] != ':') && (str[n0] != '\"') &&
 	    (str[n0] != '\'') && (str[n0] != '/') &&
 	    (str[n0] != '\0')) {
-	  if (n1 >= (sizeof(name) - 1))
+	  if (n1 >= (sizeof(nodename) - 1))
 	    return "node name too long";
 
-	  name[n1++] = str[n0++];
+	  nodename[n1++] = str[n0++];
 	} else {
 	  n1 = 0;
 	  switch (str[n0]) {
@@ -316,10 +338,10 @@ char *parseRemote(
    * Now we need to determine whether the node was specified as an address
    * or a node name.
    */
-  str = name;
+  str = nodename;
 
   if (*str != 0) {
-    if (strchr(name, '.') != NULL) {
+    if (strchr(nodename, '.') != NULL) {
       if (!isdigit(*str))
 	goto notaddr;
 
@@ -350,6 +372,8 @@ char *parseRemote(
       if (*str == 0) {
 	if ((node <= 1023) && (area <= 63)) {
 	  *addr = (area << 10) | node;
+	  if (type != NULL)
+	    *type = PARSE_ADDRESS;
 	  return NULL;
 	}
       }
@@ -360,8 +384,8 @@ notaddr:
   /*
    * Try to parse the input as a node name
    */
-  if (strlen(name) <= 6) {
-    str = name;
+  if (strlen(nodename) <= 6) {
+    str = nodename;
 
     while (*str != 0) {
       if (!isalnum(*str))
@@ -376,20 +400,32 @@ notaddr:
     if (valid) {
       struct nodeent *dp;
 
-      if ((dp = getnodebyname(name)) != NULL) {
+      if (name != NULL)
+	*name = nodename;
+
+      if ((dp = getnodebyname(nodename)) != NULL) {
 	memcpy(addr, dp->n_addr, sizeof(uint16_t));
+	if (type != NULL)
+	  *type = PARSE_NAME;
 	return NULL;
       }
+      if (type != NULL)
+	*type = PARSE_NONAME;
+      return NULL;
     }
   }
-  return "node name not in database";
+  return "node name syntax error";
 }
 
 char *parseForTell(void)
 {
-  char *status;
+  int type;
+  char *status = parseRemote(&telladdr, NULL, &type, &tellaccess);
 
-  if ((status = parseRemote(&telladdr, &tellaccess)) == NULL) {
+  if (status == NULL) {
+    if (type == PARSE_NONAME)
+      return "node name not in database";
+
     tellvalid = 1;
     return NULL;
   }
@@ -398,9 +434,13 @@ char *parseForTell(void)
 
 char* parseForSetexec(void)
 {
-  char *status;
+  int type;
+  char *status = parseRemote(&setexecaddr, NULL, &type, &setexecaccess);
 
-  if ((status = parseRemote(&setexecaddr, &setexecaccess)) == NULL) {
+  if (status == NULL) {
+    if (type == PARSE_NONAME)
+      return "node name not in database";
+
     setexecvalid = 1;
     return NULL;
   }

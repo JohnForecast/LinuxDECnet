@@ -16,6 +16,14 @@
 #define __NCP_H__
 
 /*
+ * Node name parse return types
+ */
+#define PARSE_UNKNOWN	-1		/* Unknown */
+#define PARSE_ADDRESS	 0		/* Address in aa.nnnn format */
+#define PARSE_NAME	 1		/* Node name with address mapping */
+#define PARSE_NONAME	 2		/* Node name with no address mapping */
+
+/*
  * Command parse table structures
  */
 struct element {
@@ -138,7 +146,7 @@ extern int netConnect(void);
 extern uint8_t tellvalid;
 extern char *parseForTell(void);
 extern char *parseForSetexec(void);
-extern char *parseRemote(uint16_t *, struct accessdata_dn *);
+extern char *parseRemote(uint16_t *, char **, int *, struct accessdata_dn *);
 extern char *parseAccessCtrl(struct accessdata_dn *);
 
 extern int parseTablefind(struct paramTable *);
