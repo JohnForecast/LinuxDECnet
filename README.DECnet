@@ -241,6 +241,12 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    5/31/24
+
+    Permanently disable building dapfs. It has not been tested or even
+    built for the last 5 years.
+
+
     5/29/24
 
     Fix the "LOOP NODE" command so that if the target node is specified
