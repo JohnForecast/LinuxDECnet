@@ -241,6 +241,11 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    6/4/24
+
+    Update the ncp manpage to include loop commands.
+
+
     5/31/24
 
     Permanently disable building dapfs. It has not been tested or even

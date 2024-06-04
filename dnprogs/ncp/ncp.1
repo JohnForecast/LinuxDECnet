@@ -1,4 +1,4 @@
-.TH NCP 1 "September 2, 2023" "DECnet Utilities"
+.TH NCP 1 "June 4, 2024" "DECnet Utilities"
 .SH NAME
 ncp \- Network Control Program
 .SH SYNOPSIS
@@ -100,10 +100,45 @@ and \fIshow\fP requests will display the same information.
 .br
 .B "\fIknown nodes\fP     \- all nodes known to the target system"
 .br
-.B "\fIline <name>\fP     \- specific line of the target system"
+.B "\fIline <name>\fP     \- specific line on the target system"
 .br
 .B "\fInode <node-id>\fP  \- specific node on the target system"
 .br
+.RE
+.RE
+
+.B "\fIloop\fP \- Perform loopback testing"
+.br
+
+.RS
+.RS
+.B "\fInode <node-id>\fP  \- specific node on the target system"
+
+.RS
+.B "\fI[count <number>] [length <length>] [with <type>]\fP"
+.br
+.RE
+
+.B "\fIcircuit <name>\fP  \- specific circuit on the target system"
+.br
+.RS
+.B "\fI[assistant node <node-id>]\fP"
+.br
+.B "\fI[assistand physical address <macaddress>]\fP"
+.br
+.B "\fI[count <number>] [help <helptype>]\fP"
+.br
+.B "\fI[length <length>] [node <node-id>]\fP"
+.br
+.B "\fI[physical address <macaddress>] [with <type>]\fP"
+.br
+.RE
+
+.B "\fIline <name>\fP     \- specific line on the target system"
+.br
+.RS
+.B "\fI[count <number>] [length <length>] [with <type>]\fP"
+.RE
 .RE
 .RE
 
@@ -132,6 +167,37 @@ and \fIshow\fP requests will display the same information.
 .br
 .RE
 .RE
+
+
+Note when <node-id> is used in a context where a logical link may be created
+(e.g. \fIcopy\fP, \fIloop\fP or \fItell\fP)
+the node name may include access control information  in the VMS format:
+.br
+
+.RS
+node"user password account"[::]
+.br
+.RE
+
+.RS
+or the RSX/Ultrix format:
+.RE
+.br
+
+.rs
+node/user/password/account[::]
+.br
+.RE
+
+or using the \fIuser\fP, \fIpassword\fP and \fIaccount\fP keywords. If multiple
+entries are present, the last one is used.
+
+.SH CAVEATS
+.br
+\fIncp\fP performs it's operations by connecting to the local network management
+listener. Not all commands can be processed by the local listener; in particular
+any commands referencing \fIciruit\fP or \fIline\fP will be rejected.
+.br
 
 .SH EXAMPLES
 .br
