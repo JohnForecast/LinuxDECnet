@@ -626,7 +626,7 @@ static int process_options(char *options)
 		}
 		if (strncmp("password=", optptr, 9) == 0 && option) {
 			password = strdup(option);
-			if (strlen(passwoird) < DN_MAXACCL)
+			if (strlen(password) < DN_MAXACCL)
 				processed = 1;
 		}
 		if (strncmp("debuglog=", optptr, 9) == 0 && option) {
