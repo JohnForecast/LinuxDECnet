@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <assert.h>
 #include <syslog.h>
@@ -57,23 +58,23 @@ struct dapfs_handle
 
 static char mountdir[BUFLEN];
 static int blockmode = 0; // Default to record mode
-char prefix[BUFLEN];
+char prefix[PREFIXLEN];
 int debuglevel = 0;
 
-static const int RAT_DEFAULT = -1; // Use RMS defaults
-static const int RAT_FTN  = 1; // RMS RAT values from fab.h
-static const int RAT_CR   = 2;
-static const int RAT_PRN  = 4;
-static const int RAT_NONE = 0;
+#define RAT_DEFAULT	-1		/* Use RMS defaults */
+#define RAT_FTN		1		/* RMS RAT values from fab.h */
+#define RAT_CR		2
+#define RAT_PRN		4
+#define RAT_NONE	0
 
-static const int RFM_DEFAULT = -1; // Use RMS defaults
-static const int RFM_UDF = 0; // RMS RFM values from fab.h
-static const int RFM_FIX = 1;
-static const int RFM_VAR = 2;
-static const int RFM_VFC = 3;
-static const int RFM_STM = 4;
-static const int RFM_STMLF = 5;
-static const int RFM_STMCR = 6;
+#define RFM_DEFAULT	-1		/* Use RMS defaults */
+#define RFM_UDF		0		/* RMS RFM values from fab.h */
+#define RFM_FIX		1
+#define RFM_VAR		2
+#define RFM_VFC		3
+#define RFM_STM		4
+#define RFM_STMLF	5
+#define RFM_STMCR	6
 
 /* Convert RMS record carriage control into something more unixy */
 static int convert_rms_record(char *buf, int len, struct dapfs_handle *fh)
@@ -164,7 +165,7 @@ static int dapfs_utime(const char *path, struct utimbuf *u)
 static int dapfs_rmdir(const char *path)
 {
 	char dirname[strlen(path)+7];
-	char fullname[VMSNAME_LEN];
+	char fullname[VMSNAME_LEN + 32];
 	char vmsname[VMSNAME_LEN];
 	char reply[BUFLEN];
 	int len;
@@ -202,11 +203,12 @@ static int dapfs_truncate(const char *path, off_t size)
 	int offset;
 	int res;
 	struct RAB rab;
-	char fullname[VMSNAME_LEN];
+	char fullname[PREFIXLEN + VMSNAME_LEN];
 	char vmsname[VMSNAME_LEN];
 	if (debuglevel&1)
 
-		fprintf(stderr, "dapfs_truncate: %s, %lld\n", path, size);
+		fprintf(stderr, "dapfs_truncate: %s, %" PRId64 "\n",
+			 path, size);
 
 	make_vms_filespec(path, vmsname, 0);
 	sprintf(fullname, "%s%s", prefix, vmsname);
@@ -233,7 +235,7 @@ finish:
 
 static int dapfs_mkdir(const char *path, mode_t mode)
 {
-	char fullname[VMSNAME_LEN];
+	char fullname[VMSNAME_LEN + 32];
 	char vmsname[VMSNAME_LEN];
 	char reply[BUFLEN];
 	char *lastbracket;
@@ -273,7 +275,7 @@ static int dapfs_mkdir(const char *path, mode_t mode)
 		return 0;
 }
 
-static int dapfs_statfs(const char *path, struct statfs *stbuf)
+static int dapfs_statfs(const char *path, struct statvfs *stbuf)
 {
 	int len;
 	char reply[BUFLEN];
@@ -305,7 +307,7 @@ static int dapfs_statfs(const char *path, struct statfs *stbuf)
 static int dapfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	RMSHANDLE rmsh;
-	char fullname[VMSNAME_LEN];
+	char fullname[PREFIXLEN + VMSNAME_LEN];
 	char vmsname[VMSNAME_LEN];
 
 	if (debuglevel&1)
@@ -328,7 +330,7 @@ static int dapfs_open(const char *path, struct fuse_file_info *fi)
 {
 	struct dapfs_handle *h;
 	struct FAB fab;
-	char fullname[VMSNAME_LEN];
+	char fullname[PREFIXLEN + VMSNAME_LEN];
 	char vmsname[VMSNAME_LEN];
 
 	if (debuglevel&1)
@@ -388,13 +390,13 @@ static int dapfs_read(const char *path, char *buf, size_t size, off_t offset,
 {
 	int res;
 	size_t to_copy;
-	unsigned int loffset = 0;
 	struct RAB rab;
 	struct dapfs_handle *h = (struct dapfs_handle *)fi->fh;
 	char tmpbuf[RMS_BUF_SIZE];
 
 	if (debuglevel&1)
-		fprintf(stderr, "dapfs_read (%p): %s offset=%lld\n", h->rmsh, path, offset);
+		fprintf(stderr, "dapfs_read (%p): %s offset=%" PRId64 "\n",
+			 h->rmsh, path, offset);
 
 	if (!h) {
 		res = dapfs_open(path, fi);
@@ -409,8 +411,8 @@ static int dapfs_read(const char *path, char *buf, size_t size, off_t offset,
 	memset(&rab, 0, sizeof(rab));
 	if (offset && offset != h->offset) {
 		if (debuglevel&2)
-			fprintf(stderr, "dapfs_read: new offset is %lld, old was %lld\n", offset, h->offset);
-		loffset = (unsigned int)offset;
+			fprintf(stderr, "dapfs_read: new offset is %" PRId64 ", old was %" PRId64 "\n",
+				 offset, h->offset);
 		rab.rab$l_kbf = &offset;
 		rab.rab$b_rac = 6;// Stream
 		rab.rab$b_ksz = 6;// 3x words, like an RFA
@@ -426,14 +428,14 @@ static int dapfs_read(const char *path, char *buf, size_t size, off_t offset,
 		rab.rab$b_rac = 5; // BLOCKFT
 
 	if (debuglevel&1)
-		fprintf(stderr, "dapfs_read: kf space available = %d, free=%d, size=%d\n", kfifo_len(h->kf), kfifo_avail(h->kf), size);
+		fprintf(stderr, "dapfs_read: kf space available = %d, free=%d, size=%zu\n", kfifo_len(h->kf), kfifo_avail(h->kf), size);
 
 	// Fill the buffer so it holds at least enough for us to return
 	// a full buffer to FUSE
 	while (kfifo_len(h->kf) < size && !rms_lasterror(h->rmsh))
 	{
 		if (debuglevel&1)
-			fprintf(stderr, "dapfs_read: size=%d, kfifo_len()=%d\n", size, kfifo_len(h->kf));
+			fprintf(stderr, "dapfs_read: size=%zu, kfifo_len()=%d\n", size, kfifo_len(h->kf));
 
 		// -2 here allows for convert_rms_record to add delimiters
 		res = rms_read(h->rmsh, tmpbuf, kfifo_avail(h->kf) - ((blockmode==0)?2:0), &rab);
@@ -488,7 +490,8 @@ static int dapfs_read(const char *path, char *buf, size_t size, off_t offset,
 		res = -errno;
 
 	if (debuglevel&1)
-		fprintf(stderr, "dapfs_read: returning %d, offset=%lld\n", res, h->offset);
+		fprintf(stderr, "dapfs_read: returning %d, offset=%" PRId64 "\n",
+			 res, h->offset);
 	return res;
 }
 
@@ -618,11 +621,13 @@ static int process_options(char *options)
 		optptr = t + strspn(t, " ");
 		if (strncmp("username=", optptr, 9) == 0 && option) {
 			username = strdup(option);
-			processed = 1;
+			if (strlen(username) < DN_MAXACCL)
+				processed = 1;
 		}
 		if (strncmp("password=", optptr, 9) == 0 && option) {
 			password = strdup(option);
-			processed = 1;
+			if (strlen(passwoird) < DN_MAXACCL)
+				processed = 1;
 		}
 		if (strncmp("debuglog=", optptr, 9) == 0 && option) {
 			debuglevel = atoi(option);
@@ -641,7 +646,8 @@ static int process_options(char *options)
 	if (!password)
 		password = "";
 	if (username)
-		sprintf(prefix, "%s\"%s %s\"", prefix, username, password);
+		sprintf(&prefix[strlen(prefix)], "\"%s %s\"",
+			 username, password);
 
 	free(scratch);
 	return processed;

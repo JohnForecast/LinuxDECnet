@@ -19,9 +19,9 @@ ifeq ($(OSNAME),Linux)
 SUBDIRS+= $(SUBDIRS_LINUX)
 endif
 
-#ifneq ($(wildcard /usr/include/fuse.h),)
-#SUBDIRS+= dapfs
-#endif
+ifneq ($(wildcard /usr/include/fuse.h),)
+SUBDIRS+= dapfs
+endif
 
 all: 	
 	@set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i $@ ; done

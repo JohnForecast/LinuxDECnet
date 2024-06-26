@@ -492,7 +492,7 @@ int dap_rename_file(const char *from, const char *to)
 		// Set prot=RWED on 'from' directory or we can't rename it.
 		// Don't regard this as fatal, subsequent calls will return -EPERM
 		// anyway if it's really wrong.
-		char setprot[BUFLEN];
+		char setprot[2 * VMSNAME_LEN];
 		char reply[BUFLEN];
 		int len;
 

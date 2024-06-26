@@ -154,13 +154,13 @@ check_supported_os() {
 	do
 	    case ${os} in
 		raspbian|debian)
-		    PKGLIST="xz-utils gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev"
+		    PKGLIST="xz-utils gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev -libfuse-dev"
 		    OStype=debian
 		    return 0
 		;;
 
 		fedora)
-		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel"
+		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel -fuse-devel"
 		    OStype=fedora
 
 		    if [ -x ${DNF} ]; then
@@ -294,13 +294,23 @@ check_installed_packages() {
 	    if [ -x ${APTGET} -a -x ${DPKG} ]; then
 		for pkg in ${PKGLIST}
 		do
+		    optional=0
+		    if [ "${pkg:0:1}" = "-" ]; then
+			optional=1
+			pkg=${pkg:1}
+		    fi
+
 		    ${DPKG} -s ${pkg} >/dev/null 2>&1
 		    if [ $? -ne 0 ]; then
 			echo -n "Installing ${pkg} ..."
 			${APTGET} install -y ${pkg} >/dev/null 2>&1
 			if [ $? -ne 0 ]; then
-			    echo "Failed to install package '" ${pkg} "'"
-			    exit 1
+			    if [ ${optional} -ne 0 ]; then
+				echo -n "Failed - skipping ..."
+			    else
+				echo "Failed to install package '" ${pkg} "'"
+				exit 1
+			    fi
 			fi
 			echo
 		    fi
@@ -312,13 +322,23 @@ check_installed_packages() {
 	fedora)
 	    for pkg in ${PKGLIST}
 	    do
+		optional=0
+		if [ "${pkg:0:1}" = "-" ]; then
+		    optional=1
+		    pkg=${pkg:1}
+		fi
+
 		${INST} list installed ${pkg} >/dev/null 2>&1
 		if [ $? -ne 0 ]; then
 		    echo -n "Installing ${pkg} ..."
 		    ${INST} install -y ${pkg} >/dev/null 2>&1
 		    if [ $? -ne 0 ]; then
-			echo "Failed to install package '" ${pkg} "'"
-			exit 1
+			if [ ${optional} -ne 0 ]; then
+			    echo -n "Failed - skipping ..."
+			else
+			    echo "Failed to install package '" ${pkg} "'"
+			    exit 1
+			fi
 		    fi
 		    echo
 		fi
