@@ -1,4 +1,4 @@
-.TH DAPFS 8 "April 2 2008" "DECnet utilities"
+.TH DAPFS 8 "June 27 2024" "DECnet utilities"
 
 .SH NAME
 mount.dapfs \- Mount DAP filesystem over DECnet
@@ -14,7 +14,7 @@ mount.dapfs mounts a DAP filesystem on (probably) a VMS server
 as a directory on a Linux system. It is invoked by the mount command
 when usig the \-t dapfs switch. dapfs use the FUSE (Filesystem in USEr space)
 system.
-.br
+
 The node name specified must exist in /etc/decnet.conf or be a node address. 
 With no options given dapfs will connect using a default DECnet account on
 the remote server.
@@ -22,30 +22,29 @@ the remote server.
 
 .SH OPTIONS
 .TP
-.B username= 
+.TP
+.I username=<name>
 tells dapfs to use this username for the connection.
-.br
-.B password=
+.TP
+.I password=<pwd>
 tells dapfs to use this password for the connection.
-.br
-.B block
+.TP
+.I block
 tells dapfs to return data using block mode rather than record mode. This will
 return the whole of the internal file structure (eg with sequential files you
 could get odd line endings where the record separators live). It is most useful
 for reading binary data.
-.br
+.TP
 .B record
-read data using record mode (the default). 
-.br
-.SH EXAMPLES
-.br
-# mount \-tdapfs zarqon /mnt/vax
-.br
-Mounts the default DECnet account on node ZARQON onto the Linux filesystem /mnt/vax
-.br
+tells dapfs to read data using record mode (the default). 
 
+.SH EXAMPLES
+.TP
+.TP
+# mount \-tdapfs zarqon /mnt/vax
+Mounts the default DECnet account on node ZARQON onto the Linux filesystem /mnt/vax
+.TP
 # mount \-tdapfs alpha1 /mnt/alpha \-ousername=SYSTEM,password=field
-.br
 Mounts the home directory for the user SYSTEM on node ALPHA1, using the password "field" on /mnt/alpha.
 
 .SH CAVEATS
@@ -54,7 +53,7 @@ file size shown by VMS includes the record overhead of RMS, but dapfs shows only
 utilities that get the file size (using stat) then read that many bytes into a buffer will end up with 
 a file padded with zeros. There's not much I can do about this. Later versions of dapfs might include
 an option to disable record access, but I think this is less useful as it would have to be filesystem-wide.
-.br
+
 Seeking doesn't work unless you have a remote server that supports STREAM access to files 
 (currently VMS 7.x seems not to). This means that some utilities (eg unzip) will not work as
 they try to seek inside the file looking for data.
