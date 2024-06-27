@@ -241,6 +241,13 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    6/27/24
+
+    Enable dapfs after fixing multiple build issues
+
+    Update user code version to 3.8
+
+
     6/4/24
 
     Update the ncp manpage to include loop commands.
