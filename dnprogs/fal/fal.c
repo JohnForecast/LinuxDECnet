@@ -349,8 +349,18 @@ int ProcessAttributesMessage(void)
     if (DAPexGetBit(attmenu, DAP_ATTR_ORG))
       remORG = org;
 
-    if (DAPexGetBit(attmenu, DAP_ATTR_RFM))
+    if (DAPexGetBit(attmenu, DAP_ATTR_RFM)) {
+      /*
+       * Validate that only a supported record format is present.
+       */
+      if ((rfm != DAP_RFM_FIX) &&
+	  (rfm != DAP_RFM_VAR) &&
+	  (rfm != DAP_RFM_STM)) {
+	ReportError(DAP_MAC_UNSUPP | DAP_MIC_ATTR_RFM);
+	return 1;
+      }
       remRFM = rfm;
+    }
 
     if (rat != NULL)
       DAPexCopy(rat, remRAT, sizeof(remRAT));

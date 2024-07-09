@@ -241,6 +241,15 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    7/9/24
+
+    Fix bug in fal which failed to return a creation Date/Time descriptor
+    when creating a new file and the client requested it. Not all clients
+    make that request.
+
+    Update user code version to 3.9
+
+
     6/27/24
 
     Enable dapfs after fixing multiple build issues

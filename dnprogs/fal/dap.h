@@ -93,7 +93,8 @@
 #define DAP_OS_WIN_NT           26              /* Windows NT */
 #define DAP_OS_WIN_95           27              /* Windows 95 */
 
-#define DAP_OS_LINUX            192             /* Linux */
+#define DAP_OS_PYDECNET		192		/* PyDECnet */
+#define DAP_OS_LINUX            193             /* Linux */
 
 /*
  * File system type codes

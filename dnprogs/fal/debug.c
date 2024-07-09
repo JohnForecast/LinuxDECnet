@@ -69,6 +69,7 @@ static struct name ostype[] = {
   { "OSF/1", DAP_OS_OSF1 },
   { "Windows NT", DAP_OS_WIN_NT },
   { "Windows 95", DAP_OS_WIN_95 },
+  { "PyDECnet", DAP_OS_PYDECNET },
   { "Linux", DAP_OS_LINUX },
   { NULL }
 },
@@ -296,7 +297,7 @@ shr[] = {
   { NULL }
 },
 display[] = {
-  { "Main sttributes", DAP_DSP_MAIN },
+  { "Main attributes", DAP_DSP_MAIN },
   { "Key definition attributes", DAP_DSP_KEYDEF },
   { "Allocation attributes", DAP_DSP_ALLOC },
   { "Summary attributes", DAP_DSP_SUMMARY },

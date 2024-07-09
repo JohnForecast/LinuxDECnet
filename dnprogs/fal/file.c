@@ -210,6 +210,7 @@ void CreateFile(
       DAPexInit(buf, 6);
       DAPexSetBit(buf, DAP_ATTR_DATATYPE);
       DAPexSetBit(buf, DAP_ATTR_ORG);
+      DAPexSetBit(buf, DAP_ATTR_RFM);
       DAPexDone(buf);
       
       DAPexInit(buf, 2);
@@ -220,11 +221,28 @@ void CreateFile(
       DAPexDone(buf);
 
       DAPbPut(buf, DAP_ORG_SEQ);
+      DAPbPut(buf, remRFM);
       DAPwrite(buf);
     }
 
-    if ((display != NULL) && DAPexGetBit(display, DAP_DSP_NAME))
-      DAPsendName(DAP_NAME_TYPE_FILESPEC, fullpath);
+    if (display != NULL) {
+      if (DAPexGetBit(display, DAP_DSP_DATETIME)) {
+	void *buf = DAPbuildHeader1Len(DAP_MSG_DATETIME);
+	struct stat statbuf;
+
+	memset(&statbuf, 0, sizeof(statbuf));
+	fstat(fileno(fp), &statbuf);
+
+	DAPexInit(buf, 6);
+	DAPexSetBit(buf, DAP_DMNU_CDT);
+	DAPexDone(buf);
+	DAPaddDateTime(buf, &statbuf.st_ctim);
+	DAPwrite(buf);
+      }
+
+      if (DAPexGetBit(display, DAP_DSP_NAME))
+	DAPsendName(DAP_NAME_TYPE_FILESPEC, fullpath);
+    }
     
     DAPsendAcknowledge();
 
