@@ -16,8 +16,10 @@
 #define __DAP_H__
 
 /*
- * This file is based of DAP Version 5.6.0 with some extensions (extra O/S and
- * filesystem types.
+ * This file is based on DAP Version 5.6.0 with some extensions (extra O/S and
+ * filesystem types). However, we have to claim that we are version 7.2.0 so
+ * that OpenVMS will allow us to participate in transferring Stream_LF (and
+ * Stream_CR) files.
  */
 
 #define DAP_EXTEND              0x80            /* EX-n extension indicator */
@@ -114,10 +116,11 @@
 #define DAP_FS_LINUX            192             /* Linux */
 
 /*
- * Protocol version numbers
+ * Protocol version numbers (mostly version 5.6.0 with some 7.2.0
+ * extensions).
  */
-#define DAP_VER_VERNUM          5               /* DAP version number */
-#define DAP_VER_ECONUM          6               /* DAP ECO number */
+#define DAP_VER_VERNUM          7               /* DAP version number */
+#define DAP_VER_ECONUM          2               /* DAP ECO number */
 #define DAP_VER_USRNUM          0               /* Customer modification */
 #define DAP_VER_SOFTVER         0               /* DAP software version */
 #define DAP_VER_USRSOFT         0               /* User software version */
@@ -228,6 +231,12 @@
 #define DAP_RFM_VAR             2               /* Variable length */
 #define DAP_RFM_VFC             3               /* Variable with fixed control */
 #define DAP_RFM_STM             4               /* ASCII stream */
+
+/*
+ * The following are version 7.2 extensions
+ */
+#define DAP_RFM_SLF		5		/* Stream_LF */
+#define DAP_RFM_SCR		6		/* Stream_CR */
 
 /*
  * Record attributes

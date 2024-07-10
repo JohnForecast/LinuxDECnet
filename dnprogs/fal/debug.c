@@ -184,6 +184,8 @@ rfm[] = {
   { "Variable length", DAP_RFM_VAR },
   { "Variable with fixed control", DAP_RFM_VFC },
   { "ASCII stream", DAP_RFM_STM },
+  { "Stream_LF", DAP_RFM_SLF },
+  { "Stream_CR", DAP_RFM_SCR },
   { NULL }
 },
 rat[] = {

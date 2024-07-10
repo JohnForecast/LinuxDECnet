@@ -333,6 +333,16 @@ int GetFileData(void)
             readlen = 512;
           } else eof = 1;
           break;
+
+	case DAP_RFM_SLF:
+	  /*
+	   * For Stream_LF format, we'll send each line in it's own data
+	   * data message. Long lines may occupy multiple messages.
+	   */
+	  if (fgets((char *)dbuf, dataSize, fp) != NULL)
+	    readlen = strlen((char *)dbuf);
+	  else eof = 1;
+	  break;
           
         default:
           /*

@@ -243,6 +243,15 @@ Changes from previous Linux DECnet release:
 
     7/9/24
 
+    Add support for Stream_LF format files in fal. In order to make this
+    work fal must claim to support DAP 7.x.x. This support is mostly
+    reverse engineered since no known copy of the DAP 7.x.x spec exists.
+
+    Update user code version to 3.10
+
+
+    7/9/24
+
     Fix bug in fal which failed to return a creation Date/Time descriptor
     when creating a new file and the client requested it. Not all clients
     make that request.

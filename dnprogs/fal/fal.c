@@ -355,7 +355,8 @@ int ProcessAttributesMessage(void)
        */
       if ((rfm != DAP_RFM_FIX) &&
 	  (rfm != DAP_RFM_VAR) &&
-	  (rfm != DAP_RFM_STM)) {
+	  (rfm != DAP_RFM_STM) &&
+	  (rfm != DAP_RFM_SLF)) {
 	ReportError(DAP_MAC_UNSUPP | DAP_MIC_ATTR_RFM);
 	return 1;
       }
