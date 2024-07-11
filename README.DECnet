@@ -241,6 +241,13 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    7/10/24
+
+    Increase the fal buffer size to the maximum allowed (65535).
+
+    Update user code version to 3.11
+
+
     7/9/24
 
     Add support for Stream_LF format files in fal. In order to make this

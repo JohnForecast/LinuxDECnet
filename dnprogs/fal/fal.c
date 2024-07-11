@@ -23,18 +23,17 @@
 #include <netdnet/dnetdb.h>
 #include "dap.h"
 
-#define BUFSIZ          8192
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 extern int verbosity;
 
-uint8_t sndbuf[BUFSIZ], rcvbuf[BUFSIZ];
+uint8_t sndbuf[DAP_BUFSIZ], rcvbuf[DAP_BUFSIZ];
 
 /*
  * Parameters extracted from received DAP messages.
  */
 uint8_t remOS = 0, remFS = 0, remVersion[5], remSYSCAP[12], remLen = 0;
-uint16_t bufferSize = BUFSIZ;
+uint16_t bufferSize = DAP_BUFSIZ;
 
 uint8_t remDATATYPE[2] = { (1 << DAP_DATATYPE_IMAGE) }, remORG = DAP_ORG_SEQ,
   remRFM = DAP_RFM_FIX, remRAT[3] = { 0 }, remMRS = DAP_MRS_DEFAULT,
@@ -82,7 +81,7 @@ int ProcessConfigurationMessage(void)
   if (config_seen++ == 0) {
     if (DAP2bGet(&bufsz)) {
       if (bufsz != 0)
-        bufferSize = MIN(bufsz, BUFSIZ);
+        bufferSize = MIN(bufsz, DAP_BUFSIZ);
 
       if (DAPbGet(&remOS) && DAPbGet(&remFS)) {
         for (i = 0; i < sizeof(remVersion); i++)
@@ -114,7 +113,7 @@ int ProcessConfigurationMessage(void)
            * correctly.
            */
           buf = DAPbuildHeader(DAP_MSG_CONFIG);
-          DAP2bPut(buf, BUFSIZ);
+          DAP2bPut(buf, DAP_BUFSIZ);
           if (remOS != DAP_OS_TOPS10) {
             DAPbPut(buf, DAP_OS_LINUX);
             DAPbPut(buf, DAP_FS_LINUX);
@@ -623,7 +622,7 @@ void process_request(
 {
   int status;
   
-  DAPinit(sock, rcvbuf, BUFSIZ);
+  DAPinit(sock, rcvbuf, DAP_BUFSIZ);
   
   /*
    * Wait until the first message is available from the client

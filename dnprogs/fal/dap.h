@@ -22,6 +22,8 @@
  * Stream_CR) files.
  */
 
+#define DAP_BUFSIZ		65535		/* Default buffer sizer */
+
 #define DAP_EXTEND              0x80            /* EX-n extension indicator */
 
 /*

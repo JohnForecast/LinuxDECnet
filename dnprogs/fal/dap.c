@@ -524,7 +524,7 @@ struct bufDescr {
   int                   offset;
 } descr[BUFCNT], *buffers = NULL, *pending = NULL;
 
-uint8_t bufspace[BUFSIZ * BUFCNT];
+uint8_t bufspace[DAP_BUFSIZ * BUFCNT];
 
 /*
  * Single byte field routines.
@@ -969,7 +969,7 @@ void DAPinit(
   inbuf = bufin;
   bufsiz = buflen;
 
-  for (i = 0; i < BUFCNT; i++, data += BUFSIZ) {
+  for (i = 0; i < BUFCNT; i++, data += DAP_BUFSIZ) {
     descr[i].data = data;
     descr[i].next = buffers;
     buffers = &descr[i];
