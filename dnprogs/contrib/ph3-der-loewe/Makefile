@@ -3,13 +3,13 @@ export TOP=../..
 
 PROG1=dnetcat
 PROG2=dnetstat
-PROG3=node
+PROG3=dnnode
 
-MANPAGES1=man1/dnetcat.1 man1/dnetstat.1 man1/node.1
+MANPAGES1=man1/dnetcat.1 man1/dnetstat.1 man1/dnnode.1
 
 PROG1OBJS=dnetcat.o
 PROG2OBJS=dnetstat.o
-PROG3OBJS=node.o
+PROG3OBJS=dnnode.o
 
 all: $(PROG1) $(PROG2) $(PROG3)
 

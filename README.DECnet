@@ -241,6 +241,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    7/17/24
+
+    Rename the "node" command to "dnnode" to avoid a conflict with a
+    file in the node.js package.
+
+    Update user code version to 3.12
+
+
     7/10/24
 
     Increase the fal buffer size to the maximum allowed (65535).

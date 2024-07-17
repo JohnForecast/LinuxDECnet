@@ -1,4 +1,4 @@
-//node.c:
+//dnnode.c:
 
 /*
     copyright 2008-2010 Philipp 'ph3-der-loewe' Schafft <lion@lion.leolix.org>
