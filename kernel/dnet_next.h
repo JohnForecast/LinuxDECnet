@@ -59,7 +59,7 @@ struct dn_next_seq_state {
 };
 
 extern int dn_next_init(void);
-extern int dn_next_cleanup(void);
+extern void dn_next_cleanup(void);
 
 extern struct dn_next_hash_bucket *dn_next_cache;
 extern int dn_next_hash_mask;
