@@ -1868,9 +1868,6 @@ MODULE_AUTHOR("John Forecast");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS_NETPROTO(PF_DECnet);
 
-extern int dn_dev_init(void), dn_next_init(void), dn_node_init(void);
-extern void dn_dev_exit(void);
-
 static const char banner[] __initconst = KERN_INFO
         "DECnet Ethernet Endnode for Linux V" DNET_REVISION " (C) 2023 John Forecast\n";
 

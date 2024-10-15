@@ -251,32 +251,6 @@ void dn_next_release(
 }
 
 /*
- * Remove a nexthop cache entry if it is present.
- */
-void dn_next_remove(
-  uint16_t addr
-)
-{
-        uint16_t hash = addr & dn_next_hash_mask;
-        struct dn_next_hash_bucket *bucket = &dn_next_cache[hash];
-        dn_next_entry **ppe;
-
-        spin_lock(&bucket->lock);
-        ppe = &bucket->chain;
-
-        while (*ppe != NULL) {
-                dn_next_entry *nextp = *ppe;
-
-                if (nextp->addr == addr) {
-                        *ppe = nextp->next;
-                        kfree(nextp);
-                        break;
-                }
-        }
-        spin_unlock(&bucket->lock);
-}
-
-/*
  * Scan the nexthop cache and remove entries which have expired. The
  * "forced" argument may be set to force all entries to be removed (e.g. when
  * unloading the module).

@@ -131,7 +131,11 @@ static int parse_addr(
 }
 
 static int dn_node_address_handler(
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+  const struct ctl_table *table,
+#else
   struct ctl_table *table,
+#endif
   int write,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
   void *buffer,

@@ -241,6 +241,12 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    10/14/24
+
+    Changes to allow ther DECnet kernel module to be built for kernel
+    version 6.11 and later.
+
+
     7/17/24
 
     Rename the "node" command to "dnnode" to avoid a conflict with a

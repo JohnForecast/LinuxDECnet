@@ -138,7 +138,7 @@ static void dn_node_scan(
                                 	if (forced || time_after(jiffies, nodep->timeout)) {
                                         	*ppe = nodep->next;
                                         	if (!forced)
-                                                	/*** Log event ***/;
+                                                	/*** Log event ***/{};
                                         	kfree(nodep);
                                 	} else ppe = &nodep->next;
                         	} else ppe = &nodep->next;
@@ -151,7 +151,7 @@ static void dn_node_scan(
 /*
  * Scan the node cache and remove entries which have expired.
  */
-void dn_node_timeout(
+static void dn_node_timeout(
   struct timer_list *unused
 )
 {

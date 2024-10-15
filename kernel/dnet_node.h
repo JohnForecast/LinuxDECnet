@@ -143,6 +143,8 @@ static inline void Count_timeouts(
         Inc32(&nodep->counters.timeouts);
 }
 
+extern dn_next_inbit(void);
+
 struct dn_node_entry *dn_node_lookup(uint16_t);
 void dn_node_release(dn_node_entry *, int);
 void dn_node_update_delay(struct dn_node_entry *, uint32_t);

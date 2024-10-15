@@ -58,6 +58,9 @@ struct dn_next_seq_state {
         int                     hdrDone;
 };
 
+extern dn_next_init(void);
+extern dn_next_cleanup(void);
+
 extern struct dn_next_hash_bucket *dn_next_cache;
 extern int dn_next_hash_mask;
 

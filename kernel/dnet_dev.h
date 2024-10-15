@@ -45,6 +45,9 @@ extern char *dn_ifname;
 extern char *dn_nodeaddr;
 extern char *dn_nodename;
 
+extern int dn_dev_init(void);
+extern void dn_dev_exit(void);
+
 void dn_dev_timer(struct timer_list *);
 uint16_t mtu2blksize(struct net_device *);
 int dn_dev_unknown_mcast(struct sk_buff *);
