@@ -31,7 +31,11 @@ static int dn_create(struct net *, struct socket *, int, int);
 static int dn_release(struct socket *);
 static int dn_bind(struct socket *, struct sockaddr *, int);
 static int dn_connect(struct socket *, struct sockaddr *, int, int);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
+static int dn_accept(struct socket *, struct socket *,  struct proto_accept_arg *);
+#else
 static int dn_accept(struct socket *, struct socket *, int, bool);
+#endif
 static int dn_getname(struct socket *, struct sockaddr *, int);
 static __poll_t dn_poll(struct file *, struct socket *, poll_table *);
 static int dn_ioctl(struct socket *, unsigned int, unsigned long);
@@ -735,6 +739,16 @@ static int dn_connect(
         return err;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
+static int dn_accept(
+  struct socket *sock,
+  struct socket *newsock,
+  struct proto_accept_arg *arg
+)
+{
+	int flags = arg->flags;
+	bool kern = args->kern;
+#else
 static int dn_accept(
   struct socket *sock,
   struct socket *newsock,
@@ -742,6 +756,7 @@ static int dn_accept(
   bool kern
 )
 {
+#endif
         struct sock *sk = sock->sk, *newsk;
         struct dn_scp *scp = DN_SK(sk), *newscp;
         struct sk_buff *skb = NULL;
@@ -870,7 +885,12 @@ static int dn_accept(
         }
         release_sock(newsk);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
+	arg->err = err;
+	return 0;
+#else
         return err;
+#endif
 }
 
 /*
@@ -1802,7 +1822,7 @@ static int dn_sendmsg(
  *              this specific address. Write "*" to zero counter for
  *              all entries in the node cache.
  */
-int dnet_zero_write(
+static int dnet_zero_write(
   struct file *filep,
   char *buf,
   size_t count
@@ -1936,7 +1956,7 @@ static int __init dnet_init(void)
         return rc;
 }
 
-void __exit dnet_exit(void)
+static void __exit dnet_exit(void)
 {
 #ifdef CONFIG_PROC_FS
         remove_proc_entry("decnet_zero_node", NULL);

@@ -144,6 +144,7 @@ static inline void Count_timeouts(
 }
 
 extern int dn_node_init(void);
+extern void dn_node_cleanup(void);
 
 struct dn_node_entry *dn_node_lookup(uint16_t);
 void dn_node_release(dn_node_entry *, int);
