@@ -887,10 +887,8 @@ static int dn_accept(
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
 	arg->err = err;
-	return 0;
-#else
-        return err;
 #endif
+        return err;
 }
 
 /*
