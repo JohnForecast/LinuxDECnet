@@ -747,7 +747,7 @@ static int dn_accept(
 )
 {
 	int flags = arg->flags;
-	bool kern = args->kern;
+	bool kern = arg->kern;
 #else
 static int dn_accept(
   struct socket *sock,
