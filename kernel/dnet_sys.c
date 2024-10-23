@@ -285,7 +285,9 @@ static struct ctl_table dn_table[] = {
                 .extra1 = &min_decnet_maxWindow,
                 .extra2 = &max_decnet_maxWindow,
         },
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,10,0)
         { }
+#endif
 };
 
 void dn_register_sysctl(void)
