@@ -37,6 +37,7 @@ RaspiOS 2023-10-10, kernel 6.1.0 on aarch64 (Raspberry Pi 4B 8GB)
 Ubuntu 23.10, kernel 6.5.0 on x86_64 (ESXi 6.7u3 VM)
 Dietpi 8.22.3, kernel 6.1.21 on arm7l (Raspberry Pi Zero 2 W)
 RaspiOS 2024-03-12, kernel 6.6.20 on aarch64 (Raspberry Pi 5 8GB)
+RaspiOS 2024-11-19, kernel 6.6.62 on aarch64 (Raspberry Pi 5 8GB)
 
 Changes from RaspbianDECnet:
 
