@@ -242,6 +242,15 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    02/18/25
+
+    There was an incorrect length field in message enabling escape
+    recognition. Most client seem to ignore this error but "set host"
+    on RSX-11M+ disconnected the logical link.
+
+    Update user code version to 3.13
+
+
     10/22/24
 
     Second pass at support for kernel version 6.10 and later.

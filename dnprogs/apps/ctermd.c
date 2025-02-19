@@ -53,7 +53,7 @@ void cterm_child(int s)
 void cterm_setchar(void)
 {
         char    cterm_setchar_msg[] = { 0x09,0x00,      /* common data  */
-                                        0x0f,0x00,      /* Length       */
+                                        0x0d,0x00,      /* Length       */
                                         0x0b,0x00,
                                         0x06,0x02,      /* Input ESC seq*/
                                                         /* Recognition  */
