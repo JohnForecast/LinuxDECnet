@@ -246,6 +246,17 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    02/19/25
+
+    ctermd changes:
+	1. No longer claim to be a VMS system. Uses the next value after
+	   "Unix-dni" (193).
+
+	2. No longer set up ^Y as an interrupt character just like ^C.
+
+    Update user code version to 3.14
+
+
     02/18/25
 
     There was an incorrect length field in message enabling escape

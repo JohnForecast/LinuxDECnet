@@ -39,6 +39,33 @@
 
 #include "dn_endian.h"
 
+/* Foundation services messages */
+#define FOUND_MSG_BIND        1
+#define FOUND_MSG_UNBIND      2
+#define FOUND_MSG_BINDACCEPT  4
+#define FOUND_MSG_ENTERMODE   5
+#define FOUND_MSG_EXITMODE    6
+#define FOUND_MSG_CONFIRMMODE 7
+#define FOUND_MSG_NOMODE      8
+#define FOUND_MSG_COMMONDATA  9
+#define FOUND_MSG_MODEDATA   10
+
+/* CTERM message numbers */
+#define CTERM_MSG_INITIATE               1
+#define CTERM_MSG_START_READ             2
+#define CTERM_MSG_READ_DATA              3
+#define CTERM_MSG_OOB                    4
+#define CTERM_MSG_UNREAD                 5
+#define CTERM_MSG_CLEAR_INPUT            6
+#define CTERM_MSG_WRITE                  7
+#define CTERM_MSG_WRITE_COMPLETE         8
+#define CTERM_MSG_DISCARD_STATE          9
+#define CTERM_MSG_READ_CHARACTERISTICS  10
+#define CTERM_MSG_CHARACTERISTICS       11
+#define CTERM_MSG_CHECK_INPUT           12
+#define CTERM_MSG_INPUT_COUNT           13
+#define CTERM_MSG_INPUT_STATE           14
+
 static  struct  sockaddr_dn             sockaddr;
 static  char                            *line;
 static  int                             s,t,net,pty,len;
@@ -52,19 +79,16 @@ void cterm_child(int s)
 /*-----------------------------------------------------------------------*/
 void cterm_setchar(void)
 {
-        char    cterm_setchar_msg[] = { 0x09,0x00,      /* common data  */
-                                        0x0d,0x00,      /* Length       */
-                                        0x0b,0x00,
-                                        0x06,0x02,      /* Input ESC seq*/
-                                                        /* Recognition  */
-                                        0x01,
-                                        0x07,0x02,      /*output ESC seq*/
-                                                        /* Recognition  */
-                                        0x01,
-
-                                        0x02,0x02,0x19,
-                                        0xff,0x00
-                                      };
+	char	cterm_setchar_msg[] =
+			{
+			  FOUND_MSG_COMMONDATA, 0,	/* Common data */
+			  0x08, 0x00,			/* Length */
+			  CTERM_MSG_CHARACTERISTICS, 0,
+			  0x06, 0x02,			/* Enable input ESC */
+			  0x01,				/*   seq recognition */
+			  0x07, 0x02,			/* Enable output ESC */
+			  0x01				/*   seq recognition */
+			};
 
         if (write(net,cterm_setchar_msg,sizeof(cterm_setchar_msg)) <  0)
         {
@@ -75,15 +99,28 @@ void cterm_setchar(void)
 /*-----------------------------------------------------------------------*/
 void cterm_bind(void)
 {
-        char    cterm_bind_msg[] = {0x01,0x02,0x04,0x00,0x07,0x00,0x10,0x00};
-        char    cterm_init_msg[] = {0x09,0x00,          /* common data */
-                                    0x1b,0x00,          /* Block length*/
-                                    0x01,0x00,          /* init messg */
-                                    0x01,0x04,0x00,     /* Version     */
-                                    0,0,0,0,0,0,0,0,    /* descrip     */
-                                    0x01,0x02,0x00,0x02,
-                                    0x02,0x02,0xf4,0x03,
-                                    0x03,0x04,0xfe,0x7f,0x00,0x00};
+	char	cterm_bind_msg[] =
+			{
+			  FOUND_MSG_BIND,		/* Bind request */
+			  0x02, 0x04,0x00,		/* Version */
+			  193, 0,			/* OS = Linux */
+			  0x10, 0x00			/* CTERM protocol */
+			};
+	char	cterm_init_msg[] =
+			{
+			  FOUND_MSG_COMMONDATA, 0,	/* Common data */
+			  0x1b, 0x00,			/* Length */
+			  CTERM_MSG_INITIATE, 0,	/* Initiate */
+			  0x01, 0x04, 0x00,		/* Version */
+			  0x00, 0x00, 0x00, 0x00,	/* Revision */
+			  0x00, 0x00, 0x00, 0x00,
+			  0x01,				/* Max msg size */ 
+			    0x02, 0x00, 0x02,
+			  0x02,				/* Max input buf size */
+			    0x02, 0xf4, 0x03,
+			  0x03,				/* Supported msgs */
+			    0x04, 0xfe, 0x7f, 0x00, 0x00
+			};
         char    buf[512];
 
         if (write(net,cterm_bind_msg,sizeof(cterm_bind_msg)) < 0)
@@ -173,34 +210,56 @@ void cterm_purge(void)
 /*-----------------------------------------------------------------------*/
 void cterm_unread (void)
 {
-        char    cterm_unread_msg[] = {  0x09,0x00,0x02,0x00,0x05,0x00 };
+	char	cterm_unread_msg[] =
+			{
+			  FOUND_MSG_COMMONDATA, 0,	/* Common data */
+			  0x02, 0x00,			/* Length */
+			  CTERM_MSG_UNREAD,		/* Unread */
+			  0				/* Unconditional */
+			};
+
         write(net,cterm_unread_msg,sizeof(cterm_unread_msg));
         read_present=0;
 }
 /*-----------------------------------------------------------------------*/
 void cterm_read (void)
 {
-        char    cterm_stread_msg[] = {  0x09,0x00,0x31,0x00,
-                                        0x02,
-                                        0x40,0x4A,0x02,
-                                        0xa0,0x00,0x00,0x00,
-                                        0x00,0x00,0x00,0x00,
-                                        0x00,0x00,0x00,0x00,
-                                        0x20,
-                                        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                                        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                                        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                                        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
-                                     };
+	char	cterm_stread_msg[] =
+			{
+			  FOUND_MSG_COMMONDATA, 0,	/* Mode data */
+			  0x31, 0x00,			/* Length */
+			  CTERM_MSG_START_READ,		/* Start read */
+			  0x40, 0x4a, 0x02,		/* Flags */
+			  0xa0, 0x00, 0x00, 0x00,	/* Parameters */
+			  0x00, 0x00, 0x00, 0x00,
+			  0x00, 0x00, 0x00, 0x00,
+			  0x20,				/* Termination set */
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff,
+			  0xff, 0xff, 0xff, 0xff
+			};
+
         write(net,cterm_stread_msg,sizeof(cterm_stread_msg));
         read_present=1;
 }
 /*-----------------------------------------------------------------------*/
 void cterm_write (char *buf)
 {
-        char    cterm_write_msg[] = {   0x09,0x00,
-                                        0x00,0x00,
-                                        0x07,0x30,0x00,0x00,0x00};
+	char	cterm_write_msg[] =
+			{
+			  FOUND_MSG_COMMONDATA, 0,	/* Common data */
+			  0x00, 0x00,			/* Length - later */
+			  CTERM_MSG_WRITE,		/* Write */
+			  0x30,				/* Flags */
+			  0x00,				/* Prefix value */
+			  0x00,				/* Postfix value */
+			  0x00				/* Data */
+			};
         char    lclbuf[1400];
         short   *blklen;
         int     wrtlen;
@@ -268,21 +327,24 @@ void cterm (void)
 
                         switch (buf[4])
                         {
-                        case 0x03:
-                                if ( (buf[12] == 0x19) || (buf[12] == 3) )
-                                {
-                                        buf[12]=0x03;
-                                        cterm_purge();
-                                }
+			case CTERM_MSG_READ_DATA:
+				/*
+				 * Check for ^C
+				 */
+				if (buf[12] == 3)
+					cterm_purge();
+
                                 write(pty,&buf[12],cnt-12);
                                 cterm_read();
                                 break;
-                        case 0x04:
-                                if ( (buf[6] == 0x19) || (buf[6] == 3) )
-                                {
-                                        buf[6]=0x03;
+
+			case CTERM_MSG_OOB:
+				/*
+				 * Check for ^C
+				 */
+				if (buf[6] == 3)
                                         cterm_purge();
-                                }
+
                                 write(pty,&buf[6],1);
                                 cterm_read();
                         }
