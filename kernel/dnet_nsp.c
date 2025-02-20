@@ -350,7 +350,6 @@ static int dn_nsp_process_ack(
                 skb_pull(skb, sizeof(uint16_t));
                 ptr++;
                 len += sizeof(uint16_t);
-                ack &= ~NSP_ACK_CROSS;
                 
                 if (oth)
                         ack ^= NSP_ACK_CROSS;
@@ -362,7 +361,6 @@ static int dn_nsp_process_ack(
                 if (((ack = le16_to_cpu(*ptr)) & NSP_ACK_PRESENT) != 0) {
                         skb_pull(skb, sizeof(uint16_t));
                         len += sizeof(uint16_t);
-                        ack |= NSP_ACK_CROSS;
                         
                         if (oth)
                                 ack ^= NSP_ACK_CROSS;

@@ -238,6 +238,10 @@ Kernel module versions
 
     3.0.10	Remove timeout check when trying to allocate a node entry
 
+    3.0.11	Fix cross-channel ack handling. If an interrupt/link service
+		message was received and the only ack present was a cross-
+		channel one (for the data channel), the ack would be applied
+		to the interrupt/link service channel.
 
 Changes from previous Linux DECnet release:
 
