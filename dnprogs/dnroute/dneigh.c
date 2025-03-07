@@ -107,7 +107,7 @@ int proc_file (FILE * fh) {
  int blocksize;
  int area, node;
 
- if ( fgets(buf, 1024, fh) == NULL ) {
+ if ( fgets(buf, sizeof(buf), fh) == NULL ) {
   fprintf(stderr, "Error: can not read banner from file\n");
   return -1;
  }
@@ -132,7 +132,7 @@ int cat (FILE * fh) {
  char buf[1024];
  int len;
 
- while ((len = fread(buf, 1, 1024, fh))) {
+ while ((len = fread(buf, 1, sizeof(buf), fh))) {
   fwrite(buf, 1, len, stdout);
  }
 
