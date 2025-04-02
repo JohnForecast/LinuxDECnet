@@ -93,32 +93,32 @@ SESTATUS=`which sestatus`
 if [ ! -z "${SESTATUS}" ]; then
     ${SESTATUS} | ${GREP} "SELinux status" | ${GREP} "enabled" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-	${SESTATUS} | ${GREP} "Current mode" | ${GREP} "enforcing" >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-	    while ${TRUE} ; do
-	        echo "SELinux is installed on this system and running in 'Enforcing' mode. DECnet"
-	        echo "will only be able run on this system if you change the mode to 'permissive'"
-	        echo "or 'disabled'"
-		echo
+        ${SESTATUS} | ${GREP} "Current mode" | ${GREP} "enforcing" >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            while ${TRUE} ; do
+                echo "SELinux is installed on this system and running in 'Enforcing' mode. DECnet"
+                echo "will only be able run on this system if you change the mode to 'permissive'"
+                echo "or 'disabled'"
+                echo
 
-	        read -p "Do you want to continue (Yes/No)? [Yes] " Cont
-	        if [ -z "${Cont}" ]; then
-	            Cont=Yes
-	        fi
+                read -p "Do you want to continue (Yes/No)? [Yes] " Cont
+                if [ -z "${Cont}" ]; then
+                    Cont=Yes
+                fi
 
-	        case ${Cont} in
-		    [Yy]es|[Nn]o)
-			break
-		        ;;
-	        esac
-	        echo "Invalid Response"
-	        echo
-	    done
-	
-	    if [ "${Cont}" = "No" -o "${Cont}" = "no" ]; then
-	        exit 0
-	    fi	
-	fi
+                case ${Cont} in
+                    [Yy]es|[Nn]o)
+                        break
+                        ;;
+                esac
+                echo "Invalid Response"
+                echo
+            done
+        
+            if [ "${Cont}" = "No" -o "${Cont}" = "no" ]; then
+                exit 0
+            fi  
+        fi
     fi
 fi
 
@@ -128,68 +128,68 @@ fi
 
 check_supported_os() {
     if [ "${HAVE_PACKAGES}" != "1" ]; then
-	test -e /etc/os-release && os_release='/etc/os-release'
-	if [ -z "${os_release}" ]; then
-	    test -e /usr/lib/os-release && os_release='/usr/lib/os-release'
-	    if [ -z "${os_release}" ]; then
-		echo "Unable to determine which distribution is installed on"
-		echo "this system. Manually install the following packages and"
-		echo "re-run this script with the 'HAVE_PACKAGES=1' override."
-		echo
-		echo "  gcc g++ git iproute2 libssl-dev make linux-libc-dev"
-		echo "  libncurses-dev"
-		echo
-		echo "along with any packages this directibution needs for"
-		echo "kernel module development"
-		echo
-		exit 1
-	    fi
-	fi
+        test -e /etc/os-release && os_release='/etc/os-release'
+        if [ -z "${os_release}" ]; then
+            test -e /usr/lib/os-release && os_release='/usr/lib/os-release'
+            if [ -z "${os_release}" ]; then
+                echo "Unable to determine which distribution is installed on"
+                echo "this system. Manually install the following packages and"
+                echo "re-run this script with the 'HAVE_PACKAGES=1' override."
+                echo
+                echo "  gcc g++ git iproute2 libssl-dev make linux-libc-dev"
+                echo "  libncurses-dev"
+                echo
+                echo "along with any packages this directibution needs for"
+                echo "kernel module development"
+                echo
+                exit 1
+            fi
+        fi
 
-	source ${os_release}
+        source ${os_release}
 
-	OS_list="${ID} ${ID_LIKE}"
+        OS_list="${ID} ${ID_LIKE}"
 
-	for os in ${OS_list}
-	do
-	    case ${os} in
-		raspbian|debian)
-		    PKGLIST="xz-utils gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev -libfuse-dev"
-		    OStype=debian
-		    return 0
-		;;
+        for os in ${OS_list}
+        do
+            case ${os} in
+                raspbian|debian)
+                    PKGLIST="xz-utils gcc g++ git iproute2 libssl-dev make linux-libc-dev libncurses-dev libreadline-dev -libfuse-dev"
+                    OStype=debian
+                    return 0
+                ;;
 
-		fedora)
-		    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel -fuse-devel"
-		    OStype=fedora
+                fedora)
+                    PKGLIST="gcc gcc-c++ git iproute openssl-devel make glibc-devel ncurses-devel readline-devel -fuse-devel"
+                    OStype=fedora
 
-		    if [ -x ${DNF} ]; then
-			INST=${DNF}
-			return 0
-		    fi
-		    if [ -x ${YUM} ]; then
-			INST=${YUM}
-			return 0;
-		    fi
-		    echo "An executable DNF or YUM is not installed on this"
-		    echo "system. Unable to proceed."
-		    exit 1
-		    ;;
-	    esac
-	done
+                    if [ -x ${DNF} ]; then
+                        INST=${DNF}
+                        return 0
+                    fi
+                    if [ -x ${YUM} ]; then
+                        INST=${YUM}
+                        return 0;
+                    fi
+                    echo "An executable DNF or YUM is not installed on this"
+                    echo "system. Unable to proceed."
+                    exit 1
+                    ;;
+            esac
+        done
 
-	echo "This system is running the " ${ID} " distribution which is not"
-	echo "supported by this script. You can try manually installing the"
-	echo "following packages and re-run this script with the"
-	echo "'HAVE_PACKAGES=1' override."
-	echo
-	echo "  gcc g++ git iproute2 libssl-dev make linux-libc-dev"
-	echo "  libncurses-dev"
-	echo
-	echo "along with any packages this directibution needs for"
-	echo "kernel module development"
-	echo
-	exit 1
+        echo "This system is running the " ${ID} " distribution which is not"
+        echo "supported by this script. You can try manually installing the"
+        echo "following packages and re-run this script with the"
+        echo "'HAVE_PACKAGES=1' override."
+        echo
+        echo "  gcc g++ git iproute2 libssl-dev make linux-libc-dev"
+        echo "  libncurses-dev"
+        echo
+        echo "along with any packages this directibution needs for"
+        echo "kernel module development"
+        echo
+        exit 1
     fi
 }
 
@@ -226,10 +226,10 @@ check_name() {
             echo "DECnet node names may be up to 6 alphanumeric characters"
             return 0
         fi
-	if [ `${EXPR} "$1" : '[0-9]*'` -eq "`${EXPR} length "$1"`" ]; then
-	    echo "DECnet node names must include at least 1 alpha character"
-	    return 0
-	fi
+        if [ `${EXPR} "$1" : '[0-9]*'` -eq "`${EXPR} length "$1"`" ]; then
+            echo "DECnet node names must include at least 1 alpha character"
+            return 0
+        fi
         return 1
     fi
     return 0
@@ -259,30 +259,30 @@ set_default_interface() {
 
 check_headers() {
     if [ "${HAVE_HEADERS}" = "1" ]; then
-	if [ -d /lib/modules/$(uname -r)/source/include ]; then
-	    return
-	fi
+        if [ -d /lib/modules/$(uname -r)/source/include ]; then
+            return
+        fi
     fi
 
     case ${OStype} in
-	debian)
-	    if [ -x ${APT} ]; then
-		${APT} list 2>/dev/null | ${GREP} raspberrypi-kernel-headers >/dev/null 2>&1
-		if [ $? -eq 0 ]; then
-		    PKGLIST="${PKGLIST} raspberrypi-kernel-headers"
-		    return
-		fi
-	    fi
-	    PKGLIST="${PKGLIST} linux-headers-$(uname -r)"
-	    ;;
+        debian)
+            if [ -x ${APT} ]; then
+                ${APT} list 2>/dev/null | ${GREP} raspberrypi-kernel-headers >/dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    PKGLIST="${PKGLIST} raspberrypi-kernel-headers"
+                    return
+                fi
+            fi
+            PKGLIST="${PKGLIST} linux-headers-$(uname -r)"
+            ;;
 
-	fedora)
-	    if [ "${CPUtype}" = "aarch64" ]; then
-		PKGLIST="${PKGLIST} kernel-devel-$(uname -r)"
-	    else
-		PKGLIST="${PKGLIST} kernel-devel"
-	    fi
-	    ;;
+        fedora)
+            if [ "${CPUtype}" = "aarch64" ]; then
+                PKGLIST="${PKGLIST} kernel-devel-$(uname -r)"
+            else
+                PKGLIST="${PKGLIST} kernel-devel"
+            fi
+            ;;
     esac
 }
 
@@ -290,61 +290,61 @@ check_installed_packages() {
     echo "Checking required packages are installed..."
 
     case ${OStype} in
-	debian)
-	    if [ -x ${APTGET} -a -x ${DPKG} ]; then
-		for pkg in ${PKGLIST}
-		do
-		    optional=0
-		    if [ "${pkg:0:1}" = "-" ]; then
-			optional=1
-			pkg=${pkg:1}
-		    fi
+        debian)
+            if [ -x ${APTGET} -a -x ${DPKG} ]; then
+                for pkg in ${PKGLIST}
+                do
+                    optional=0
+                    if [ "${pkg:0:1}" = "-" ]; then
+                        optional=1
+                        pkg=${pkg:1}
+                    fi
 
-		    ${DPKG} -s ${pkg} >/dev/null 2>&1
-		    if [ $? -ne 0 ]; then
-			echo -n "Installing ${pkg} ..."
-			${APTGET} install -y ${pkg} >/dev/null 2>&1
-			if [ $? -ne 0 ]; then
-			    if [ ${optional} -ne 0 ]; then
-				echo -n "Failed - skipping ..."
-			    else
-				echo "Failed to install package '" ${pkg} "'"
-				exit 1
-			    fi
-			fi
-			echo
-		    fi
-		done
-		return 1
-	    fi
-	    ;;
+                    ${DPKG} -s ${pkg} >/dev/null 2>&1
+                    if [ $? -ne 0 ]; then
+                        echo -n "Installing ${pkg} ..."
+                        ${APTGET} install -y ${pkg} >/dev/null 2>&1
+                        if [ $? -ne 0 ]; then
+                            if [ ${optional} -ne 0 ]; then
+                                echo -n "Failed - skipping ..."
+                            else
+                                echo "Failed to install package '" ${pkg} "'"
+                                exit 1
+                            fi
+                        fi
+                        echo
+                    fi
+                done
+                return 1
+            fi
+            ;;
 
-	fedora)
-	    for pkg in ${PKGLIST}
-	    do
-		optional=0
-		if [ "${pkg:0:1}" = "-" ]; then
-		    optional=1
-		    pkg=${pkg:1}
-		fi
+        fedora)
+            for pkg in ${PKGLIST}
+            do
+                optional=0
+                if [ "${pkg:0:1}" = "-" ]; then
+                    optional=1
+                    pkg=${pkg:1}
+                fi
 
-		${INST} list installed ${pkg} >/dev/null 2>&1
-		if [ $? -ne 0 ]; then
-		    echo -n "Installing ${pkg} ..."
-		    ${INST} install -y ${pkg} >/dev/null 2>&1
-		    if [ $? -ne 0 ]; then
-			if [ ${optional} -ne 0 ]; then
-			    echo -n "Failed - skipping ..."
-			else
-			    echo "Failed to install package '" ${pkg} "'"
-			    exit 1
-			fi
-		    fi
-		    echo
-		fi
-	    done
-	    return 1
-	    ;;
+                ${INST} list installed ${pkg} >/dev/null 2>&1
+                if [ $? -ne 0 ]; then
+                    echo -n "Installing ${pkg} ..."
+                    ${INST} install -y ${pkg} >/dev/null 2>&1
+                    if [ $? -ne 0 ]; then
+                        if [ ${optional} -ne 0 ]; then
+                            echo -n "Failed - skipping ..."
+                        else
+                            echo "Failed to install package '" ${pkg} "'"
+                            exit 1
+                        fi
+                    fi
+                    echo
+                fi
+            done
+            return 1
+            ;;
     esac
     return 0
 }
@@ -358,53 +358,53 @@ if [ "${HAVE_PACKAGES}" != "1" ]; then
 
     check_installed_packages
     if [ $? -eq 0 ]; then
-	echo "Invalid OStype value ... terminating install"
-	exit 1
+        echo "Invalid OStype value ... terminating install"
+        exit 1
     fi
 fi
 
 if [ -d ./LinuxDECnet ]; then
     while ${TRUE} ; do
-	echo "There appears to be an existing Linux DECnet source tree present"
-	echo "Do you want to:"
-	echo "  1 - Delete existing tree, download a new one and build"
-	echo "  2 - Clean and rebuild using the existing tree"
-	echo "  3 - Rebuild using the existing tree"
-	echo "  4 - Install everything already built in the existing tree"
-	echo
-	read -p "Enter code (1 - 4): " DECnetDownload Junk
+        echo "There appears to be an existing Linux DECnet source tree present"
+        echo "Do you want to:"
+        echo "  1 - Delete existing tree, download a new one and build"
+        echo "  2 - Clean and rebuild using the existing tree"
+        echo "  3 - Rebuild using the existing tree"
+        echo "  4 - Install everything already built in the existing tree"
+        echo
+        read -p "Enter code (1 - 4): " DECnetDownload Junk
 
-	if [ "${Junk}" = "" ]; then
-	    case ${DECnetDownload} in
-		1|2|3|4)
-		    break
-		    ;;
-	    esac
-	fi
-	echo "Invalid Response"
-	echo
+        if [ "${Junk}" = "" ]; then
+            case ${DECnetDownload} in
+                1|2|3|4)
+                    break
+                    ;;
+            esac
+        fi
+        echo "Invalid Response"
+        echo
     done
 fi
 
 if [ -e /etc/decnet.conf ]; then
     while ${TRUE} ; do
-	echo
-	echo "There appears to be an existing DECnet configuration present"
-	echo "Do you want to:"
-	echo "  1 - Delete the existing configuration files and create new ones"
-	echo "  2 - Use the existing configuration files"
-	echo
-	read -p "Enter code (1 - 2): " DECnetConfig Junk
+        echo
+        echo "There appears to be an existing DECnet configuration present"
+        echo "Do you want to:"
+        echo "  1 - Delete the existing configuration files and create new ones"
+        echo "  2 - Use the existing configuration files"
+        echo
+        read -p "Enter code (1 - 2): " DECnetConfig Junk
 
-	if [ "${Junk}" = "" ]; then
-	    case ${DECnetConfig} in
-		1|2)
-		    break
-		    ;;
-	    esac
-	fi
-	echo "Invalid Response"
-	echo
+        if [ "${Junk}" = "" ]; then
+            case ${DECnetConfig} in
+                1|2)
+                    break
+                    ;;
+            esac
+        fi
+        echo "Invalid Response"
+        echo
     done
 fi
 
@@ -417,11 +417,11 @@ while ${TRUE} ; do
     read -p "Enter code (1 - 3): " PostBuild junk
 
     if [ "${Junk}" = "" ]; then
-	case ${PostBuild} in
-	    1|2|3)
-		break
-		;;
-	esac
+        case ${PostBuild} in
+            1|2|3)
+                break
+                ;;
+        esac
     fi
     echo "Invalid Response"
     echo
@@ -434,34 +434,34 @@ set_default_interface
 if [ ${DECnetConfig} -eq 1 ]; then
     echo
     while ${TRUE} ; do
-	read -p "Enter your DECnet node address [${DefaultAddr}] : " Addr
-	if [ -z "${Addr}" ]; then
-	    Addr=${DefaultAddr}
-	fi
-	check_addr ${Addr}
-	if [ $? -eq 1 ]; then break; fi
+        read -p "Enter your DECnet node address [${DefaultAddr}] : " Addr
+        if [ -z "${Addr}" ]; then
+            Addr=${DefaultAddr}
+        fi
+        check_addr ${Addr}
+        if [ $? -eq 1 ]; then break; fi
     done
     Area=${AreaNo}
     Node=${NodeNo}
 
     while ${TRUE} ; do
-	read -p "Enter your DECnet node name [${DefaultName}] : " MyName
-	if [ -z "${MyName}" ]; then
-	    MyName=${DefaultName}
-	fi
-	check_name ${MyName}
-	if [ $? -eq 1 ]; then break; fi
+        read -p "Enter your DECnet node name [${DefaultName}] : " MyName
+        if [ -z "${MyName}" ]; then
+            MyName=${DefaultName}
+        fi
+        check_name ${MyName}
+        if [ $? -eq 1 ]; then break; fi
     done
 
     Name=`echo -n ${MyName} | ${TR} "[:lower:]" "[:upper:]"`
 
     while ${TRUE} ; do
-	read -p "Enter your Ethernet/Wireless interface name [${DefaultInterface}] : " Interface
-	if [ -z "${Interface}" ]; then
-	    Interface=${DefaultInterface}
-	fi
-	check_interface ${Interface}
-	if [ $? -eq 1 ]; then break; fi
+        read -p "Enter your Ethernet/Wireless interface name [${DefaultInterface}] : " Interface
+        if [ -z "${Interface}" ]; then
+            Interface=${DefaultInterface}
+        fi
+        check_interface ${Interface}
+        if [ $? -eq 1 ]; then break; fi
     done
 
     ${CP} /dev/null /tmp/node$$
@@ -488,7 +488,7 @@ if [ ${DECnetConfig} -eq 1 ]; then
             if [ $? -eq 1 ]; then break; fi
         done
 
-	remname=`echo -n ${remname} | ${TR} "[:lower:]" "[:upper:]"`
+        remname=`echo -n ${remname} | ${TR} "[:lower:]" "[:upper:]"`
 
         printf >>/tmp/node$$ "node             %-7s        name            %-6s\n" ${remaddr} ${remname}
     done
@@ -507,8 +507,8 @@ if [ ${DECnetDownload} -eq 1 ]; then
     DOCMD "${RM} -rf LinuxDECnet"
     DOCMD "${GIT} clone https://github.com/JohnForecast/LinuxDECnet"
     if [ $? -ne 0 ]; then
-	echo "git failed to clone LinuxDECnet repository"
-	exit 1
+        echo "git failed to clone LinuxDECnet repository"
+        exit 1
     fi
 fi
 
@@ -520,20 +520,20 @@ if [ ${DECnetDownload} -le 3 ]; then
     fi
     DOCMD "${MAKE} -C /lib/modules/`uname -r`/build M=${PWD}"
     if [ $? -ne 0 ]; then
-	echo "DECnet kernel module make failed"
-	exit 1
+        echo "DECnet kernel module make failed"
+        exit 1
     fi
 
     cd ${Here}/LinuxDECnet/dnprogs
 
     if [ ${DECnetDownload} -le 2 ]; then
-	DOCMD "${MAKE} clean"
+        DOCMD "${MAKE} clean"
     fi
 
     DOCMD "${MAKE} all"
     if [ $? -ne 0 ]; then
-	echo "DECnet Utilities make failed"
-	exit 1
+        echo "DECnet Utilities make failed"
+        exit 1
     fi
 
 echo "Kernel module and DECnet Utilities build complete"
@@ -598,7 +598,6 @@ EOF
 
     ${PRINTF} >/tmp/$$.service "[Unit]\n"
     ${PRINTF} >>/tmp/$$.service "Description=Change MAC address for DECnet device\n"
-    ${PRINTF} >>/tmp/$$.service "Wants=network-pre.target\n"
     ${PRINTF} >>/tmp/$$.service "Before=network-pre.target\n"
     ${PRINTF} >>/tmp/$$.service "\n"
     ${PRINTF} >>/tmp/$$.service "[Service]\n"
@@ -640,45 +639,45 @@ EOF
     DOCMD "${MV} /tmp/$$.service ${Here}/Startup/systemd/phoned.service"
 
     if [ -d /etc/systemd ]; then
-	if [ -x ${SYSTEMCTL} ]; then
-	    ${SYSTEMCTL} status decnet3.service >/dev/null 2>&1
-	    if [ $? -ne 0 ]; then
-		while ${TRUE} ; do
-		    echo "This system appears to be using systemd"
-		    echo "Do you want systemd to:"
-		    echo "   Change the MAC address of ${Interface}"
-		    echo "   Start DECnet running on boot"
-		    echo "   Start the phone daemon running"
+        if [ -x ${SYSTEMCTL} ]; then
+            ${SYSTEMCTL} status decnet3.service >/dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                while ${TRUE} ; do
+                    echo "This system appears to be using systemd"
+                    echo "Do you want systemd to:"
+                    echo "   Change the MAC address of ${Interface}"
+                    echo "   Start DECnet running on boot"
+                    echo "   Start the phone daemon running"
 
-		    read -p "Modify systemd settings (Yes/No)? [Yes] " Modify
-		    if [ -z "${Modify}" ]; then
-		        Modify=Yes
-		    fi
+                    read -p "Modify systemd settings (Yes/No)? [Yes] " Modify
+                    if [ -z "${Modify}" ]; then
+                        Modify=Yes
+                    fi
 
-		    case ${Modify} in
-			[Yy]es|[Nn]o)
-			    break
-			    ;;
-		    esac
-		    echo "Invalid Response"
-		    echo
-		done
+                    case ${Modify} in
+                        [Yy]es|[Nn]o)
+                            break
+                            ;;
+                    esac
+                    echo "Invalid Response"
+                    echo
+                done
 
-		if [ "${Modify}" = "Yes" -o "${Modify}" = "yes" ]; then
-		    ${SYSTEMCTL} disable DECnetMAC.service >/dev/null 2>&1
-		    ${SYSTEMCTL} disable decnet3.service >/dev/null 2>&1
-		    ${SYSTEMCTL} disable phoned.service >/dev/null 2>&1
+                if [ "${Modify}" = "Yes" -o "${Modify}" = "yes" ]; then
+                    ${SYSTEMCTL} disable DECnetMAC.service >/dev/null 2>&1
+                    ${SYSTEMCTL} disable decnet3.service >/dev/null 2>&1
+                    ${SYSTEMCTL} disable phoned.service >/dev/null 2>&1
 
-		    ${CP} ${Here}/Startup/systemd/DECnetMAC.service /etc/systemd/system
-		    ${CP} ${Here}/Startup/systemd/decnet3.service /etc/systemd/system
-		    ${CP} ${Here}/Startup/systemd/phoned.service /etc/systemd/system
-		    ${SYSTEMCTL} daemon-reload
-		    ${SYSTEMCTL} enable DECnetMAC.service >/dev/null 2>&1
-		    ${SYSTEMCTL} enable decnet3.service >/dev/null 2>&1
-		    ${SYSTEMCTL} enable phoned.service >/dev/null 2>&1
-		fi
-	    fi
-	fi
+                    ${CP} ${Here}/Startup/systemd/DECnetMAC.service /etc/systemd/system
+                    ${CP} ${Here}/Startup/systemd/decnet3.service /etc/systemd/system
+                    ${CP} ${Here}/Startup/systemd/phoned.service /etc/systemd/system
+                    ${SYSTEMCTL} daemon-reload
+                    ${SYSTEMCTL} enable DECnetMAC.service >/dev/null 2>&1
+                    ${SYSTEMCTL} enable decnet3.service >/dev/null 2>&1
+                    ${SYSTEMCTL} enable phoned.service >/dev/null 2>&1
+                fi
+            fi
+        fi
     fi
 fi
 

@@ -246,6 +246,11 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    4/2/25
+
+    Fix "ordering cycle" error from systemd if kdump is enabled.
+
+
     3/7/25
 
     Fix compiler warning in dneigh.c about trying to read 1024 bytes into
