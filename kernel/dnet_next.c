@@ -65,7 +65,7 @@ static struct dn_next_entry *create_next_entry(
         uint8_t macaddr[ETH_ALEN];
         struct dn_next_hash_bucket *bucket = &dn_next_cache[hash];
         
-        if ((nextp = kmalloc(NEXT_CACHE_ENTRY_SIZE, GFP_ATOMIC)) != NULL) {
+        if ((nextp = kmalloc(NEXT_CACHE_ENTRY_SIZE, GFP_NOWAIT)) != NULL) {
                 refcount_set(&nextp->refcount, 1);
                 nextp->creation = get_jiffies_64();
                 nextp->addr = addr;
@@ -206,7 +206,7 @@ dn_next_entry *dn_next_update_and_hold(
         if (nextp != NULL) {
                 nextp->onEthernet = onEthernet;
                 if ((nextp != ETHDEVICE.router) && onEthernet)
-                	nextp->blksize = ETHDEVICE.blksize;
+                        nextp->blksize = ETHDEVICE.blksize;
                 refcount_inc(&nextp->refcount);
         }
         
@@ -264,8 +264,11 @@ static void dn_next_scan(
 
         for (i = 0; i <= dn_next_hash_mask; i++) {
                 struct dn_next_hash_bucket *bucket = &dn_next_cache[i];
-                
-                spin_lock(&bucket->lock);
+
+                if (!forced) {
+                        if (spin_trylock(&bucket->lock) == 0)
+                                continue;
+                } else spin_lock(&bucket->lock);
                 ppe = &bucket->chain;
 
                 while (*ppe != NULL) {
@@ -336,14 +339,14 @@ static void dn_next_format_entry(
         
         seq_printf(seq, "%-7s %s%s%s   %02x    %02d  %07d %-8s %s\n",
                    dn_addr2asc(nextp->addr, buf),
-		   ((iinfo & RT_II_LEVEL_1) != 0) ? "1" : "-",
-		   ((iinfo & RT_II_LEVEL_2) != 0) ? "2" : "-",
+                   ((iinfo & RT_II_LEVEL_1) != 0) ? "1" : "-",
+                   ((iinfo & RT_II_LEVEL_2) != 0) ? "2" : "-",
                    "-",
                    0,
                    refcount_read(&nextp->refcount),
                    nextp->blksize,
                    dn_devices[nextp->deviceIndex].dev->name,
-		   dn_eth2asc(nextp->nexthop, eth));
+                   dn_eth2asc(nextp->nexthop, eth));
 }
 
 static struct dn_next_entry *dn_next_get_first(
@@ -503,7 +506,7 @@ int __init dn_next_init(void)
                 while (dn_next_hash_mask & (dn_next_hash_mask - 1))
                         dn_next_hash_mask--;
                 dn_next_cache =
-                        (struct dn_next_hash_bucket *)__get_free_pages(GFP_ATOMIC, order);
+                        (struct dn_next_hash_bucket *)__get_free_pages(GFP_KERNEL, order);
         } while ((dn_next_cache == NULL) && (--order > 0));
 
         if (!dn_next_cache)
@@ -530,7 +533,19 @@ int __init dn_next_init(void)
          * hosts. This entry is the one and only entry for the loopback device.
          */
         dn_dn2eth(loopMacAddr, decnet_address);
-        loop = dn_next_update_and_hold(decnet_address, loopMacAddr, 1);
+        loop = create_next_entry(decnet_address & dn_next_hash_mask,
+                                 decnet_address, loopMacAddr, 1);
+        if (loop == NULL) {
+          pr_info("Unable to allocate nexthop entry to self (lo)\n");
+          return -ENOMEM;
+        }
+
+        /*
+         * Take an extra reference count on this entry to lock it in the
+         * cache.
+         */
+        refcount_inc(&loop->refcount);
+        
         loop->deviceIndex = LOOPINDEX;
         loop->blksize = LOOPDEVICE.blksize;
         
@@ -550,6 +565,7 @@ int __init dn_next_init(void)
 void __exit dn_next_cleanup(void)
 {
         del_timer(&dn_next_timer);
+        refcount_dec(&loop->refcount);
         dn_next_scan(1);
 
 #ifdef CONFIG_PROC_FS

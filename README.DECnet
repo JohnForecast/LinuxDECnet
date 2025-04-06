@@ -243,7 +243,20 @@ Kernel module versions
 		channel one (for the data channel), the ack would be applied
 		to the interrupt/link service channel.
 
+    3.0.12	Fix kernel memory allocations which could result in a
+		system hang. Fix initial allocation of the loopback nexthop
+		cache entry so that we get a clean result from running the
+		lock dependency checker. Switch to using trylocks in timer
+		callbacks. Allow the DECnet module to be built if the kernel
+		does not include support for 802.11.
+
+
 Changes from previous Linux DECnet release:
+
+
+    4/6/25
+
+    Various fixes for kernel memory allocation problems.
 
 
     4/2/25

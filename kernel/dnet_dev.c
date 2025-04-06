@@ -51,12 +51,12 @@ void dn_dev_timer(
 {
         struct dn_device *device = from_timer(device, t, timer);
 
-	/*
-	 * If we have been asked to unregister this device, shut down the
-	 * timer
-	 */
-	if (device->dev == NULL)
-		return;
+        /*
+         * If we have been asked to unregister this device, shut down the
+         * timer
+         */
+        if (device->dev == NULL)
+                return;
 
         if (device->t3) {
                 if (--device->t3 == 0) {
@@ -118,22 +118,22 @@ static int dn_dev_event(
   void *ptr
 )
 {
-	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+        struct net_device *dev = netdev_notifier_info_to_dev(ptr);
 
-	if (!net_eq(dev_net(dev), &init_net))
-		return NOTIFY_DONE;
+        if (!net_eq(dev_net(dev), &init_net))
+                return NOTIFY_DONE;
 
-	if (ETHDEVICE.dev == dev) {
-		if (event == NETDEV_UNREGISTER) {
-			ETHDEVICE.dev = NULL;
-			dev_put(dev);
-		}
-	}
-	return NOTIFY_DONE;
+        if (ETHDEVICE.dev == dev) {
+                if (event == NETDEV_UNREGISTER) {
+                        ETHDEVICE.dev = NULL;
+                        dev_put(dev);
+                }
+        }
+        return NOTIFY_DONE;
 }
 
 static struct notifier_block dn_dev_notifier = {
-	.notifier_call = dn_dev_event
+        .notifier_call = dn_dev_event
 };
 
 /*
@@ -209,8 +209,8 @@ static int dn_cost_show(
   void *v
 )
 {
-	seq_printf(seq, "%-3u\n", DNET_COST);
-	return 0;
+        seq_printf(seq, "%-3u\n", DNET_COST);
+        return 0;
 }
 
 module_param(dn_nodeaddr, charp, 0);
@@ -297,7 +297,7 @@ static int __init parse_name(
                                 return -1;
                         if (ISALPHA(*str))
                                 valid = 1;
-			str++;
+                        str++;
                 }
 
                 if (valid) {
@@ -358,7 +358,11 @@ int __init dn_dev_init(void)
          */
         ETHDEVICE.dev = eth;
         ETHDEVICE.type = "ethernet";
+#if IS_ENABLED(CONFIG_CFG80211)
         ETHDEVICE.multiplier = eth->ieee80211_ptr == NULL ? DN_BCT3MULT : DN_WT3MULT;
+#else
+        ETHDEVICE.multiplier = DN_BCT3MULT;
+#endif
         ETHDEVICE.hello = DN_DEFAULT_HELLO;
         ETHDEVICE.blksize = mtu2blksize(eth);
         ETHDEVICE.macAddr = NULL;
@@ -397,35 +401,35 @@ int __init dn_dev_init(void)
 
         if (decnet_address) {
 #ifdef DNET_COMPAT
-		uint8_t ethaddr[ETH_ALEN];
+                uint8_t ethaddr[ETH_ALEN];
 
-		dn_dn2eth(ethaddr, decnet_address);
-		if (memcmp(ethaddr, eth->dev_addr, ETH_ALEN) != 0) {
-			pr_info("DECnet address mismatch with %s device\n",
-				eth->name);
-			decnet_address = 0;
-			rc = -EINVAL;
-		} else 
+                dn_dn2eth(ethaddr, decnet_address);
+                if (memcmp(ethaddr, eth->dev_addr, ETH_ALEN) != 0) {
+                        pr_info("DECnet address mismatch with %s device\n",
+                                eth->name);
+                        decnet_address = 0;
+                        rc = -EINVAL;
+                } else 
 #endif
-		{
-                	/*
-                	 * Special case the first hello timer so that we
-			 * only wait 2 seconds.
-                	 */
-                	ETHDEVICE.t3 = 2;
-                	ETHDEVICE.t4 = 0;
-                	ETHDEVICE.timer.expires = jiffies + HZ;
-                	add_timer(&ETHDEVICE.timer);
-		}
+                {
+                        /*
+                         * Special case the first hello timer so that we
+                         * only wait 2 seconds.
+                         */
+                        ETHDEVICE.t3 = 2;
+                        ETHDEVICE.t4 = 0;
+                        ETHDEVICE.timer.expires = jiffies + HZ;
+                        add_timer(&ETHDEVICE.timer);
+                }
         }
 
-	register_netdevice_notifier(&dn_dev_notifier);
+        register_netdevice_notifier(&dn_dev_notifier);
 
 #ifdef CONFIG_PROC_FS
         proc_create_single("decnet_phase", 0444, init_net.proc_net, &dn_phase_show);
         proc_create_single("decnet_dev", 0444, init_net.proc_net, &dn_dev_show);
         proc_create_single("decnet_revision", 0444, init_net.proc_net, &dn_revision_show);
-	proc_create_single("decnet_cost", 0444, init_net.proc_net, &dn_cost_show);
+        proc_create_single("decnet_cost", 0444, init_net.proc_net, &dn_cost_show);
 #endif
         
         if (rc)
@@ -439,6 +443,6 @@ void __exit dn_dev_exit(void)
         remove_proc_entry("decnet_phase", NULL);
         remove_proc_entry("decnet_dev", NULL);
         remove_proc_entry("decnet_revision", NULL);
-	remove_proc_entry("decnet_cost", NULL);
+        remove_proc_entry("decnet_cost", NULL);
 #endif
 }

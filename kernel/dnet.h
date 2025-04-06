@@ -33,13 +33,13 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.11"
+#define DNET_REVISION   "3.0.12"
 
 /*
  * Define the cost to be returned by network management for the ethernet
  * device.
  */
-#define DNET_COST	3
+#define DNET_COST       3
 
 struct dn_scp;
 
@@ -272,10 +272,10 @@ static inline char *dn_eth2asc(
   char *buf
 )
 {
-	sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
-		 ethaddr[0], ethaddr[1], ethaddr[2],
-		 ethaddr[3], ethaddr[4], ethaddr[5]);
-	return buf;
+        sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
+                 ethaddr[0], ethaddr[1], ethaddr[2],
+                 ethaddr[3], ethaddr[4], ethaddr[5]);
+        return buf;
 }
 
 /*

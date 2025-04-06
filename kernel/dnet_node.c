@@ -43,22 +43,22 @@ struct dn_node_entry *dn_node_lookup(
         uint16_t hash = addr & dn_node_hash_mask;
         struct dn_node_hash_bucket *bucket = &dn_node_db[hash];
         dn_node_entry *entry;
-	unsigned long flags;
+        unsigned long flags;
 
         spin_lock_irqsave(&bucket->lock, flags);
         if ((entry = bucket->chain) != NULL) {
                 do {
                         if (entry->addr == addr) {
                                 /*
-				 * Reuse an existing entry.
+                                 * Reuse an existing entry.
                                  */
-				break;
+                                break;
                         }
                 } while ((entry = entry->next) != NULL);
         }
 
         if (entry == NULL) {
-                if ((entry = kzalloc(NODE_CACHE_ENTRY_SIZE, GFP_ATOMIC)) != NULL) {
+                if ((entry = kmalloc(NODE_CACHE_ENTRY_SIZE, GFP_NOWAIT)) != NULL) {
                         refcount_set(&entry->refcount, 1);
                         entry->hash = hash;
                         entry->addr = addr;
@@ -89,7 +89,7 @@ void dn_node_release(
   int timedout
 )
 {
-	unsigned long flags;
+        unsigned long flags;
 
         spin_lock_irqsave(&dn_node_db[entry->hash].lock, flags);
         entry->timeout = jiffies + (CACHE_TIMEOUT * HZ);
@@ -117,35 +117,44 @@ void dn_node_update_delay(
  * argument may be set to force all entries to be removed (e.g. when unloading
  * the module).
  */
-static void dn_node_scan(
+static int dn_node_scan(
   int forced
 )
 {
-        int i;
+        int i, delay = 60;
         dn_node_entry **ppe;
 
         for (i = 0; i <= dn_node_hash_mask; i++) {
                 struct dn_node_hash_bucket *bucket = &dn_node_db[i];
 
-		if (bucket->chain != NULL) {
-                	spin_lock(&bucket->lock);
-                	ppe = &bucket->chain;
+                if (bucket->chain != NULL) {
+                        if (!forced) {
+                                if (spin_trylock(&bucket->lock) == 0) {
+                                        /*
+                                         * Try again in 1 second
+                                         */
+                                        delay = 1;
+                                        continue;
+                                }
+                        } else spin_lock(&bucket->lock);
+                        ppe = &bucket->chain;
 
-                	while (*ppe != NULL) {
-                        	dn_node_entry *nodep = *ppe;
+                        while (*ppe != NULL) {
+                                dn_node_entry *nodep = *ppe;
 
-                        	if (refcount_read(&nodep->refcount) == 1) {
-                                	if (forced || time_after(jiffies, nodep->timeout)) {
-                                        	*ppe = nodep->next;
-                                        	if (!forced)
-                                                	/*** Log event ***/{};
-                                        	kfree(nodep);
-                                	} else ppe = &nodep->next;
-                        	} else ppe = &nodep->next;
-                	}
-                	spin_unlock(&bucket->lock);
-		}
+                                if (refcount_read(&nodep->refcount) == 1) {
+                                        if (forced || time_after(jiffies, nodep->timeout)) {
+                                                *ppe = nodep->next;
+                                                if (!forced)
+                                                        /*** Log event ***/{};
+                                                kfree(nodep);
+                                        } else ppe = &nodep->next;
+                                } else ppe = &nodep->next;
+                        }
+                        spin_unlock(&bucket->lock);
+                }
         }
+        return delay;
 }
 
 /*
@@ -155,8 +164,9 @@ static void dn_node_timeout(
   struct timer_list *unused
 )
 {
-        dn_node_scan(0);
-        mod_timer(&dn_node_timer, jiffies + (60 * HZ));
+        int delta = dn_node_scan(0);
+        
+        mod_timer(&dn_node_timer, jiffies + (delta * HZ));
 }
 
 #ifdef CONFIG_PROC_FS
@@ -243,7 +253,7 @@ static int dn_node_seq_show(
         struct dn_node_counters *ctrp = &nodep->counters;
         char buf1[DN_ASCBUF_LEN];
         uint32_t delay;
-	time64_t delta = ktime_get_real_seconds() - ctrp->timezeroed;
+        time64_t delta = ktime_get_real_seconds() - ctrp->timezeroed;
 
         delay = (nodep->delay + HZ - 1) / HZ;
 #define VALOF(v, limit) (v) < limit ? v : limit
@@ -253,13 +263,13 @@ static int dn_node_seq_show(
                    "0x%04x 0x%04x 0x%04x\n",
                    dn_addr2asc(nodep->addr, buf1),
                    delay > 255 ? 255 : delay,
-		   delta > 0xFFFE ? 0xFFFF : delta,
+                   delta > 0xFFFE ? 0xFFFF : delta,
                    VALOF(ctrp->user_bytes_rcv, 0xFFFFFFFF),
                    VALOF(ctrp->user_bytes_xmt, 0xFFFFFFFF),
-		   VALOF(ctrp->user_msg_rcv, 0xFFFFFFFF),
-		   VALOF(ctrp->user_msg_xmt, 0xFFFFFFFF),
-		   VALOF(ctrp->total_bytes_rcv, 0xFFFFFFFF),
-		   VALOF(ctrp->total_bytes_xmt, 0xFFFFFFFF),
+                   VALOF(ctrp->user_msg_rcv, 0xFFFFFFFF),
+                   VALOF(ctrp->user_msg_xmt, 0xFFFFFFFF),
+                   VALOF(ctrp->total_bytes_rcv, 0xFFFFFFFF),
+                   VALOF(ctrp->total_bytes_xmt, 0xFFFFFFFF),
                    VALOF(ctrp->total_msg_rcv, 0xFFFFFFFF),
                    VALOF(ctrp->total_msg_xmt, 0xFFFFFFFF),
                    VALOF(ctrp->connects_rcv, 0xFFFF),
@@ -318,7 +328,7 @@ int __init dn_node_init(void)
                 while (dn_node_hash_mask & (dn_node_hash_mask - 1))
                         dn_node_hash_mask--;
                 dn_node_db =
-                        (struct dn_node_hash_bucket *)__get_free_pages(GFP_ATOMIC, order);
+                        (struct dn_node_hash_bucket *)__get_free_pages(GFP_KERNEL, order);
         } while ((dn_node_db == NULL) && (--order > 0));
 
         if (!dn_node_db)
@@ -334,9 +344,9 @@ int __init dn_node_init(void)
                 dn_node_db[i].chain = NULL;
         }
 
-	timer_setup(&dn_node_timer, dn_node_timeout, 0);
-	dn_node_timer.expires = jiffies + (HZ / 2);
-	add_timer(&dn_node_timer);
+        timer_setup(&dn_node_timer, dn_node_timeout, 0);
+        dn_node_timer.expires = jiffies + (HZ / 2);
+        add_timer(&dn_node_timer);
 
 #ifdef CONFIG_PROC_FS
         proc_create_seq_private("decnet_nodes", 0444, init_net.proc_net,
@@ -349,7 +359,7 @@ int __init dn_node_init(void)
 
 void __exit dn_node_cleanup(void)
 {
-	del_timer(&dn_node_timer);
+        del_timer(&dn_node_timer);
 
         /*** Flush node db entries ***/
 #ifdef CONFIG_PROC_FS

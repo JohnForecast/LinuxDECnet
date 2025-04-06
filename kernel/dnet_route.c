@@ -120,11 +120,11 @@ static int dn_routing_rx_long(
                 goto drop;
         cb->dst = dn_eth2dn(hdr->d_id);
 
-	/*
-	 * Discard this packet if it is not explicitly addressed to this node
-	 */
-	if (cb->dst != decnet_address)
-		goto drop;
+        /*
+         * Discard this packet if it is not explicitly addressed to this node
+         */
+        if (cb->dst != decnet_address)
+                goto drop;
 
         /*
          * Source address
@@ -137,7 +137,7 @@ static int dn_routing_rx_long(
 
         if (skb->dev != LOOPDEVICE.dev) {
                 uint8_t onEthernet  = (cb->rt_flags & RT_FLG_IE) ? 1 : 0;
-		uint8_t *ethaddr = onEthernet ? hdr->s_id : eth_hdr(skb)->h_source;
+                uint8_t *ethaddr = onEthernet ? hdr->s_id : eth_hdr(skb)->h_source;
 
                 if (dn_IVprime) {
                         
@@ -190,7 +190,7 @@ int dn_routing_rcv(
         
         /*
          * Discard messages if we don't have an address set yet or we are in
-	 * the process of unregistering the ethernet device..
+         * the process of unregistering the ethernet device..
          */
         if ((decnet_address == 0) || (ETHDEVICE.dev == NULL)) {
                 kfree_skb(skb);
@@ -260,7 +260,7 @@ void dn_routing_tx_endnode_hello(
         uint8_t *dst = dn_IVprime ? dn_all_primertr : dn_all_routers;
         uint8_t flags = dn_IVprime ? RT_FLG_EHELLOP : RT_FLG_EHELLO;
         
-        if ((skb = dn_alloc_skb(NULL, sizeof(*msg), GFP_ATOMIC)) != NULL) {
+        if ((skb = dn_alloc_skb(NULL, sizeof(*msg), GFP_NOWAIT)) != NULL) {
                 skb->dev = dev;
 
                 msg = skb_put(skb, sizeof(*msg));
@@ -309,13 +309,13 @@ int dn_routing_tx_long(
         int err, headroom;
         uint8_t *macAddr = dn_devices[nextp->deviceIndex].macAddr;
         
-	/*
-	 * If we are unregistering the ethernet device, discard the packet
-	 */
-	if (ETHDEVICE.dev == NULL) {
-		kfree_skb(skb);
-		return 0;
-	}
+        /*
+         * If we are unregistering the ethernet device, discard the packet
+         */
+        if (ETHDEVICE.dev == NULL) {
+                kfree_skb(skb);
+                return 0;
+        }
 
         skb->dev = dev = dn_devices[nextp->deviceIndex].dev;
         

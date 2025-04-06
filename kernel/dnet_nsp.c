@@ -189,7 +189,7 @@ static int dn_nsp_check_xmt_q(
                 segnum = cb2->segnum;
                 
                 if (dn_before_or_equal(segnum, acknum)) {
-			uint8_t delayed = cb2->ack_delay;
+                        uint8_t delayed = cb2->ack_delay;
 
                         /*
                          * A packet is being acknowledged so wakeup the
@@ -202,7 +202,7 @@ static int dn_nsp_check_xmt_q(
 
                         /*
                          * Remove the ack'd packet and free it. Don't reference
-			 * skb2 or cb2 after this point
+                         * skb2 or cb2 after this point
                          */
                         skb_unlink(skb2, q);
                         kfree_skb(skb2);
@@ -213,24 +213,24 @@ static int dn_nsp_check_xmt_q(
                          */
                         WARN_ON(xmit_count == 0);
 
-			/*
-			 * If the packet was orginally sent without the delay
-			 * ack option, we can use it to update the round-trip
-			 * estimate.
-			 */
-			if (delayed == 0) {
-				uint32_t delay = acktime - pkttime;
+                        /*
+                         * If the packet was orginally sent without the delay
+                         * ack option, we can use it to update the round-trip
+                         * estimate.
+                         */
+                        if (delayed == 0) {
+                                uint32_t delay = acktime - pkttime;
 
-				dn_node_update_delay(scp->nodeEntry, delay);
-			}
+                                dn_node_update_delay(scp->nodeEntry, delay);
+                        }
 
-			/*
-			 * Open the window a little further if this is a
-			 * data ack.
-			 */
-			if (!oth)
-				if (scp->snd_window < decnet_maxWindow)
-					scp->snd_window++;
+                        /*
+                         * Open the window a little further if this is a
+                         * data ack.
+                         */
+                        if (!oth)
+                                if (scp->snd_window < decnet_maxWindow)
+                                        scp->snd_window++;
 
                         /*
                          * If this packet is the last one to be acknowledged
@@ -247,19 +247,19 @@ static int dn_nsp_check_xmt_q(
          * the persist timer.
          */
         if (skb2 != (struct sk_buff *)q) {
-		unsigned long deadline = (unsigned long)(DN_SKB_CB(skb2)->deadline);
+                unsigned long deadline = (unsigned long)(DN_SKB_CB(skb2)->deadline);
                 unsigned long delta = deadline - jiffies;
 
-		/*
-		 * If the deadline for this message has already passed,
-		 * force the delay to 1 tick so the retransmission will
-		 * happen at the next timeout and try to retransmit it as
-		 * soon as possible.
-		 */
-		if (time_after_eq(jiffies, deadline)) {
-			delta = 1;
-			try_retrans = 1;
-		}
+                /*
+                 * If the deadline for this message has already passed,
+                 * force the delay to 1 tick so the retransmission will
+                 * happen at the next timeout and try to retransmit it as
+                 * soon as possible.
+                 */
+                if (time_after_eq(jiffies, deadline)) {
+                        delta = 1;
+                        try_retrans = 1;
+                }
 
                 if ((scp->persist == 0) || (delta < scp->persist))
                         scp->persist = delta;
@@ -699,45 +699,45 @@ int dn_nsp_rcv_ls(
         fcval = *ptr;
 
         if (seq_next(scp->other.num_rcv, segnum)) {
-		if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_DATA) {
+                if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_DATA) {
                         switch (lsflags & NSP_FCMOD_MASK) {
-				case NSP_FCMOD_NOC:
-					if (fcval < 0) {
-						unsigned char pfcval = -fcval;
+                                case NSP_FCMOD_NOC:
+                                        if (fcval < 0) {
+                                                unsigned char pfcval = -fcval;
 
-						if ((scp->data.flowrem > pfcval) &&
-						    (fctype == NSP_FCOPT_MSG)) {
-							scp->data.flowrem -= pfcval;
-						}
-					} else if (fcval > 0) {
-						scp->data.flowrem += fcval;
-						wakeup = 1;
-					}
-					break;
+                                                if ((scp->data.flowrem > pfcval) &&
+                                                    (fctype == NSP_FCOPT_MSG)) {
+                                                        scp->data.flowrem -= pfcval;
+                                                }
+                                        } else if (fcval > 0) {
+                                                scp->data.flowrem += fcval;
+                                                wakeup = 1;
+                                        }
+                                        break;
                                                 
-				case NSP_FCMOD_NOSND:
-					scp->data.flowrem_sw = DN_DONTSEND;
-					break;
+                                case NSP_FCMOD_NOSND:
+                                        scp->data.flowrem_sw = DN_DONTSEND;
+                                        break;
                                                 
-				case NSP_FCMOD_SND:
-					scp->data.flowrem_sw = DN_SEND;
-					dn_nsp_xmt_socket(sk);
-					wakeup = 1;
-					break;
+                                case NSP_FCMOD_SND:
+                                        scp->data.flowrem_sw = DN_SEND;
+                                        dn_nsp_xmt_socket(sk);
+                                        wakeup = 1;
+                                        break;
                                                 
-				default:
-					goto drop;
-			}
-		} else {
-			if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_INTR) {
-				if (fcval > 0) {
-					scp->other.flowrem += fcval;
-					wakeup = 1;
-				}
-			}
-		}
+                                default:
+                                        goto drop;
+                        }
+                } else {
+                        if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_INTR) {
+                                if (fcval > 0) {
+                                        scp->other.flowrem += fcval;
+                                        wakeup = 1;
+                                }
+                        }
+                }
                                 
-		seq_add(&scp->other.num_rcv, 1);
+                seq_add(&scp->other.num_rcv, 1);
 
                 if (wakeup && !sock_flag(sk, SOCK_DEAD))
                         sk->sk_state_change(sk);
@@ -870,19 +870,19 @@ int dn_nsp_rcv_cc(
                 scp->info_rem = cb->info;
                 scp->segsize_rem = cb->segsize;
 
-		/*
-		 * If the Connect Confirm message was received with the
-		 * Intra-Ethernet bit clear, revert to the "SEGMENT BUFFER
-		 * SIZE" parameter since traffic will be going off ethernet.
-		 */
-		if ((cb->rt_flags & RT_FLG_IE) == 0)
-			scp->segsize_rem =
-			  decnet_segbufsize - NSP_MAX_DATAHDR;
+                /*
+                 * If the Connect Confirm message was received with the
+                 * Intra-Ethernet bit clear, revert to the "SEGMENT BUFFER
+                 * SIZE" parameter since traffic will be going off ethernet.
+                 */
+                if ((cb->rt_flags & RT_FLG_IE) == 0)
+                        scp->segsize_rem =
+                          decnet_segbufsize - NSP_MAX_DATAHDR;
 
-		/*
-		 * Update the local segment size in case it has changed.
-		 */
-		scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
+                /*
+                 * Update the local segment size in case it has changed.
+                 */
+                scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
 
                 if (skb->len > 0) {
                         uint16_t dlen = *skb->data;
@@ -1041,7 +1041,7 @@ int dn_nsp_rcv_di(
          * address.
          */
         if (scp->addrrem != 0)
-                dn_nsp_xmt_disc(sk, NSP_MSG_DC, NSP_REASON_DC, GFP_ATOMIC);
+                dn_nsp_xmt_disc(sk, NSP_MSG_DC, NSP_REASON_DC, GFP_KERNEL);
 
         PERSIST(scp, dn_sk_destroy_timer);
         kfree_skb(skb);
@@ -1316,12 +1316,12 @@ static void dn_nsp_mk_data_hdr(
 {
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         uint16_t *ptr = dn_nsp_mk_ack_hdr(sk, skb, cb->nsp_flags, NSP_MAX_DATAHDR, oth);
-	uint16_t segnum = cb->segnum;
+        uint16_t segnum = cb->segnum;
 
-	if ((cb->ack_delay != 0) && !oth)
-		segnum |= NSP_ACK_DELAY;
+        if ((cb->ack_delay != 0) && !oth)
+                segnum |= NSP_ACK_DELAY;
 
-	*ptr++ = cpu_to_le16(segnum);
+        *ptr++ = cpu_to_le16(segnum);
 }
 
 /*
@@ -1363,7 +1363,7 @@ static inline unsigned int dn_nsp_clone_xmt(
         unsigned int ret = 0;
 
         if ((skb2 = skb_clone(skb, gfp)) != NULL) {
-		struct dn_skb_cb *cb2 = DN_SKB_CB(skb2);
+                struct dn_skb_cb *cb2 = DN_SKB_CB(skb2);
                 struct dn_scp *scp = DN_SK(sk);
                 unsigned long persist = dn_nsp_persist(scp);
                 
@@ -1372,19 +1372,19 @@ static inline unsigned int dn_nsp_clone_xmt(
                 cb->stamp = jiffies;
                 cb->deadline = cb->stamp + persist;
 
-		/*
-		 * Disable delayed ack if this is a retransmit
-		 */
-		if (ret > 1)
-			cb2->ack_delay = 0;
+                /*
+                 * Disable delayed ack if this is a retransmit
+                 */
+                if (ret > 1)
+                        cb2->ack_delay = 0;
 
                 skb2->sk = sk;
                 skb2->destructor = dn_nsp_null_destructor;
 
-		/*
-		 * Back-build an NSP header
-		 */
-		dn_nsp_mk_data_hdr(sk, skb2, oth);
+                /*
+                 * Back-build an NSP header
+                 */
+                dn_nsp_mk_data_hdr(sk, skb2, oth);
 
                 dn_nsp_xmt(skb2);
 
@@ -1417,7 +1417,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win = dn_nsp_clone_xmt(skb, GFP_ATOMIC, 1);
+                reduce_win = dn_nsp_clone_xmt(skb, GFP_KERNEL, 1);
         }
         
         if (reduce_win || (scp->data.flowrem_sw != DN_SEND))
@@ -1429,7 +1429,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win += dn_nsp_clone_xmt(skb, GFP_ATOMIC, 0);
+                reduce_win += dn_nsp_clone_xmt(skb, GFP_KERNEL, 0);
         }
         /*
          * If we re-transmitted one of these messages, cut the window in
@@ -1472,20 +1472,20 @@ void dn_nsp_queue_xmt(
 
         cb->xmit_count = 0;
 
-	/*
-	 * Slow start: If we have been idle for more than one RTT, then
-	 * reset window to min size.
-	 */
-	if ((jiffies - scp->stamp) > scp->nodeEntry->delay)
-		scp->snd_window = NSP_MIN_WINDOW;
+        /*
+         * Slow start: If we have been idle for more than one RTT, then
+         * reset window to min size.
+         */
+        if ((jiffies - scp->stamp) > scp->nodeEntry->delay)
+                scp->snd_window = NSP_MIN_WINDOW;
 
         if (oth) {
-		cb->segnum = scp->other.num;
-		seq_add(&scp->other.num, 1);
+                cb->segnum = scp->other.num;
+                seq_add(&scp->other.num, 1);
                 skb_queue_tail(&scp->other.xmit_queue, skb);
         } else {
-		cb->segnum = scp->data.num;
-		seq_add(&scp->data.num, 1);
+                cb->segnum = scp->data.num;
+                seq_add(&scp->data.num, 1);
                 skb_queue_tail(&scp->data.xmit_queue, skb);
 
                 /*
@@ -1526,7 +1526,7 @@ void dn_nsp_xmt_ack_data(
 {
         struct sk_buff *skb;
 
-        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_ATOMIC)) != NULL) {
+        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_KERNEL)) != NULL) {
                 skb_reserve(skb, NSP_MAX_ACK);
                 dn_nsp_mk_ack_hdr(sk, skb, NSP_MSG_DATACK, NSP_MAX_ACK, 0);
                 dn_nsp_xmt(skb);
@@ -1542,7 +1542,7 @@ void dn_nsp_xmt_ack_oth(
 {
         struct sk_buff *skb;
 
-        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_ATOMIC)) != NULL) {
+        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_KERNEL)) != NULL) {
                 skb_reserve(skb, NSP_MAX_ACK);
                 dn_nsp_mk_ack_hdr(sk, skb, NSP_MSG_OTHACK, NSP_MAX_ACK, 1);
                 dn_nsp_xmt(skb);
@@ -1590,7 +1590,7 @@ int dn_nsp_rexmt_cc(
 
         if (scp->state == DN_CC) {
                 if (scp->persist_count-- != 0) {
-                        dn_nsp_xmt_cc(sk, GFP_ATOMIC);
+                        dn_nsp_xmt_cc(sk, GFP_KERNEL);
                         Count_timeouts(scp->nodeEntry);
                         scp->persist = dn_nsp_persist(scp);
                         return 0;
@@ -1621,7 +1621,7 @@ void dn_nsp_xmt_ci(
         struct dn_skb_cb *cb;
         struct sockaddr_dn *saddr;
         uint8_t aux, menuver = 0, type = 1;
-        gfp_t allocation = msgflg == NSP_MSG_CI ? sk->sk_allocation : GFP_ATOMIC;
+        gfp_t allocation = msgflg == NSP_MSG_CI ? sk->sk_allocation : GFP_KERNEL;
         struct sk_buff *skb = dn_alloc_skb(sk, 200, allocation);
 
         if (!skb)
@@ -1649,12 +1649,12 @@ void dn_nsp_xmt_ci(
         saddr = scp->addr.sdn_objnamel != 0 ? &scp->addr : &dummyname;
         skb_put(skb, dn_sockaddr2username(saddr, skb_tail_pointer(skb), 1));
 
-	if ((scp->accessdata.acc_userl != 0) ||
-	    (scp->accessdata.acc_passl != 0) ||
-	    (scp->accessdata.acc_accl != 0))
-		menuver |= NSP_MENU_ACC;
-	if (scp->conndata_out.opt_optl != 0)
-		menuver |= NSP_MENU_USR;
+        if ((scp->accessdata.acc_userl != 0) ||
+            (scp->accessdata.acc_passl != 0) ||
+            (scp->accessdata.acc_accl != 0))
+                menuver |= NSP_MENU_ACC;
+        if (scp->conndata_out.opt_optl != 0)
+                menuver |= NSP_MENU_USR;
         if (scp->peer.sdn_flags & SDF_PROXY)
                 menuver |= NSP_MENU_PROXY;
         if (scp->peer.sdn_flags & SDF_UICPROXY)
@@ -1662,28 +1662,28 @@ void dn_nsp_xmt_ci(
 
         skb_put_u8(skb, menuver);
 
-	if ((menuver & NSP_MENU_ACC) != 0) {
-        	aux = scp->accessdata.acc_userl;
-        	skb_put_u8(skb, aux);
-        	if (aux > 0)
-                	skb_put_data(skb, scp->accessdata.acc_user, aux);
+        if ((menuver & NSP_MENU_ACC) != 0) {
+                aux = scp->accessdata.acc_userl;
+                skb_put_u8(skb, aux);
+                if (aux > 0)
+                        skb_put_data(skb, scp->accessdata.acc_user, aux);
 
-        	aux = scp->accessdata.acc_passl;
-        	skb_put_u8(skb, aux);
-        	if (aux > 0)
-                	skb_put_data(skb, scp->accessdata.acc_pass, aux);
+                aux = scp->accessdata.acc_passl;
+                skb_put_u8(skb, aux);
+                if (aux > 0)
+                        skb_put_data(skb, scp->accessdata.acc_pass, aux);
 
-        	aux = scp->accessdata.acc_accl;
-        	skb_put_u8(skb, aux);
-        	if (aux > 0)
-                	skb_put_data(skb, scp->accessdata.acc_acc, aux);
-	}
+                aux = scp->accessdata.acc_accl;
+                skb_put_u8(skb, aux);
+                if (aux > 0)
+                        skb_put_data(skb, scp->accessdata.acc_acc, aux);
+        }
 
-	if ((menuver & NSP_MENU_USR) != 0) {
-        	aux = le16_to_cpu(scp->conndata_out.opt_optl);
-		skb_put_u8(skb, aux);
+        if ((menuver & NSP_MENU_USR) != 0) {
+                aux = le16_to_cpu(scp->conndata_out.opt_optl);
+                skb_put_u8(skb, aux);
                 skb_put_data(skb, scp->conndata_out.opt_data, aux);
-	}
+        }
         
         cb->rt_flags = RT_FLG_RQR;
 
@@ -1731,16 +1731,16 @@ int dn_nsp_xmt_timeout(
 {
         struct dn_scp *scp = DN_SK(sk);
 
-	/*
-	 * If there is a pending transmit, increment the count of timeouts
-	 * and try to retransmit the message.
-	 */
-	if ((skb_peek(&scp->other.xmit_queue) != NULL) ||
-	    (skb_peek(&scp->data.xmit_queue) != NULL)) {
-		Count_timeouts(scp->nodeEntry);
-		dn_nsp_xmt_socket(sk);
-		return 0;
-	}
+        /*
+         * If there is a pending transmit, increment the count of timeouts
+         * and try to retransmit the message.
+         */
+        if ((skb_peek(&scp->other.xmit_queue) != NULL) ||
+            (skb_peek(&scp->data.xmit_queue) != NULL)) {
+                Count_timeouts(scp->nodeEntry);
+                dn_nsp_xmt_socket(sk);
+                return 0;
+        }
 
         scp->persist = 0;
         return 0;
@@ -1835,7 +1835,7 @@ void dn_nsp_return_disc(
         nextp = dn_next_update_and_hold(cb->src, NULL, 0);
 
         if (nextp != NULL) {
-                dn_nsp_disconnect(NULL, msgflg, reason, nextp, GFP_ATOMIC, 0,
+                dn_nsp_disconnect(NULL, msgflg, reason, nextp, GFP_KERNEL, 0,
                                   NULL, cb->src_port, cb->dst_port);
                 dn_next_release(nextp);
         }
@@ -1853,7 +1853,7 @@ int dn_nsp_xmt_ls(
         struct dn_scp *scp = DN_SK(sk);
         struct sk_buff *skb;
         uint8_t *ptr;
-        gfp_t gfp = GFP_ATOMIC;
+        gfp_t gfp = GFP_KERNEL;
 
         if ((skb = dn_alloc_skb(sk, NSP_MAX_DATAHDR + (2 * sizeof(uint8_t)), gfp)) == NULL)
                 return 0;
