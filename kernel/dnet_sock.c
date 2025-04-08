@@ -102,15 +102,6 @@ int dn_sk_hash_sock(
 /*
  * Remove a socket from it's hash chain.
  */
-void dn_sk_unhash_sock(
-  struct sock *sk
-)
-{
-        write_lock(&dn_sk_hash_lock);
-        sk_del_node_init(sk);
-        write_unlock(&dn_sk_hash_lock);
-}
-
 void dn_sk_unhash_sock_bh(
   struct sock *sk
 )
@@ -152,7 +143,7 @@ struct sock *dn_sk_find_listener(
         struct hlist_head *list = dn_sk_find_listen_list(addr);
         struct sock *sk;
 
-        read_lock(&dn_sk_hash_lock);
+        read_lock_bh(&dn_sk_hash_lock);
         sk_for_each(sk, list) {
                 struct dn_scp *scp = DN_SK(sk);
 
@@ -170,7 +161,7 @@ struct sock *dn_sk_find_listener(
                                 continue;
                 }
                 sock_hold(sk);
-                read_unlock(&dn_sk_hash_lock);
+                read_unlock_bh(&dn_sk_hash_lock);
                 return sk;
         }
 
@@ -181,7 +172,7 @@ struct sock *dn_sk_find_listener(
                 else
                         sk = NULL;
         }
-        read_unlock(&dn_sk_hash_lock);
+        read_unlock_bh(&dn_sk_hash_lock);
         return sk;
 }
 
@@ -195,7 +186,7 @@ struct sock *dn_sk_lookup_by_skb(
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         struct sock *sk;
 
-        read_lock(&dn_sk_hash_lock);
+        read_lock_bh(&dn_sk_hash_lock);
         sk_for_each(sk, &dn_sk_hash[cb->dst_port & DN_SK_HASH_MASK]) {
                 struct dn_scp *scp = DN_SK(sk);
 
@@ -207,10 +198,10 @@ struct sock *dn_sk_lookup_by_skb(
                         continue;
 
                 sock_hold(sk);
-                read_unlock(&dn_sk_hash_lock);
+                read_unlock_bh(&dn_sk_hash_lock);
                 return sk;
         }
-        read_unlock(&dn_sk_hash_lock);
+        read_unlock_bh(&dn_sk_hash_lock);
         return NULL;
 }
 
@@ -268,7 +259,7 @@ int dn_sk_check_duplicate(
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         int i, found = 0;
 
-        read_lock(&dn_sk_hash_lock);
+        read_lock_bh(&dn_sk_hash_lock);
         for (i = 0; i < DN_SK_HASH_SIZE; i++) {
                 sk_for_each(sk, &dn_sk_hash[i]) {
                         if (sk->sk_state != DNET_LISTEN) {
@@ -285,7 +276,7 @@ int dn_sk_check_duplicate(
                 }
         }
  done:
-        read_unlock(&dn_sk_hash_lock);
+        read_unlock_bh(&dn_sk_hash_lock);
         return found;
 }
 
@@ -300,7 +291,7 @@ struct sock *dn_sk_check_returned(
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
         struct sock *sk;
 
-        read_lock(&dn_sk_hash_lock);
+        read_lock_bh(&dn_sk_hash_lock);
         sk_for_each(sk, &dn_sk_hash[cb->src_port & DN_SK_HASH_MASK]) {
                 if (sk->sk_state != DNET_LISTEN) {
                         struct dn_scp *scp = DN_SK(sk);
@@ -309,11 +300,11 @@ struct sock *dn_sk_check_returned(
                                 continue;
 
                         sock_hold(sk);
-                        read_unlock(&dn_sk_hash_lock);
+                        read_unlock_bh(&dn_sk_hash_lock);
                         return sk;
                 }
         }
-        read_unlock(&dn_sk_hash_lock);
+        read_unlock_bh(&dn_sk_hash_lock);
         return NULL;
 }
 
@@ -381,7 +372,7 @@ struct sock *dn_alloc_sock(
                 scp->conndata_out.opt_optl = 0;
                 memset(&scp->discdata_in, 0, sizeof(scp->discdata_in));
                 memset(&scp->discdata_out, 0, sizeof(scp->discdata_out));
-		memset(&scp->accessdata, 0, sizeof(scp->accessdata));
+                memset(&scp->accessdata, 0, sizeof(scp->accessdata));
         
                 scp->snd_window = NSP_MIN_WINDOW;
         
@@ -414,15 +405,15 @@ void dn_sk_destruct(
 {
         struct dn_scp *scp = DN_SK(sk);
 
-	if (scp->nextEntry != NULL) {
-		dn_next_release(scp->nextEntry);
-		scp->nextEntry = NULL;
-	}
+        if (scp->nextEntry != NULL) {
+                dn_next_release(scp->nextEntry);
+                scp->nextEntry = NULL;
+        }
 
-	if (scp->nodeEntry != NULL) {
-		dn_node_release(scp->nodeEntry, 0);
-		scp->nodeEntry = NULL;
-	}
+        if (scp->nodeEntry != NULL) {
+                dn_node_release(scp->nodeEntry, 0);
+                scp->nodeEntry = NULL;
+        }
 
         skb_queue_purge(&scp->data.xmit_queue);
         skb_queue_purge(&scp->other.xmit_queue);
@@ -446,7 +437,7 @@ int dn_sk_destroy_timer(
          */
         switch (scp->state) {
                 case DN_DI:
-                        dn_nsp_xmt_disc(sk, NSP_MSG_DI, 0, GFP_ATOMIC);
+                        dn_nsp_xmt_disc(sk, NSP_MSG_DI, 0, GFP_NOWAIT);
                         Count_timeouts(scp->nodeEntry);
                         if (scp->persist_count-- != 0)
                                 scp->state = DN_CN;
@@ -455,7 +446,7 @@ int dn_sk_destroy_timer(
                         return 0;
                         
                 case DN_DR:
-                        dn_nsp_xmt_disc(sk, NSP_MSG_DC, 0, GFP_ATOMIC);
+                        dn_nsp_xmt_disc(sk, NSP_MSG_DC, 0, GFP_NOWAIT);
                         scp->state = DN_DRC;
                         scp->persist_count = 0;
                         scp->stamp = jiffies;
@@ -470,7 +461,7 @@ int dn_sk_destroy_timer(
 
         if (sk->sk_socket == NULL) {
                 if (time_after_eq(jiffies, scp->stamp + (2 * HZ))) {
-                        dn_sk_unhash_sock(sk);
+                        dn_sk_unhash_sock_bh(sk);
                         sock_put(sk);
                         return 1;
                 }

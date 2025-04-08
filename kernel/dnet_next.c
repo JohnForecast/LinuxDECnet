@@ -114,7 +114,7 @@ int dn_next_in_cache(
         struct dn_next_hash_bucket *bucket = &dn_next_cache[hash];
         dn_next_entry *nextp;
 
-        spin_lock(&bucket->lock);
+        spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
                         if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
@@ -127,7 +127,7 @@ int dn_next_in_cache(
                         }
                 } while ((nextp = nextp->next) != NULL);
         }
-        spin_unlock(&bucket->lock);
+        spin_unlock_bh(&bucket->lock);
 
         return res;
 }
@@ -149,7 +149,7 @@ int dn_next_update(
         struct dn_next_hash_bucket *bucket = &dn_next_cache[hash];
         dn_next_entry *nextp;
 
-        spin_lock(&bucket->lock);
+        spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
                         if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
@@ -169,7 +169,7 @@ int dn_next_update(
         if ((nextp != ETHDEVICE.router) && onEthernet)
                 nextp->blksize = ETHDEVICE.blksize;
         
-        spin_unlock(&bucket->lock);
+        spin_unlock_bh(&bucket->lock);
 
         return res;
 }
@@ -188,7 +188,7 @@ dn_next_entry *dn_next_update_and_hold(
         struct dn_next_hash_bucket *bucket = &dn_next_cache[hash];
         dn_next_entry *nextp;
 
-        spin_lock(&bucket->lock);
+        spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
                         if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
@@ -210,7 +210,7 @@ dn_next_entry *dn_next_update_and_hold(
                 refcount_inc(&nextp->refcount);
         }
         
-        spin_unlock(&bucket->lock);
+        spin_unlock_bh(&bucket->lock);
 
         return nextp;
 }

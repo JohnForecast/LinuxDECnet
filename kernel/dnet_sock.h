@@ -19,7 +19,6 @@ struct dn_sock_seq_state {
 };
 
 int dn_sk_hash_sock(struct sock *);
-void dn_sk_unhash_sock(struct sock *);
 void dn_sk_unhash_sock_bh(struct sock *);
 void dn_sk_rehash_sock(struct sock *);
 struct sock *dn_sk_find_listener(struct sockaddr_dn *);

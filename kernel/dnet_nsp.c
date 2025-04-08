@@ -1041,7 +1041,7 @@ int dn_nsp_rcv_di(
          * address.
          */
         if (scp->addrrem != 0)
-                dn_nsp_xmt_disc(sk, NSP_MSG_DC, NSP_REASON_DC, GFP_KERNEL);
+                dn_nsp_xmt_disc(sk, NSP_MSG_DC, NSP_REASON_DC, GFP_NOWAIT);
 
         PERSIST(scp, dn_sk_destroy_timer);
         kfree_skb(skb);
@@ -1417,7 +1417,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win = dn_nsp_clone_xmt(skb, GFP_KERNEL, 1);
+                reduce_win = dn_nsp_clone_xmt(skb, GFP_NOWAIT, 1);
         }
         
         if (reduce_win || (scp->data.flowrem_sw != DN_SEND))
@@ -1429,7 +1429,7 @@ void dn_nsp_xmt_socket(
                 if (cb->xmit_count >= decnet_NSPretrans)
                         goto lost;
                 
-                reduce_win += dn_nsp_clone_xmt(skb, GFP_KERNEL, 0);
+                reduce_win += dn_nsp_clone_xmt(skb, GFP_NOWAIT, 0);
         }
         /*
          * If we re-transmitted one of these messages, cut the window in
@@ -1526,7 +1526,7 @@ void dn_nsp_xmt_ack_data(
 {
         struct sk_buff *skb;
 
-        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_KERNEL)) != NULL) {
+        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_NOWAIT)) != NULL) {
                 skb_reserve(skb, NSP_MAX_ACK);
                 dn_nsp_mk_ack_hdr(sk, skb, NSP_MSG_DATACK, NSP_MAX_ACK, 0);
                 dn_nsp_xmt(skb);
@@ -1542,7 +1542,7 @@ void dn_nsp_xmt_ack_oth(
 {
         struct sk_buff *skb;
 
-        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_KERNEL)) != NULL) {
+        if ((skb = dn_alloc_skb(sk, NSP_MAX_ACK, GFP_NOWAIT)) != NULL) {
                 skb_reserve(skb, NSP_MAX_ACK);
                 dn_nsp_mk_ack_hdr(sk, skb, NSP_MSG_OTHACK, NSP_MAX_ACK, 1);
                 dn_nsp_xmt(skb);
@@ -1590,7 +1590,7 @@ int dn_nsp_rexmt_cc(
 
         if (scp->state == DN_CC) {
                 if (scp->persist_count-- != 0) {
-                        dn_nsp_xmt_cc(sk, GFP_KERNEL);
+                        dn_nsp_xmt_cc(sk, GFP_NOWAIT);
                         Count_timeouts(scp->nodeEntry);
                         scp->persist = dn_nsp_persist(scp);
                         return 0;
@@ -1621,7 +1621,7 @@ void dn_nsp_xmt_ci(
         struct dn_skb_cb *cb;
         struct sockaddr_dn *saddr;
         uint8_t aux, menuver = 0, type = 1;
-        gfp_t allocation = msgflg == NSP_MSG_CI ? sk->sk_allocation : GFP_KERNEL;
+        gfp_t allocation = msgflg == NSP_MSG_CI ? sk->sk_allocation : GFP_NOWAIT;
         struct sk_buff *skb = dn_alloc_skb(sk, 200, allocation);
 
         if (!skb)
@@ -1835,7 +1835,7 @@ void dn_nsp_return_disc(
         nextp = dn_next_update_and_hold(cb->src, NULL, 0);
 
         if (nextp != NULL) {
-                dn_nsp_disconnect(NULL, msgflg, reason, nextp, GFP_KERNEL, 0,
+                dn_nsp_disconnect(NULL, msgflg, reason, nextp, GFP_NOWAIT, 0,
                                   NULL, cb->src_port, cb->dst_port);
                 dn_next_release(nextp);
         }
@@ -1853,7 +1853,7 @@ int dn_nsp_xmt_ls(
         struct dn_scp *scp = DN_SK(sk);
         struct sk_buff *skb;
         uint8_t *ptr;
-        gfp_t gfp = GFP_KERNEL;
+        gfp_t gfp = GFP_NOWAIT;
 
         if ((skb = dn_alloc_skb(sk, NSP_MAX_DATAHDR + (2 * sizeof(uint8_t)), gfp)) == NULL)
                 return 0;

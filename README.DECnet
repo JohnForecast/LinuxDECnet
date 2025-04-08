@@ -250,8 +250,16 @@ Kernel module versions
 		callbacks. Allow the DECnet module to be built if the kernel
 		does not include support for 802.11.
 
+    3.0.13	Second pass at fixing kernel locking and memory allocation
+		problems.
+
 
 Changes from previous Linux DECnet release:
+
+
+    4/8/25
+
+    More fixes for kernel locking and memory allocation problems.
 
 
     4/6/25
