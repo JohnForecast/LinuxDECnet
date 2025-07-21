@@ -511,7 +511,7 @@ void DAPlogUnexpectedMessage(void)
 /*
  * Message transmission support routines.
  */
-#define BUFCNT          8                       /* Pre-allocated buffers */
+#define BUFCNT          32                      /* Pre-allocated buffers */
 
 /*
  * Buffer descriptor for message transmission

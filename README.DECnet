@@ -266,6 +266,14 @@ Changes from previous Linux DECnet release:
 
     7/21/25
 
+    Increase the number of buffer in fal from 8 to 32. This allows more
+    larger buffers to be sent on the network, improving network performance.
+
+    Update user code version to 3.16
+
+
+    7/21/25
+
     Miscellaneous fixes - see 3.0.14 description above.
 
 
