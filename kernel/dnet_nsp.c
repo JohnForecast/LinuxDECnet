@@ -522,18 +522,8 @@ static int dn_nsp_no_sock(
         int ret = NET_RX_DROP;
 
         if (reason != NSP_REASON_OK) {
-                switch (cb->nsp_flags) {
-                        case NSP_MSG_CI:
-                        case NSP_MSG_RCI:
-                                dn_nsp_return_disc(skb, NSP_MSG_DI, reason);
-                                ret = NET_RX_SUCCESS;
-                                break;
-                                
-                        case NSP_MSG_CC:
-                                dn_nsp_return_disc(skb, NSP_MSG_DC, reason);
-                                ret = NET_RX_SUCCESS;
-                                break;
-                }
+                dn_nsp_return_disc(skb, NSP_MSG_DC, reason);
+                ret = NET_RX_SUCCESS;
         }
         kfree_skb(skb);
         return ret;

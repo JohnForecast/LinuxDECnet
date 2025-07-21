@@ -20,9 +20,9 @@
 #define TIMER_INTERVAL  (HZ / 5)
 
 /*
- * Initial estimate of round trip delay (5 Sec)
+ * Initial estimate of round trip delay (3 Sec)
  */
-#define INITIAL_ESTM    (5 * HZ)
+#define INITIAL_ESTM    (3 * HZ)
 
 void dn_keepalive(struct sock *);
 void dn_start_slow_timer(struct sock *);

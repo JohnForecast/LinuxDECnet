@@ -17,8 +17,8 @@ kernel code so could not be installed on kernel 6.1.x or later.
 
 Distributions tested:
 
-Minimum kernel supported:	4.18.0
-Maximum kernel supported:	6.6.20
+Minimum kernel supported:       4.18.0
+Maximum kernel supported:       6.12.34
 
 Tested distributions:
 
@@ -38,28 +38,29 @@ Ubuntu 23.10, kernel 6.5.0 on x86_64 (ESXi 6.7u3 VM)
 Dietpi 8.22.3, kernel 6.1.21 on arm7l (Raspberry Pi Zero 2 W)
 RaspiOS 2024-03-12, kernel 6.6.20 on aarch64 (Raspberry Pi 5 8GB)
 RaspiOS 2024-11-19, kernel 6.6.62 on aarch64 (Raspberry Pi 5 8GB)
+RaspiOS 2025-05-13, kernel 6.12.34 on aarch64 (Raspberry Pi 5 8GB)
 
 Changes from RaspbianDECnet:
 
   - Designed to be built as an external module
 
-	Simplifies and speeds up the installation procedure. We no longer
-	need to rebuild the kernel as part of the installation. For a low
-	end system like the Raspberry Pi this really speeds up the
-	installation.
+        Simplifies and speeds up the installation procedure. We no longer
+        need to rebuild the kernel as part of the installation. For a low
+        end system like the Raspberry Pi this really speeds up the
+        installation.
 
   - Can only be built as an ethernet endnode
 
-	This substantially simplifies the kernel code. The routing code
-	in RaspbianDECnet was never supported.
+        This substantially simplifies the kernel code. The routing code
+        in RaspbianDECnet was never supported.
 
   - Minimize use of Linux kernel frameworks
 
-	Most of the problems with keeping RaspbianDECnet running between Linux
-	versions were changes to the kernel framework APIs. RaspbianDECnet
-	used the Destination Cache, Neighbour structures, flow idn
-	infrastructure and the routing infrastructure. LinuxDECnet does not
-	use any of these frameworks.
+        Most of the problems with keeping RaspbianDECnet running between Linux
+        versions were changes to the kernel framework APIs. RaspbianDECnet
+        used the Destination Cache, Neighbour structures, flow idn
+        infrastructure and the routing infrastructure. LinuxDECnet does not
+        use any of these frameworks.
 
 
 Installation:
@@ -95,11 +96,11 @@ Several overrides may be used to control the operation of BuildAndInstall.sh.
 These overrides would be placed on the command line prior to invoking
 BuildAndInstall.sh:
 
-	OVERRIDES ./BuildAndInstall.sh
+        OVERRIDES ./BuildAndInstall.sh
 
 or
 
-	sudo OVERRIDES ./BuildAndInstall.sh
+        sudo OVERRIDES ./BuildAndInstall.sh
 
     1. If your system uses a kernel which was installed outside of the package
        manager mechanism, you must load the linux headers for this kernel
@@ -114,147 +115,158 @@ Notes:
 
     1. Library locations
 
-	The location of 64-bit static and dynamic libraries seems to be left
+        The location of 64-bit static and dynamic libraries seems to be left
         to the individual distributions:
 
-	In order to have a single installation, "/sbin/ldconfig -p" will
-	be issued to obtain the entries in the ld.so cache. If any entries
-	are in /lib64 then we will use that directory otherwise we will use
-	/lib. 32-bit systems will continue to use /lib.
+        In order to have a single installation, "/sbin/ldconfig -p" will
+        be issued to obtain the entries in the ld.so cache. If any entries
+        are in /lib64 then we will use that directory otherwise we will use
+        /lib. 32-bit systems will continue to use /lib.
 
 
     2. Upgrading from RaspianDECnet to LinuxDECnet
 
-	Dues to the above change it is possible that, after installing
-	LinuxDECnet, libraries will exist in both /lib and /lib64. It is
-	unclear what the priority order would be so I would suggest deleting
-	the following libraries from /lib:
+        Dues to the above change it is possible that, after installing
+        LinuxDECnet, libraries will exist in both /lib and /lib64. It is
+        unclear what the priority order would be so I would suggest deleting
+        the following libraries from /lib:
 
-		/lib/libdnet.a
-		/lib/libdnet_daemon.so
-		/lib/libdnet_daemon.so.2
-		/lib/libdnet_daemon.so.2.43.1
-		/lib/libdnet-dap.a
-		/lib/libdnet-dap.so
-		/lib/libdnet-dap.so.2
-		/lib/libdnet-dap.so.46.0
-		/lib/libdnet.so
-		/lib/libdnet.so.2
-		/lib/libdnet.so.2.43.2
-		/lib/librms.a
-		/lib/librms.so
-		/lib/librms/so.2
-		/lib/librms/so.2.43.0
-		/lib/libvaxdata.a
+                /lib/libdnet.a
+                /lib/libdnet_daemon.so
+                /lib/libdnet_daemon.so.2
+                /lib/libdnet_daemon.so.2.43.1
+                /lib/libdnet-dap.a
+                /lib/libdnet-dap.so
+                /lib/libdnet-dap.so.2
+                /lib/libdnet-dap.so.46.0
+                /lib/libdnet.so
+                /lib/libdnet.so.2
+                /lib/libdnet.so.2.43.2
+                /lib/librms.a
+                /lib/librms.so
+                /lib/librms/so.2
+                /lib/librms/so.2.43.0
+                /lib/libvaxdata.a
 
-	You may also want to delete the kernel module:
+        You may also want to delete the kernel module:
 
-		/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko
-	or	/lib/modules/`uname -a`/kernel/net/decnet/decnet.ko.xz
+                /lib/modules/`uname -a`/kernel/net/decnet/decnet.ko
+        or      /lib/modules/`uname -a`/kernel/net/decnet/decnet.ko.xz
 
-	and remove your startup scripts or convert them to use the new kernel
-	modulee which is located at:
+        and remove your startup scripts or convert them to use the new kernel
+        modulee which is located at:
 
-		/lib/modules/`uname -a`/extra/decnet3.ko.xz
+                /lib/modules/`uname -a`/extra/decnet3.ko.xz
 
 
     3. SELinux
 
-	DECnet does not operate correctly if SELinux is in the enforcing mode
-	(dnetd will not be able to access sockets and incoming connections
-	will fail). DECnet will operate correctly if SELinux is in permissive
-	mode or disabled. If someone comes up with a suitable policy
-	configuration to allow DECnet to run with SELinux in the enforcing
-	mode, I would be open to including it in the installation procedure
-	but, given the lack of modern security features (e.g. encryption)
-	it is not clear to me that it is a worthwhile effort.
+        DECnet does not operate correctly if SELinux is in the enforcing mode
+        (dnetd will not be able to access sockets and incoming connections
+        will fail). DECnet will operate correctly if SELinux is in permissive
+        mode or disabled. If someone comes up with a suitable policy
+        configuration to allow DECnet to run with SELinux in the enforcing
+        mode, I would be open to including it in the installation procedure
+        but, given the lack of modern security features (e.g. encryption)
+        it is not clear to me that it is a worthwhile effort.
 
-	If the decnet3 module is loaded but dnetd is not running this is
-	likely the problem. Use "sestatus" to determine the current status
-	of SELinux.
+        If the decnet3 module is loaded but dnetd is not running this is
+        likely the problem. Use "sestatus" to determine the current status
+        of SELinux.
 
 
     4. Secure Boot
 
-	If your system uses or requires Secure Boot, it must be disabled
-	otherwise loading the DECnet kernel module will be rejected. For
-	example, Rocky Linux 9 does this when run from ESXi 6.7.
+        If your system uses or requires Secure Boot, it must be disabled
+        otherwise loading the DECnet kernel module will be rejected. For
+        example, Rocky Linux 9 does this when run from ESXi 6.7.
 
-	If the decnet3 module does not load and dnetd complains about files
-	in /proc/net being missing this is likely the problem. The solution
-	is machine (EFI) dependent.
+        If the decnet3 module does not load and dnetd complains about files
+        in /proc/net being missing this is likely the problem. The solution
+        is machine (EFI) dependent.
 
 
     5. Backports
 
-	Some distributions backport code from newer kernels to their
-	currently supported kernel. In most cases this does not affect the
-	DECnet code but sometimes it does and it requires source code
-	changes to fix. I will keep a list here of those backports which
-	can be supported with simple code changes:
+        Some distributions backport code from newer kernels to their
+        currently supported kernel. In most cases this does not affect the
+        DECnet code but sometimes it does and it requires source code
+        changes to fix. I will keep a list here of those backports which
+        can be supported with simple code changes:
 
-	1. Rocky Linux 9 (backport of per-cpu network memory allocation)
+        1. Rocky Linux 9 (backport of per-cpu network memory allocation)
 
-	    In LinuxDECnet/kernel/dnet.c there are 2 references to
-	    'decnet_memory_per_cpu_fw_alloc' which are conditionalized on
-	    kernel version 6.0.0 or above. Change these conditionals to
-	    kernel version 5.14.0 (or whatever you are running) and
-	    re-install using the "Clean and rebuild using existing tree"
-	    option.
+            In LinuxDECnet/kernel/dnet.c there are 2 references to
+            'decnet_memory_per_cpu_fw_alloc' which are conditionalized on
+            kernel version 6.0.0 or above. Change these conditionals to
+            kernel version 5.14.0 (or whatever you are running) and
+            re-install using the "Clean and rebuild using existing tree"
+            option.
 
 
 Kernel module versions
 
     The current version can be obtained from:
 
-	cat /proc/net/decnet_revision
+        cat /proc/net/decnet_revision
 
     The kernel module version number is updated when the DECnet kernel module
     has been changed:
 
-    3.0.0	Original release
+    3.0.0       Original release
 
-    3.0.1	/proc/net/decnet_neigh includes the next hop MAC address
+    3.0.1       /proc/net/decnet_neigh includes the next hop MAC address
 
-    3.0.2	Kernel hang fixed when scanning the node database for an
-		entry needing deletions.
+    3.0.2       Kernel hang fixed when scanning the node database for an
+                entry needing deletions.
 
-    3.0.3	Fixed hang seen on Raspberry Pi Bookworm reboot requests.
+    3.0.3       Fixed hang seen on Raspberry Pi Bookworm reboot requests.
 
-    3.0.4	Verify the destination address of unicast messages is the
-		node address of this node.
+    3.0.4       Verify the destination address of unicast messages is the
+                node address of this node.
 
-    3.0.5	Fix bugs found when trying to transfer large files to VMS
+    3.0.5       Fix bugs found when trying to transfer large files to VMS
 
-    3.0.6	More bugs found when transferring large files to VMS
+    3.0.6       More bugs found when transferring large files to VMS
 
-    3.0.7	Fix data corruption bug when receiving segmented packets
+    3.0.7       Fix data corruption bug when receiving segmented packets
 
-    3.0.8	Fix inbound handling of data packets with the intra-ethernet
-		bit set
+    3.0.8       Fix inbound handling of data packets with the intra-ethernet
+                bit set
 
-    3.0.9	Fix handling of inbound link service messages when the
-		remote system uses segment or message flow control
+    3.0.9       Fix handling of inbound link service messages when the
+                remote system uses segment or message flow control
 
-    3.0.10	Remove timeout check when trying to allocate a node entry
+    3.0.10      Remove timeout check when trying to allocate a node entry
 
-    3.0.11	Fix cross-channel ack handling. If an interrupt/link service
-		message was received and the only ack present was a cross-
-		channel one (for the data channel), the ack would be applied
-		to the interrupt/link service channel.
+    3.0.11      Fix cross-channel ack handling. If an interrupt/link service
+                message was received and the only ack present was a cross-
+                channel one (for the data channel), the ack would be applied
+                to the interrupt/link service channel.
 
-    3.0.12	Fix kernel memory allocations which could result in a
-		system hang. Fix initial allocation of the loopback nexthop
-		cache entry so that we get a clean result from running the
-		lock dependency checker. Switch to using trylocks in timer
-		callbacks. Allow the DECnet module to be built if the kernel
-		does not include support for 802.11.
+    3.0.12      Fix kernel memory allocations which could result in a
+                system hang. Fix initial allocation of the loopback nexthop
+                cache entry so that we get a clean result from running the
+                lock dependency checker. Switch to using trylocks in timer
+                callbacks. Allow the DECnet module to be built if the kernel
+                does not include support for 802.11.
 
-    3.0.13	Second pass at fixing kernel locking and memory allocation
-		problems.
+    3.0.13      Second pass at fixing kernel locking and memory allocation
+                problems.
+
+    3.0.14      Reduce timer interval from 500 mSec to 200 mSec. Require RTT
+                estimate to be at least 1 timer tick. Remove pad byte from
+                all transmitted long routing headers. Respond correctly to
+                incoming messages which do not map to a valid socket.
+                Reduce initial round-trip estimate to 3 seconds (from 5).
 
 
 Changes from previous Linux DECnet release:
+
+
+    7/21/25
+
+    Miscellaneous fixes - see 3.0.14 description above.
 
 
     4/8/25
@@ -283,10 +295,10 @@ Changes from previous Linux DECnet release:
     02/19/25
 
     ctermd changes:
-	1. No longer claim to be a VMS system. Uses the next value after
-	   "Unix-dni" (193).
+        1. No longer claim to be a VMS system. Uses the next value after
+           "Unix-dni" (193).
 
-	2. No longer set up ^Y as an interrupt character just like ^C.
+        2. No longer set up ^Y as an interrupt character just like ^C.
 
     Update user code version to 3.14
 
@@ -420,11 +432,11 @@ Changes from previous Linux DECnet release:
     4/11/24
 
     dnlogin changes:
-	1. Change OS type in the BindAccept response so that it no longer
-	   claims to be VMS. Use a unique value after "Unix-dni".
+        1. Change OS type in the BindAccept response so that it no longer
+           claims to be VMS. Use a unique value after "Unix-dni".
 
-	2. Fix Start-Read with the "formatting" flag set so that it no longer
-	   causes input lines to be overwritten.
+        2. Fix Start-Read with the "formatting" flag set so that it no longer
+           causes input lines to be overwritten.
 
     Update user code version to 3.4.
 
@@ -551,23 +563,23 @@ Changes from previous Linux DECnet release:
 
     These changes are relative to the last RaspbianDECnet release:
 
-	Fix read handling for SEQPACKET sockets if the remote system sends
-	a message longer than the receive size
+        Fix read handling for SEQPACKET sockets if the remote system sends
+        a message longer than the receive size
 
-	Added additional parameter when loading the DECnet kernel module:
+        Added additional parameter when loading the DECnet kernel module:
 
-	    dn_ifname="dev"		sets the interface to be used
+            dn_ifname="dev"             sets the interface to be used
 
-	Note that dn_ifname and dn_nodeaddr are now required.
+        Note that dn_ifname and dn_nodeaddr are now required.
 
-	LinuxDECnet uses the newer version of nml which used to be called
-	nml2 and the older version is no longer available. It also defaults
-	to the newer version of fal which used to be called fal2. The older
-	version is still available as fal-old.
+        LinuxDECnet uses the newer version of nml which used to be called
+        nml2 and the older version is no longer available. It also defaults
+        to the newer version of fal which used to be called fal2. The older
+        version is still available as fal-old.
 
-	The kernel DECnet module now implements node counters and nml
-	supports reading and zeroing node counters.
+        The kernel DECnet module now implements node counters and nml
+        supports reading and zeroing node counters.
 
-	All version numbers have moved to 3.x and the DECnet module is
-	called decnet3.ko so it can co-exist with the older version.
+        All version numbers have moved to 3.x and the DECnet module is
+        called decnet3.ko so it can co-exist with the older version.
 
