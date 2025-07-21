@@ -337,11 +337,10 @@ int dn_routing_tx_long(
                 net_info_ratelimited("dn_routing_tx_long: Increasing headroom\n");
         }
 
-        data = skb_push(skb, sizeof(struct rt_long_hdr) + 3);
-        hdr = (struct rt_long_hdr *)(data + 3);
+        data = skb_push(skb, sizeof(struct rt_long_hdr) + sizeof(uint16_t));
+        hdr = (struct rt_long_hdr *)(data + sizeof(uint16_t));
 
         *((uint16_t *)data) = cpu_to_le16(skb->len - sizeof(uint16_t));
-        *(data + sizeof(uint16_t)) = RT_FLG_PAD | 1;
 
         hdr->flags = RT_FLG_LONG | RT_FLG_IE | (cb->rt_flags & RT_FLG_RQR);
         hdr->d_area = hdr->d_subarea = 0;

@@ -1227,11 +1227,9 @@ unsigned long dn_nsp_persist(
 )
 {
         struct dn_node_entry *nodep = scp->nodeEntry;
+        unsigned long delay = (nodep->delay * decnet_NSPdelay) / 16;
 
-        if (nodep->delay == 0)
-                return 5 * HZ;
-
-        return (nodep->delay * decnet_NSPdelay) / 16;
+        return delay < TIMER_INTERVAL ? TIMER_INTERVAL : delay;
 }
 
 /*

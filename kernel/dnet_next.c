@@ -304,7 +304,7 @@ uint16_t dn_eth2segsize(
 {
         uint16_t segsize = nextp->blksize;
 
-        segsize -= sizeof(struct rt_long_hdr) + 1;
+        segsize -= sizeof(struct rt_long_hdr);
         segsize -= NSP_MAX_DATAHDR;
 
         return segsize;

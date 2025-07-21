@@ -22,11 +22,6 @@
 #include <linux/jiffies.h>
 #include "dnet.h"
 
-/*
- * Slow timer is in units of 500 mSec
- */
-#define SLOW_INTERVAL   (HZ / 2)
-
 static void dn_slow_timer(
   struct timer_list *t
 )
@@ -52,12 +47,12 @@ static void dn_slow_timer(
          * routines may remove sockets.
          */
         if (scp->persist && scp->persist_fcn) {
-                if (scp->persist <= SLOW_INTERVAL) {
+                if (scp->persist < TIMER_INTERVAL) {
                         scp->persist = 0;
 
                         if (scp->persist_fcn(sk))
                                 goto done;
-                } else scp->persist -=SLOW_INTERVAL;
+                } else scp->persist -=TIMER_INTERVAL;
         }
 
         /*
@@ -66,13 +61,13 @@ static void dn_slow_timer(
          */
         if (scp->conntimer) {
                 if (scp->state == DN_CD) {
-                        if (scp->conntimer <= SLOW_INTERVAL) {
+                        if (scp->conntimer <= TIMER_INTERVAL) {
                                 scp->conntimer = 0;
                                 scp->state = DN_NC;
                                 sk->sk_state = DNET_CLOSE;
                                 if (!sock_flag(sk, SOCK_DEAD))
                                         sk->sk_state_change(sk);
-                        } else scp->conntimer -= SLOW_INTERVAL;
+                        } else scp->conntimer -= TIMER_INTERVAL;
                 } else scp->conntimer = 0;
         }
 
@@ -91,17 +86,17 @@ static void dn_slow_timer(
 
         /*
          * Check for delayed ack. We do this after all the other cases since
-         * they may gererate retransmissions which will pick up delayed
+         * they may generate retransmissions which will pick up delayed
          * acks.
          */
         if (scp->ackdelay && (scp->state == DN_RUN)) {
-                if (scp->ackdelay <= SLOW_INTERVAL) {
+                if (scp->ackdelay <= TIMER_INTERVAL) {
                         scp->ackdelay = 0;
                         dn_nsp_xmt_ack_data(sk);
-                } else scp->ackdelay -= SLOW_INTERVAL;
+                } else scp->ackdelay -= TIMER_INTERVAL;
         }
         
-        sk_reset_timer(sk, &sk->sk_timer, jiffies + SLOW_INTERVAL);
+        sk_reset_timer(sk, &sk->sk_timer, jiffies + TIMER_INTERVAL);
  done:
         bh_unlock_sock(sk);
         sock_put(sk);
@@ -126,7 +121,7 @@ void dn_start_slow_timer(
 )
 {
         timer_setup(&sk->sk_timer, dn_slow_timer, 0);
-        sk_reset_timer(sk, &sk->sk_timer, jiffies + SLOW_INTERVAL);
+        sk_reset_timer(sk, &sk->sk_timer, jiffies + TIMER_INTERVAL);
 }
 
 void dn_stop_slow_timer(

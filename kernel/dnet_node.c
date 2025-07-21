@@ -62,7 +62,7 @@ struct dn_node_entry *dn_node_lookup(
                         refcount_set(&entry->refcount, 1);
                         entry->hash = hash;
                         entry->addr = addr;
-                        entry->delay = 0;
+                        entry->delay = INITIAL_ESTM;
                         
                         memset(&entry->counters, 0, sizeof(struct dn_node_counters));
                         entry->counters.timezeroed = ktime_get_real_seconds();
