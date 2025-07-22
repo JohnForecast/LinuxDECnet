@@ -1763,11 +1763,11 @@ static int dn_sendmsg(
                             ((flags & MSG_EOR) != 0)) {
                                 cb->nsp_flags |= NSP_MSG_EOM;
                                 scp->seg_total = 0;
-                                if (scp->data.services_rem == NSP_FCOPT_SEG)
+                                if (scp->data.services_rem == NSP_FCOPT_MSG)
                                         scp->data.flowrem--;
                         }
 
-                        if (scp->data.services_rem == NSP_FCOPT_MSG)
+                        if (scp->data.services_rem == NSP_FCOPT_SEG)
                                 scp->data.flowrem--;
                 }
 
