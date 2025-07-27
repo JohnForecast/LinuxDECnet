@@ -268,8 +268,17 @@ Kernel module versions
 		messages would eventually result in a hung logical link or
 		data overrun issues.
 
+    3.0.16	Correctly compute the remote segment size based on the
+		SEGSIZE parameter in the connect initiate message rather
+		than assuming that if the remote system is on the same
+		ethernet that it will use maximum size packet.
 
 Changes from previous Linux DECnet release:
+
+
+    7/26/25
+
+    Fix computation of the remote segment size.
 
 
     7/22/25

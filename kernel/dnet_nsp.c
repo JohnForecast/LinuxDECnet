@@ -579,7 +579,8 @@ int dn_nsp_rcv_gen(
                  */
                 if ((cb->rt_flags & RT_FLG_IE) == 0)
                         scp->segsize_rem =
-                                decnet_segbufsize - NSP_MAX_DATAHDR;
+				min(scp->segsize_rem,
+                                	decnet_segbufsize - NSP_MAX_DATAHDR);
         }
 
         if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
@@ -867,7 +868,8 @@ int dn_nsp_rcv_cc(
                  */
                 if ((cb->rt_flags & RT_FLG_IE) == 0)
                         scp->segsize_rem =
-                          decnet_segbufsize - NSP_MAX_DATAHDR;
+				min(scp->segsize_rem,
+                        		decnet_segbufsize - NSP_MAX_DATAHDR);
 
                 /*
                  * Update the local segment size in case it has changed.

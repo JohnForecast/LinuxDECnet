@@ -829,9 +829,8 @@ static int dn_accept(
         newscp->data.services_loc = NSP_FCOPT_NONE;
         newscp->info_rem = cb->info;
         newscp->segsize_rem = cb->segsize;
-        if ((cb->rt_flags & RT_FLG_IE) != 0)
-                newscp->segsize_rem = dn_eth2segsize(newscp->nextEntry);
-        else dn_segsize2eth(newscp->nextEntry, newscp->segsize_rem);
+        if ((cb->rt_flags & RT_FLG_IE) == 0)
+        	dn_segsize2eth(newscp->nextEntry, newscp->segsize_rem);
         newscp->accept_mode = scp->accept_mode;
 
         newsk->sk_state = DNET_LISTEN;
