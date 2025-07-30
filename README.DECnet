@@ -278,6 +278,15 @@ Changes from previous Linux DECnet release:
 
     7/30/25
 
+    "sethost" used the "termio" interface for accessing terminals. Change
+    it to use the "termios" interface which is almost compatible; needed
+    changes to put the terminal in "raw" mode.
+
+    Update user code version to 3.18
+
+
+    7/30/25
+
     Change type "bool" to "bool_t" in dnet_daemon.c since "bool" is now a
     reserved keywoprd in C23.
 

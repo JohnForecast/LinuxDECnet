@@ -20,7 +20,6 @@
 #include <ctype.h>
 #include <termios.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/fcntl.h>
@@ -36,7 +35,7 @@ typedef enum { CTERM, RSTS, RSX, VMS, TOPS20 } term_flavor;
 
 struct	sockaddr_dn		sockaddr;
 struct	accessdata_dn		accessdata;
-struct	termio			raw,cooked;
+struct	termios			raw,cooked;
 struct	logical_terminal_characteristics
 				log_char = {FALSE,3,{5,'V','T','2','0','0'}
 					    ,TRUE,
@@ -167,9 +166,9 @@ static inline void set_short(short *dest, short src)
 /*-------------------------------------------------------------------------*/
 static void ct_reset_term(void)
 {       if (debug == 2) { printf(" Entered static void ct_reset_term...\n");}
-	if ( ioctl(ttyfd,TCSETA,&cooked) < 0)
+	if (tcsetattr(ttyfd, TCSANOW, &cooked) < 0)
 	{
-		perror("ioctl TCSETA");
+		perror("tcsetattr");
 		exit(-1);
 	}
 	close(ttyfd);
@@ -679,7 +678,6 @@ static void	ct_setup_link(void)
 /*-------------------------------------------------------------------------*/
 static void	ct_init_term(void)
 {
-	long	savflgs;
         if (debug == 2) { printf(" Entered static void ct_init_term...\n");}
 
 	if ((ttyfd=open("/dev/tty",O_RDWR)) < 0)
@@ -689,25 +687,14 @@ static void	ct_init_term(void)
 	}
         fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) | O_NONBLOCK);
 
-	memcpy(&raw,&cooked,sizeof(struct termio));
+	memcpy(&raw,&cooked,sizeof(struct termios));
 
-	raw.c_iflag &= INLCR;
-	raw.c_lflag &= ~(ICANON | ISIG | ECHO);
-	raw.c_cc[4] = 1;
-	raw.c_cc[5] = 2;
-
-	if ( ioctl(ttyfd,TCSETA,&raw) < 0)
+	cfmakeraw(&raw);
+	if (tcsetattr(ttyfd, TCSANOW, &raw) < 0)
 	{
-		perror("ioctl TCSETA");
+		perror("tcsetattr");
 		exit(-1);
 	}
-	if ( (savflgs=fcntl(ttyfd,F_GETFL)) < 0)
-	{
-		perror("getflg");
-		ct_reset_term();
-		exit(-1);
-	}
-
 }
 /*-------------------------------------------------------------------------*/
 
@@ -1776,7 +1763,7 @@ static void ct_proc_pkt(void)
 		}
 		if (cnt==bufptr) ct_read_pkt();
 	}
-	printf("\n\nReturned to local host.\n");
+	printf("\r\n\nReturned to local host.\r\n");
 }
 /*-------------------------------------------------------------------------*/
 int main(int argc, char *argv[])
@@ -1836,9 +1823,9 @@ int main(int argc, char *argv[])
     /* ct_setup_link may use "cooked" to send terminal characteristics
      * to the other end
      */
-    if ( ioctl(ttyfd,TCGETA,&cooked) < 0)
+    if (tcgetattr(ttyfd, &cooked) < 0)
     {
-	    perror("ioctl TCGETAR");
+	    perror("tcgetattr");
 	    exit(-1);
     }
     ct_setup_link();			/* Setup link		   */
