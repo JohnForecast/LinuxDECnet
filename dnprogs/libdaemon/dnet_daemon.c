@@ -49,7 +49,7 @@
 #define FALSE 0
 #endif
 #define MAX_FORKS 10
-typedef int bool;
+typedef int bool_t;
 
 #define NODE_LENGTH 20
 #define USERNAME_LENGTH 65
@@ -76,7 +76,7 @@ struct object
 {
     char  name[USERNAME_LENGTH]; // Object name
     unsigned int number;         // Object number
-    bool  proxy;                 // Whether to use proxies
+    bool_t  proxy;               // Whether to use proxies
     char  user[USERNAME_LENGTH]; // User to use if proxies not used
     char  daemon[PATH_MAX];      // Name of daemon
     int   auto_accept;           // Auto Accept incoming connections
@@ -89,11 +89,11 @@ static struct object *object_db = NULL;
 static struct object *thisobj   = NULL;
 static const char *proxy_filename = SYSCONF_PREFIX "/etc/decnet.proxy";
 static const char *dnetd_filename = SYSCONF_PREFIX "/etc/dnetd.conf";
-static bool volatile do_shutdown = FALSE;
+static bool_t volatile do_shutdown = FALSE;
 static int verbose;
 static char errstring[1024];
 static struct optdata_dn optdata;
-static bool have_optdata = FALSE;
+static bool_t have_optdata = FALSE;
 static char *lasterror="";
 
 // Catch child process shutdown
@@ -268,7 +268,7 @@ static void free_proxy(void)
 }
 
 // Always returns false. Sets the error string to strerror(errno)
-static bool error_return(char *txt)
+static bool_t error_return(char *txt)
 {
     snprintf(errstring, sizeof(errstring), "%s: %s", txt, strerror(errno));
     lasterror = errstring;
@@ -277,11 +277,11 @@ static bool error_return(char *txt)
 
 
 // Check the proxy database for authentication
-static bool check_proxy_database(char *nodename,
-				 char *remoteuser,
-				 char *localuser)
+static bool_t check_proxy_database(char *nodename,
+				   char *remoteuser,
+				   char *localuser)
 {
-    bool found = FALSE;
+    bool_t found = FALSE;
     struct proxy *p;
 
 // Re-read the proxy database 'cos it has changed.
@@ -321,7 +321,7 @@ static int waitfor(int sockfd)
     int                  newsock;
     unsigned int         len;
     struct sockaddr_dn	 sockaddr;
-    static bool listening = FALSE;
+    static bool_t listening = FALSE;
 
     memset(&sockaddr, 0, sizeof(sockaddr));
 
@@ -377,7 +377,7 @@ static int fork_and_setuid(int sockfd)
     pid_t   newpid;
     uid_t   newuid;
     gid_t   newgid;
-    bool    use_proxy;
+    bool_t  use_proxy;
     struct  passwd *pw;
     int     have_shadow = -1;
     memset(&sockaddr, 0, sizeof(sockaddr));
@@ -755,7 +755,7 @@ static void load_dnetd_conf(void)
 }
 
 // Bind to an object number
-bool bind_number(int sockfd, int object)
+bool_t bind_number(int sockfd, int object)
 {
     struct sockaddr_dn bind_sockaddr;
     int status;
@@ -779,7 +779,7 @@ bool bind_number(int sockfd, int object)
 }
 
 // Bind to an object number
-bool bind_name(int sockfd, char *object)
+bool_t bind_name(int sockfd, char *object)
 {
     struct sockaddr_dn bind_sockaddr;
     int status;
@@ -804,7 +804,7 @@ bool bind_name(int sockfd, char *object)
 }
 
 // Bind to the wildcard object
-bool bind_wild(int sockfd)
+bool_t bind_wild(int sockfd)
 {
     struct sockaddr_dn bind_sockaddr;
     int status;
@@ -837,11 +837,11 @@ bool bind_wild(int sockfd)
 // This is the keystone of all DECnet daemons that can be called from dnetd
 //
 int dnet_daemon(int object, char *named_object,
-		int verbosity, bool do_fork)
+		int verbosity, bool_t do_fork)
 {
     struct sockaddr_dn  sa, remotesa;
     unsigned int        namelen = sizeof(struct sockaddr_dn);
-    bool                bind_status  = FALSE;
+    bool_t              bind_status  = FALSE;
     pid_t               pid;
     int                 sockfd;
     int                 acceptmode;

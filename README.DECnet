@@ -276,6 +276,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    7/30/25
+
+    Change type "bool" to "bool_t" in dnet_daemon.c since "bool" is now a
+    reserved keywoprd in C23.
+
+    Update user code version to 3.17
+
+
     7/26/25
 
     Fix computation of the remote segment size.
