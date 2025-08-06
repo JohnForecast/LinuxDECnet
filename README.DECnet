@@ -62,6 +62,14 @@ Changes from RaspbianDECnet:
         infrastructure and the routing infrastructure. LinuxDECnet does not
         use any of these frameworks.
 
+NOTE:
+
+    Both RaspianDECnet and LinuxDECnet contain 2 implementations of the CTERM protocol;
+    dnlogin is the primary implementation and sethost contains a different implementation.
+    I will no longer fix bugs in the sethost CTERM implementation. sethost may still be
+    used for connecting to RSTS and TOPS-20 via their private protocols (the RSX private
+    protocol is not implemented) but dnlogin should be the preferred mechanism for CTERM.
+    
 
 Installation:
 
