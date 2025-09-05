@@ -190,16 +190,18 @@ struct sock *dn_sk_lookup_by_skb(
         sk_for_each(sk, &dn_sk_hash[cb->dst_port & DN_SK_HASH_MASK]) {
                 struct dn_scp *scp = DN_SK(sk);
 
-                if (cb->src != dn_saddr2dn(&scp->peer))
-                        continue;
-                if (cb->dst_port != scp->addrloc)
-                        continue;
-                if (scp->addrrem && (cb->src_port != scp->addrrem))
-                        continue;
+                if (scp->state != DN_CN) {
+                        if (cb->src != dn_saddr2dn(&scp->peer))
+                                continue;
+                        if (cb->dst_port != scp->addrloc)
+                                continue;
+                        if (scp->addrrem && (cb->src_port != scp->addrrem))
+                                continue;
 
-                sock_hold(sk);
-                read_unlock_bh(&dn_sk_hash_lock);
-                return sk;
+                        sock_hold(sk);
+                        read_unlock_bh(&dn_sk_hash_lock);
+                        return sk;
+                }
         }
         read_unlock_bh(&dn_sk_hash_lock);
         return NULL;

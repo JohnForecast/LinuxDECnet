@@ -281,6 +281,14 @@ Kernel module versions
 		than assuming that if the remote system is on the same
 		ethernet that it will use maximum size packet.
 
+    3.0.17      Stop matching incoming packets against links in the CN state
+                which is entered when we receive a DC(NO_LINK) message. This
+                means that we will correctly send back our own DC(NO_LINK)
+                response when we receive any further traffic on the link
+                rather than just drop traffic which causes the link to
+                remain active.
+
+
 Changes from previous Linux DECnet release:
 
 
