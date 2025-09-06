@@ -268,18 +268,18 @@ Kernel module versions
                 incoming messages which do not map to a valid socket.
                 Reduce initial round-trip estimate to 3 seconds (from 5).
 
-    3.0.15	The logic for decrementing the flow control count for message
-		and segment flow control was inverted (this code came from
-		the orginal DECnet on Linux from the late '90's). If NSP data
-		messsages fit into a single data link packet (like most cases
-		for DEC protocols) everything would work correctly. Larger
-		messages would eventually result in a hung logical link or
-		data overrun issues.
+    3.0.15      The logic for decrementing the flow control count for message
+                and segment flow control was inverted (this code came from
+                the orginal DECnet on Linux from the late '90's). If NSP data
+                messsages fit into a single data link packet (like most cases
+                for DEC protocols) everything would work correctly. Larger
+                messages would eventually result in a hung logical link or
+                data overrun issues.
 
-    3.0.16	Correctly compute the remote segment size based on the
-		SEGSIZE parameter in the connect initiate message rather
-		than assuming that if the remote system is on the same
-		ethernet that it will use maximum size packet.
+    3.0.16      Correctly compute the remote segment size based on the
+                SEGSIZE parameter in the connect initiate message rather
+                than assuming that if the remote system is on the same
+                ethernet that it will use maximum size packet.
 
     3.0.17      Stop matching incoming packets against links in the CN state
                 which is entered when we receive a DC(NO_LINK) message. This
@@ -287,6 +287,10 @@ Kernel module versions
                 response when we receive any further traffic on the link
                 rather than just drop traffic which causes the link to
                 remain active.
+
+    3.0.18      Fix parsing of incoming link service messages so that
+                SEND/DONT_SEND are processed when the remote system uses
+                message or segment flow control.
 
 
 Changes from previous Linux DECnet release:

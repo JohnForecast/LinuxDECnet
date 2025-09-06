@@ -510,7 +510,7 @@ static struct sock *dn_nsp_find_listener(
 }
 
 /*
- * Generate an apprpriate response if there was no socket associated
+ * Generate an appropriate response if there was no socket associated
  * with an incoming message.
  */
 static int dn_nsp_no_sock(
@@ -518,7 +518,6 @@ static int dn_nsp_no_sock(
   uint16_t reason
 )
 {
-        struct dn_skb_cb *cb = DN_SKB_CB(skb);
         int ret = NET_RX_DROP;
 
         if (reason != NSP_REASON_OK) {
@@ -579,8 +578,8 @@ int dn_nsp_rcv_gen(
                  */
                 if ((cb->rt_flags & RT_FLG_IE) == 0)
                         scp->segsize_rem =
-				min(scp->segsize_rem,
-                                	decnet_segbufsize - NSP_MAX_DATAHDR);
+                                min(scp->segsize_rem,
+                                        decnet_segbufsize - NSP_MAX_DATAHDR);
         }
 
         if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
@@ -691,19 +690,11 @@ int dn_nsp_rcv_ls(
 
         if (seq_next(scp->other.num_rcv, segnum)) {
                 if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_DATA) {
+                        if ((fcval < 0) && (fctype != NSP_FCOPT_SEG))
+                                goto drop;
+                        
                         switch (lsflags & NSP_FCMOD_MASK) {
                                 case NSP_FCMOD_NOC:
-                                        if (fcval < 0) {
-                                                unsigned char pfcval = -fcval;
-
-                                                if ((scp->data.flowrem > pfcval) &&
-                                                    (fctype == NSP_FCOPT_MSG)) {
-                                                        scp->data.flowrem -= pfcval;
-                                                }
-                                        } else if (fcval > 0) {
-                                                scp->data.flowrem += fcval;
-                                                wakeup = 1;
-                                        }
                                         break;
                                                 
                                 case NSP_FCMOD_NOSND:
@@ -719,6 +710,13 @@ int dn_nsp_rcv_ls(
                                 default:
                                         goto drop;
                         }
+
+                        /*
+                         * Update the flow control count.
+                         */
+                        if (fcval != 0)
+                                if ((scp->data.flowrem += fcval) >= 0)
+                                        wakeup = 1;
                 } else {
                         if ((lsflags & NSP_FCVAL_MASK) == NSP_FCVAL_INTR) {
                                 if (fcval > 0) {
@@ -868,8 +866,8 @@ int dn_nsp_rcv_cc(
                  */
                 if ((cb->rt_flags & RT_FLG_IE) == 0)
                         scp->segsize_rem =
-				min(scp->segsize_rem,
-                        		decnet_segbufsize - NSP_MAX_DATAHDR);
+                                min(scp->segsize_rem,
+                                        decnet_segbufsize - NSP_MAX_DATAHDR);
 
                 /*
                  * Update the local segment size in case it has changed.

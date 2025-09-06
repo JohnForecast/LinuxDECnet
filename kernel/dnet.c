@@ -746,8 +746,8 @@ static int dn_accept(
   struct proto_accept_arg *arg
 )
 {
-	int flags = arg->flags;
-	bool kern = arg->kern;
+        int flags = arg->flags;
+        bool kern = arg->kern;
 #else
 static int dn_accept(
   struct socket *sock,
@@ -830,7 +830,7 @@ static int dn_accept(
         newscp->info_rem = cb->info;
         newscp->segsize_rem = cb->segsize;
         if ((cb->rt_flags & RT_FLG_IE) == 0)
-        	dn_segsize2eth(newscp->nextEntry, newscp->segsize_rem);
+                dn_segsize2eth(newscp->nextEntry, newscp->segsize_rem);
         newscp->accept_mode = scp->accept_mode;
 
         newsk->sk_state = DNET_LISTEN;
@@ -885,7 +885,7 @@ static int dn_accept(
         release_sock(newsk);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
-	arg->err = err;
+        arg->err = err;
 #endif
         return err;
 }
@@ -1318,12 +1318,12 @@ static int dn_data_ready(
                 len += skb->len;
 
                 if ((cb->nsp_flags & NSP_MSG_EOM) != 0) {
-			/*
-			 * If we are using message framing (SOCK_SEQPACKET
-	`		 * of WAITALL) we read to EOM.
-			 */
-			if (framing != 0)
-				return 1;
+                        /*
+                         * If we are using message framing (SOCK_SEQPACKET
+        `                * of WAITALL) we read to EOM.
+                         */
+                        if (framing != 0)
+                                return 1;
                 }
 
                 /*
@@ -1388,11 +1388,11 @@ static int dn_recvmsg(
         int rv = 0;
         struct sk_buff *skb, *n;
         long timeo = sock_rcvtimeo(sk, flags & MSG_DONTWAIT);
-	int msg_framing = 1;
+        int msg_framing = 1;
 
-	if ((sock->type == SOCK_STREAM) &&
-	    ((flags & (MSG_WAITALL | MSG_OOB)) == 0))
-		msg_framing = 0;
+        if ((sock->type == SOCK_STREAM) &&
+            ((flags & (MSG_WAITALL | MSG_OOB)) == 0))
+                msg_framing = 0;
 
         lock_sock(sk);
 
@@ -1494,36 +1494,36 @@ static int dn_recvmsg(
                                 skb_pull(skb, chunk);
                 }
 
-		/*
-		 * Decide if we need to unlink and free this skb
-		 */
-		if ((flags & MSG_PEEK) == 0) {
-			if ((skb->len == 0) ||
-			     ((copied == size) && (msg_framing != 0))) {
-                        	skb_unlink(skb, queue);
-                        	kfree_skb(skb);
+                /*
+                 * Decide if we need to unlink and free this skb
+                 */
+                if ((flags & MSG_PEEK) == 0) {
+                        if ((skb->len == 0) ||
+                             ((copied == size) && (msg_framing != 0))) {
+                                skb_unlink(skb, queue);
+                                kfree_skb(skb);
 
-                        	if ((flags & MSG_OOB) != 0) {
-                                	dn_nsp_sched_pending(sk, DN_PEND_INTR);
-                        	} else {
-                                	if ((scp->data.flowloc_sw == DN_DONTSEND) &&
-                                    	     !dn_congested(sk)) {
-                                        	scp->data.flowloc_sw = DN_SEND;
-                                        	dn_nsp_sched_pending(sk, DN_PEND_SW);
-                                	}
-				}
+                                if ((flags & MSG_OOB) != 0) {
+                                        dn_nsp_sched_pending(sk, DN_PEND_INTR);
+                                } else {
+                                        if ((scp->data.flowloc_sw == DN_DONTSEND) &&
+                                             !dn_congested(sk)) {
+                                                scp->data.flowloc_sw = DN_SEND;
+                                                dn_nsp_sched_pending(sk, DN_PEND_SW);
+                                        }
+                                }
                         }
                 }
 
-		if (eor && (msg_framing != 0))
-			break;
+                if (eor && (msg_framing != 0))
+                        break;
 
                 if ((flags & MSG_OOB) != 0)
                         break;
 
-		if (sock->type == SOCK_STREAM)
-                	if (copied >= target)
-                        	break;
+                if (sock->type == SOCK_STREAM)
+                        if (copied >= target)
+                                break;
         }
 
         rv = copied;
@@ -1572,19 +1572,18 @@ static inline int dn_is_blocked(
                 if ((scp->other.flowrem == 0) || dn_intr_xmt_pending(queue))
                         return 1;
         } else {
-        	if (sk_wmem_alloc_get(sk) >= READ_ONCE(sk->sk_sndbuf))
-               		return 1;
+                if (sk_wmem_alloc_get(sk) >= READ_ONCE(sk->sk_sndbuf))
+                        return 1;
         
                 if (skb_queue_len(queue) >= scp->snd_window)
                         return 1;
 
-                if (scp->data.services_rem != NSP_FCOPT_NONE) {
-                        if (scp->data.flowrem == 0)
+                if (scp->data.flowrem_sw == DN_DONTSEND)
+                        return 1;
+                
+                if (scp->data.services_rem != NSP_FCOPT_NONE)
+                        if (scp->data.flowrem <= 0)
                                 return 1;
-                } else {
-                        if (scp->data.flowrem_sw == DN_DONTSEND)
-                                return 1;
-                }
         }
         return 0;
 }
@@ -1849,7 +1848,7 @@ static int dnet_zero_write(
                         return -EINVAL;
 
                 if (!ISNUM(*str))
-                	return -EINVAL;
+                        return -EINVAL;
                 node = *str++ -'0';
                 if (ISNUM(*str)) {
                         node *= 10;
@@ -1865,7 +1864,7 @@ static int dnet_zero_write(
                 }
 
                 if ((node == 0) || (node > 1023) || (area == 0) || (area > 63))
-                	return -EINVAL;
+                        return -EINVAL;
 
                 if (ISALPHANUM(*str))
                         return -EINVAL;
@@ -1932,12 +1931,12 @@ static int __init dnet_init(void)
                                 dn_register_sysctl();
 
 #ifdef CONFIG_PROC_FS
-				proc_create_net_single_write("decnet_zero_node",
-							      0222,
-							      init_net.proc_net,
-							      NULL,
-							      dnet_zero_write,
-							      NULL);
+                                proc_create_net_single_write("decnet_zero_node",
+                                                              0222,
+                                                              init_net.proc_net,
+                                                              NULL,
+                                                              dnet_zero_write,
+                                                              NULL);
 #endif
                                 return 0;
                         }

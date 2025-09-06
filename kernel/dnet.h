@@ -33,7 +33,7 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.17"
+#define DNET_REVISION   "3.0.18"
 
 /*
  * Define the cost to be returned by network management for the ethernet
@@ -87,8 +87,8 @@ struct dn_subchannel {
 #define DN_DONTSEND             1
 #define DN_NOCHANGE             0
 
-        uint16_t                flowrem;
-        uint16_t                flowloc;
+        int16_t                 flowrem;
+        int16_t                 flowloc;
 
         uint8_t                 services_rem;
         uint8_t                 services_loc;
