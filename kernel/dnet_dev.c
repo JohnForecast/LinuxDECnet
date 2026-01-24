@@ -49,7 +49,11 @@ void dn_dev_timer(
   struct timer_list *t
 )
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,16,0)
+        struct dn_device *device = timer_container_of(device, t, timer);
+#else
         struct dn_device *device = from_timer(device, t, timer);
+#endif
 
         /*
          * If we have been asked to unregister this device, shut down the

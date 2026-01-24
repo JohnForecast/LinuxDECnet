@@ -359,7 +359,11 @@ int __init dn_node_init(void)
 
 void __exit dn_node_cleanup(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
+        timer_delete(&dn_node_timer);
+#else
         del_timer(&dn_node_timer);
+#endif
 
         /*** Flush node db entries ***/
 #ifdef CONFIG_PROC_FS

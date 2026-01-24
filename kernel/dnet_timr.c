@@ -20,13 +20,18 @@
 #include <net/sock.h>
 #include <linux/atomic.h>
 #include <linux/jiffies.h>
+#include <linux/version.h>
 #include "dnet.h"
 
 static void dn_slow_timer(
   struct timer_list *t
 )
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,16,0)
+        struct sock *sk = timer_container_of(sk, t, sk_timer);
+#else
         struct sock *sk = from_timer(sk, t, sk_timer);
+#endif
         struct dn_scp *scp = DN_SK(sk);
 
         bh_lock_sock(sk);

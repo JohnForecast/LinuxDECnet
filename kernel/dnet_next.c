@@ -564,7 +564,11 @@ int __init dn_next_init(void)
 
 void __exit dn_next_cleanup(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
+        timer_delete(&dn_next_timer);
+#else
         del_timer(&dn_next_timer);
+#endif
         refcount_dec(&loop->refcount);
         dn_next_scan(1);
 
