@@ -668,6 +668,7 @@ static int __dn_connect(
         if ((saddr == NULL) ||
             (addrlen != sizeof(struct sockaddr_dn)) ||
             (saddr->sdn_family != AF_DECnet) ||
+	    (le16_to_cpu(saddr->sdn_objnamel) > DN_MAXOBJL) ||
             ((saddr->sdn_flags & SDF_WILD) != 0))
                 goto out;
 

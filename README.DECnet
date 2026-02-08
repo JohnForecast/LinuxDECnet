@@ -296,6 +296,8 @@ Kernel module versions
     3.0.19	Fix macro and routine names which changed in kernel
 		6.15.0 and 6.16.0.
 
+    3.0.20	Validate object name length when connecting to a named
+		object.
 
 Changes from previous Linux DECnet release:
 
