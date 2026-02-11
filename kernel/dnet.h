@@ -33,7 +33,7 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.21"
+#define DNET_REVISION   "3.0.22"
 
 /*
  * Define the cost to be returned by network management for the ethernet

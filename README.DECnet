@@ -303,6 +303,11 @@ Kernel module versions
 		device is running in promiscuous mode such as when used as
 		part of a bridge or running tcpdump or smilar tools.
 
+    3.0.22	Slightly improve the performance of 3.0.21 by only allowing
+		routing control messages which are addressed to the
+		"All Endnodes" multicast address, rather than filtering
+		out the "All Routers" address for all message types.
+
 
 Changes from previous Linux DECnet release:
 

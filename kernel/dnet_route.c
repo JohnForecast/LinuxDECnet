@@ -46,6 +46,16 @@ static int dn_routing_ctl(
         uint8_t fval = RT_FLG_RHELLO | (dn_IVprime ? RT_FLG_FP : 0);
         uint16_t src;
 
+	/*
+	 * Discard all packets sent to multicast addresses other than
+	 * "All Endnodes". These packets can slip by ethernet filtering
+	 * if the ethernet device is in  promiscuous mode, such as when
+	 * used through a bridge or during protocol capture by tools
+	 * such as tcpdump.
+	 */
+	if (memcmp(dn_all_endnodes, eth_hdr(skb)->h_dest, 6) != 0)
+		goto out;
+
         if ((cb->rt_flags & (RT_FLG_RSVD | RT_FLG_CNTL_MSK)) == fval) {
                 if (pskb_may_pull(skb, sizeof(struct rt_eth_rtr_hello))) {
                         hp = (struct rt_eth_rtr_hello *)skb->data;
@@ -205,15 +215,6 @@ int dn_routing_rcv(
 
         if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL)
                 goto out;
-
-	/*
-	 * Since we can only be an endnode, discard all packets sent to
-	 * the "All Routers" multicast address. These packets can slip by
-	 * ethernet filtering if the ethernet device is in promiscuous
-	 * mode, such when used through a bridge.
-	 */
-	if (memcmp(dn_all_routers, eth_hdr(skb)->h_dest, 6) == 0)
-		goto drop;
 
         if ((dev == ETHDEVICE.dev) || (dev == LOOPDEVICE.dev)) {
                 if (pskb_may_pull(skb, 3)) {
