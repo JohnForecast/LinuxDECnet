@@ -206,6 +206,15 @@ int dn_routing_rcv(
         if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL)
                 goto out;
 
+	/*
+	 * Since we can only be an endnode, discard all packets sent to
+	 * the "All Routers" multicast address. These packets can slip by
+	 * ethernet filtering if the ethernet device is in promiscuous
+	 * mode, such when used through a bridge.
+	 */
+	if (memcmp(dn_all_routers, eth_hdr(skb)->h_dest, 6) == 0)
+		goto drop;
+
         if ((dev == ETHDEVICE.dev) || (dev == LOOPDEVICE.dev)) {
                 if (pskb_may_pull(skb, 3)) {
                         skb_pull(skb, sizeof(uint16_t));

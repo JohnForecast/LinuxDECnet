@@ -296,8 +296,13 @@ Kernel module versions
     3.0.19	Fix macro and routine names which changed in kernel
 		6.15.0 and 6.16.0.
 
-    3.0.20	Validate object name length when connecting to a named
-		object.
+    3.0.20	Validate object name length when connecting.
+
+    3.0.21	Filter out incoming packets addressed to the "All Routers"
+		multicast address. These can be received when the ethernet
+		device is running in promiscuous mode such as when used as
+		part of a bridge or running tcpdump or smilar tools.
+
 
 Changes from previous Linux DECnet release:
 
