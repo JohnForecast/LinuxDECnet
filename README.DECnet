@@ -318,6 +318,13 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    2/17/26
+
+    Add support to "ncp" to display remote event logging information.
+
+    Update user code version to 3.19
+
+
     7/30/25
 
     "sethost" used the "termio" interface for accessing terminals. Change

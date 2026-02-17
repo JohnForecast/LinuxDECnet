@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
     (C) John Forecast                           john@forecast.name
 
     This program is free software; you can redistribute it and/or modify
@@ -149,8 +149,11 @@
   (NICE_TYPE_NC | NICE_TYPE_NC_BIN | NICE_TYPE_NC_BIN_IMAGE | NICE_TYPE_NC_BIN_HEX)
 #define NICE_TYPE_C1 \
   (NICE_TYPE_C | NICE_TYPE_C_SING | 1)
-#define NICE_TYPE_CM(n) \
-  (NICE_TYPE_C | NICE_TYPE_C_MULTI | (n))
+#define NICE_TYPE_C2 \
+  (NICE_TYPE_C | NICE_TYPE_C_SING | 2)
+#define NICE_TYPE_CMULTI \
+  (NICE_TYPE_C | NICE_TYPE_C_MULTI)
+#define NICE_TYPE_CM(n) (NICE_TYPE_CMULTI | (n))
 
 /*
  * Macros to build tables mapping parameter or counter numbers to a display
@@ -540,6 +543,7 @@
 #define NICE_P_G_ENTITY_MODULE  4               /* MODULE */
 #define NICE_P_G_ENTITY_AREA    5               /* AREA */
 
+#define NICE_P_G_CLASS_TYPE	0xC000		/* Type of class */
 #define NICE_P_G_CLASS_SINGLE   0x0000          /* Single class */
 #define NICE_P_G_CLASS_ALL      0x8000          /* All events for class */
 #define NICE_P_G_CLASS_KNOWN    0xC000          /* KNOWN EVENTS */
@@ -982,9 +986,12 @@ extern int NICErewind(void);
 extern int NICEget1(uint8_t *);
 extern int NICEget2(uint16_t *);
 extern int NICEget4(uint32_t *);
+extern int NICEpeek2(uint16_t *);
 extern int NICEgetAI(char *, char, char *, int);
 extern int NICEcopyAI(uint8_t *, int);
+extern int NICEcopyHI(uint8_t *, int);
 extern int NICEskipAI(void);
+extern int NICEgetType(uint8_t, void *, int);
 extern void NICEbackup(int);
 extern int NICEisEmpty(void);
 

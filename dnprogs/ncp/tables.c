@@ -67,8 +67,8 @@ static struct element showEntities[] = {
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_SFMT_ACTIVE, NICE_ENT_LINE) },
   { "active logging",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(CTRS)|READ_OPT(SUM),
-           NICE_SFMT_ACTIVE, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(CHAR)|READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
+           NICE_P_G_SINK_ACTIVE, NICE_ENT_LOGGING) },
   { "active nodes",
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_NFMT_ACTIVE, NICE_ENT_NODE) },
@@ -94,7 +94,8 @@ static struct element showEntities[] = {
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_SFMT_KNOWN, NICE_ENT_LINE) },
   { "known logging",
-     PACK4(0, 0, NICE_SFMT_KNOWN, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(CHAR)|READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
+	   NICE_P_G_SINK_KNOWN, NICE_ENT_LOGGING) },
   { "known nodes",
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_NFMT_KNOWN, NICE_ENT_NODE) },
@@ -102,14 +103,14 @@ static struct element showEntities[] = {
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_SFMT_STRING, NICE_ENT_LINE) },
   { "logging console",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(CHAR)|READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
+           NICE_P_G_SINK_CONSOLE, NICE_ENT_LOGGING) },
   { "logging file",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(CHAR)|READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
+           NICE_P_G_SINK_FILE, NICE_ENT_LOGGING) },
   { "logging monitor",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(CHAR)|READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
+           NICE_P_G_SINK_MONITOR, NICE_ENT_LOGGING) },
   { "loop nodes",
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            0, NICE_ENT_NODE) }, /*** TODO ***/
@@ -151,7 +152,8 @@ static struct element listEntities[] = {
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_SFMT_KNOWN, NICE_ENT_LINE) },
   { "known logging",
-     PACK4(0, 0, NICE_SFMT_KNOWN, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(EVENTS)|READ_OPT(SUM),
+	   NICE_P_G_SINK_KNOWN, NICE_ENT_LOGGING) },
   { "known nodes",
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_NFMT_KNOWN, NICE_ENT_NODE) },
@@ -159,14 +161,14 @@ static struct element listEntities[] = {
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            NICE_SFMT_STRING, NICE_ENT_LINE) },
   { "logging console",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(EVENTS)|READ_OPT(SUM),
+           NICE_P_G_SINK_CONSOLE, NICE_ENT_LOGGING) },
   { "logging file",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(EVENTS)|READ_OPT(SUM),
+           NICE_P_G_SINK_FILE, NICE_ENT_LOGGING) },
   { "logging monitor",
-     PACK4(0, READ_OPT(EVENTS)|READ_OPT(STATUS)|READ_OPT(SUM),
-           0, NICE_ENT_LOGGING) },
+     PACK4(0, READ_OPT(EVENTS)|READ_OPT(SUM),
+           NICE_P_G_SINK_MONITOR, NICE_ENT_LOGGING) },  
   { "loop nodes",
      PACK4(0, READ_OPT(CHAR)|READ_OPT(CTRS)|READ_OPT(STATUS)|READ_OPT(SUM),
            0, NICE_ENT_NODE) }, /*** TODO ***/
@@ -652,6 +654,23 @@ struct nameTable circuitCtrTable[] = {
   COUNTER(NICE_C_C_E_DBSENT, "Data blocks sent", NULL),
   COUNTER(NICE_C_C_E_NOBUF, "User buffer unavailable", NULL),
   { 0, NULL, NULL }
+};
+
+/*
+ * Logging - mapping tables
+ */
+static struct valueTable loggingStateTable[] = {
+  VALUE(NICE_P_G_STATE_ON, "On"),
+  VALUE(NICE_P_G_STATE_OFF, "Off"),
+  VALUE(NICE_P_G_STATE_HOLD, "Hold"),
+  { 0, NULL }
+};
+
+struct nameTable loggingParamTable[] = {
+  PARAMETER(NICE_P_G_STATE, "State", loggingStateTable),
+  PARAMETER(NICE_P_G_NAME, "Name", NULL),
+  PARAMETER(NICE_P_G_SINKNODE, "Sink node", NULL),
+  {0, NULL, NULL }
 };
 
 /*

@@ -553,6 +553,22 @@ int NICEget4(
   return FALSE;
 }
 
+/*
+ * Peek at the next parameter value (2 bytes) without removing them from
+ * the input buffer.
+ */
+int NICEpeek2(
+  uint16_t *result
+)
+{
+  if (inlen >= sizeof(*result)) {
+    *result = inbuf[inptr];
+    *result |= inbuf[inptr + 1] << 8;
+    return TRUE;
+  }
+  return FALSE;
+}
+
 int NICEgetAI(
   char *len,
   char mask,
@@ -609,6 +625,87 @@ int NICEcopyAI(
       return result;
     }
   }
+  return FALSE;
+}
+
+/*
+ * Copy an HEX image field into a supplied buffer. The output buffer will
+ * be zeroed before the data is copied. The HEX image field will always be
+ * passed over in the input buffer even if there is insufficient space in
+ * the output buffer.
+ */
+int NICEcopyHI(
+  uint8_t *buf,
+  int maxlen
+)
+{
+  uint8_t len;
+  int result = FALSE;
+
+  memset(buf, 0, maxlen);
+
+  if (inlen >= sizeof(uint8_t)) {
+    len = inbuf[inptr++];
+    inlen -= sizeof(uint8_t);
+
+    if (len <= inlen) {
+      if (len <= maxlen) {
+	memcpy(buf, &inbuf[inptr], len);
+	result = TRUE;
+      }
+      inptr += len;
+      inlen -= len;
+      return result;
+    }
+  }
+  return FALSE;
+}
+
+/*
+ * Check if the next datatype matches the expected value and retrieve
+ * the data. No dasta will be removed from the input buffer if the data type
+ * does not match.
+ */
+int NICEgetType(
+  uint8_t expected,
+  void *result,
+  int maxlen
+)
+{
+  ssize_t save_inlen = inlen;
+  int save_inptr = inptr;
+
+  if (inlen >= sizeof(uint8_t)) {
+    if (inbuf[inptr++] == expected) {
+      inlen--;
+
+      switch (expected) {
+	case NICE_TYPE_DU1:
+	case NICE_TYPE_C1:
+	  if (NICEget1(result))
+	    return TRUE;
+	  break;
+
+	case NICE_TYPE_DU2:
+	case NICE_TYPE_C2:
+	  if (NICEget2(result))
+	    return TRUE;
+	  break;
+
+	case NICE_TYPE_AI:
+	  if (NICEcopyAI(result, maxlen))
+	    return TRUE;
+	  break;
+
+	case NICE_TYPE_HI:
+	  if (NICEcopyHI(result, maxlen))
+	    return TRUE;
+	  break;
+      }
+    }
+  }
+  inptr = save_inptr;
+  inlen = save_inlen;
   return FALSE;
 }
 

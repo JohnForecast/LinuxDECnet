@@ -129,6 +129,8 @@ extern struct nameTable areaParamTable[];
 extern struct nameTable circuitCtrTable[];
 extern struct nameTable circuitParamTable[];
 
+extern struct nameTable loggingParamTable[];
+
 extern struct table zeroEntitiesTable;
 
 extern struct table loopEntitiesTable;
