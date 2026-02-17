@@ -223,10 +223,19 @@ void dn_next_tryhard(
   struct dn_next_entry *nextp
 )
 {
-        if (!dn_IVprime) {
-                dn_dn2eth(nextp->nexthop, nextp->addr);
-        } else memcpy(nextp->nexthop, dn_unknown_dest, ETH_ALEN);
-        nextp->onEthernet = 1;
+	uint8_t macaddr[ETH_ALEN];
+	uint8_t *ethaddr = macaddr;
+
+	if (ETHDEVICE.router != NULL) {
+		nextp->onEthernet = 0;
+		ethaddr = ETHDEVICE.router->nexthop;
+	} else {
+		nextp->onEthernet = 1;
+        	if (!dn_IVprime)
+                	dn_dn2eth(macaddr, nextp->addr);
+		else ethaddr = dn_unknown_dest;
+	}
+	memcpy(nextp->nexthop, ethaddr, ETH_ALEN);
 }
 
 /*

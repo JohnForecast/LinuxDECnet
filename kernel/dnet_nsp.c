@@ -1402,8 +1402,11 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->other.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-                if (cb->xmit_count >= decnet_NSPretrans)
-                        goto lost;
+		if (cb->xmit_count > ((decnet_NSPretrans + 1) / 2)) {
+			if (cb->xmit_count > decnet_NSPretrans)
+				goto lost;
+			dn_next_tryhard(scp->nextEntry);
+		}
                 
                 reduce_win = dn_nsp_clone_xmt(skb, GFP_NOWAIT, 1);
         }
@@ -1414,8 +1417,11 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->data.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-                if (cb->xmit_count >= decnet_NSPretrans)
-                        goto lost;
+		if (cb->xmit_count > ((decnet_NSPretrans + 1) / 2)) {
+			if (cb->xmit_count > decnet_NSPretrans)
+				goto lost;
+			dn_next_tryhard(scp->nextEntry);
+		}
                 
                 reduce_win += dn_nsp_clone_xmt(skb, GFP_NOWAIT, 0);
         }

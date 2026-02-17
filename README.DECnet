@@ -308,6 +308,12 @@ Kernel module versions
 		"All Endnodes" multicast address, rather than filtering
 		out the "All Routers" address for all message types.
 
+    3.0.23	Fix off-by-1 error when checking if the retransmit count
+		has been exceeded. Fix the "tryhard" implementation to
+		manipulate the next hop address according to the routing
+		spec. Add the missing calls to "tryhard" when transmitting
+		data and interrupt/link service messages.
+
 
 Changes from previous Linux DECnet release:
 
