@@ -28,7 +28,6 @@ int dn_IVprime = 0;
 #endif
 
 uint16_t decnet_address;
-uint64_t dn_rtrchange;
 
 static uint8_t dn_eco_version[3] = { 0x02, 0x00, 0x00 };
 
@@ -88,7 +87,6 @@ static int dn_routing_ctl(
                                         device->iinfo = hp->iinfo;
                                         nextp->blksize = le16_to_cpu(hp->blksize);
                                         device->listen = device->multiplier * le16_to_cpu(hp->timer);
-                                        dn_rtrchange = get_jiffies_64();
                                 }
                                 ETHDEVICE.t4 = ETHDEVICE.listen;
                                 dn_next_release(nextp);

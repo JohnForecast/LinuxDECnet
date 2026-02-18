@@ -1914,8 +1914,6 @@ static int __init dnet_init(void)
         trc_init();
 #endif
         
-        dn_rtrchange = get_jiffies_64();
-        
         /*
          * Make sure mandatory parameters are present.
          */

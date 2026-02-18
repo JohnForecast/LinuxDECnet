@@ -37,7 +37,6 @@
 typedef struct dn_next_entry {
         struct dn_next_entry    *next;
         refcount_t              refcount;
-        uint64_t                creation;
         uint16_t                addr;
         uint16_t                blksize;
         uint8_t                 onEthernet;

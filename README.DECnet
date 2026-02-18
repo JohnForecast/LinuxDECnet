@@ -314,6 +314,9 @@ Kernel module versions
 		spec. Add the missing calls to "tryhard" when transmitting
 		data and interrupt/link service messages.
 
+    3.0.24	Simplify the next-hop cache so there can only be a single
+		entry for each node address.
+
 
 Changes from previous Linux DECnet release:
 

@@ -21,7 +21,6 @@ extern int dn_IVprime;
 #endif
 
 extern uint16_t decnet_address;
-extern uint64_t dn_rtrchange;
 
 int dn_routing_rcv(struct sk_buff *, struct net_device *,
                    struct packet_type *, struct net_device *);

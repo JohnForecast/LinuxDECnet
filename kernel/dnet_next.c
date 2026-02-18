@@ -35,22 +35,6 @@ struct dn_next_entry *loop = NULL;
 uint8_t loopMacAddr[ETH_ALEN];
 
 /*
- * Check if a dn_next_entry describes an off-ethernet node and was created
- * prior to the last router change.
- */
-static int dn_next_is_old(
-  struct dn_next_entry *nextp
-)
-{
-        if ((nextp->deviceIndex == ETHINDEX) &&
-            !nextp->onEthernet &&
-            !time_after64(nextp->creation, dn_rtrchange))
-                return 1;
-
-        return 0;
-}
-
-/*
  * Create a dn_next_entry and link it into the hash table. Note the spinlock
  * on the bucket must be held across this call.
  */
@@ -67,7 +51,6 @@ static struct dn_next_entry *create_next_entry(
         
         if ((nextp = kmalloc(NEXT_CACHE_ENTRY_SIZE, GFP_NOWAIT)) != NULL) {
                 refcount_set(&nextp->refcount, 1);
-                nextp->creation = get_jiffies_64();
                 nextp->addr = addr;
                 nextp->blksize = ETHDEVICE.blksize;
                 nextp->onEthernet = onEthernet;
@@ -117,7 +100,7 @@ int dn_next_in_cache(
         spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
-                        if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
+                        if (nextp->addr == addr) {
                                 if (ethaddr != NULL)
                                         memcpy(ethaddr, nextp->nexthop, ETH_ALEN);
                                 if (onEthernet)
@@ -152,7 +135,7 @@ int dn_next_update(
         spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
-                        if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
+                        if (nextp->addr == addr) {
                                 nextp->timeout = jiffies + (CACHE_TIMEOUT * HZ);
                                 memcpy(nextp->nexthop, ethaddr, ETH_ALEN);
                                 nextp->onEthernet = onEthernet;
@@ -191,7 +174,7 @@ dn_next_entry *dn_next_update_and_hold(
         spin_lock_bh(&bucket->lock);
         if ((nextp = bucket->chain) != NULL) {
                 do {
-                        if ((nextp->addr == addr) && !dn_next_is_old(nextp)) {
+                        if (nextp->addr == addr) {
                                 nextp->timeout = jiffies + (CACHE_TIMEOUT * HZ);
                                 if (ethaddr != NULL)
                                         memcpy(nextp->nexthop, ethaddr, ETH_ALEN);
@@ -478,9 +461,6 @@ static int dn_next_cache_seq_show(
 {
         struct dn_next_entry *nextp = v;
         char buf1[DN_ASCBUF_LEN], buf2[DN_ASCBUF_LEN], buf3[DN_ASCBUF_LEN];
-
-        if (dn_next_is_old(nextp))
-                return SEQ_SKIP;
 
         seq_printf(seq, "%-8s %-7s %-7s %-7s %04d %04d %04d\n",
                    dn_devices[nextp->deviceIndex].dev->name,
