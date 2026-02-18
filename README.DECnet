@@ -317,6 +317,9 @@ Kernel module versions
     3.0.24	Simplify the next-hop cache so there can only be a single
 		entry for each node address.
 
+    3.0.25	Minor code optimization for checking when to use "tryhard"
+		on transmit calls.
+
 
 Changes from previous Linux DECnet release:
 

@@ -1395,6 +1395,7 @@ void dn_nsp_xmt_socket(
         struct dn_scp *scp = DN_SK(sk);
         struct sk_buff *skb;
         unsigned int reduce_win = 0;
+	int tryhard = (decnet_NSPretrans + 1) / 2;
 
         /*
          * First check for otherdata/linkservice messages
@@ -1402,7 +1403,7 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->other.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-		if (cb->xmit_count > ((decnet_NSPretrans + 1) / 2)) {
+		if (cb->xmit_count > tryhard) {
 			if (cb->xmit_count > decnet_NSPretrans)
 				goto lost;
 			dn_next_tryhard(scp->nextEntry);
@@ -1417,7 +1418,7 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->data.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-		if (cb->xmit_count > ((decnet_NSPretrans + 1) / 2)) {
+		if (cb->xmit_count > tryhard) {
 			if (cb->xmit_count > decnet_NSPretrans)
 				goto lost;
 			dn_next_tryhard(scp->nextEntry);
