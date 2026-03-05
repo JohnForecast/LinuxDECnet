@@ -20,6 +20,7 @@
 #include <linux/netdevice.h>
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
+#include <linux/workqueue.h>
 #include <net/sock.h>
 #include <linux/version.h>
 #include <linux/timekeeping.h>
@@ -27,6 +28,7 @@
 
 struct dn_node_hash_bucket *dn_node_db;
 int dn_node_hash_mask;
+static struct work_struct dn_node_work;
 static struct timer_list dn_node_timer;
 
 #define CACHE_ORDER             4
@@ -117,26 +119,18 @@ void dn_node_update_delay(
  * argument may be set to force all entries to be removed (e.g. when unloading
  * the module).
  */
-static int dn_node_scan(
+static void dn_node_scan(
   int forced
 )
 {
-        int i, delay = 60;
+        int i;
         dn_node_entry **ppe;
 
         for (i = 0; i <= dn_node_hash_mask; i++) {
                 struct dn_node_hash_bucket *bucket = &dn_node_db[i];
 
                 if (bucket->chain != NULL) {
-                        if (!forced) {
-                                if (spin_trylock(&bucket->lock) == 0) {
-                                        /*
-                                         * Try again in 1 second
-                                         */
-                                        delay = 1;
-                                        continue;
-                                }
-                        } else spin_lock(&bucket->lock);
+                        spin_lock(&bucket->lock);
                         ppe = &bucket->chain;
 
                         while (*ppe != NULL) {
@@ -154,7 +148,16 @@ static int dn_node_scan(
                         spin_unlock(&bucket->lock);
                 }
         }
-        return delay;
+}
+
+/*
+ * Work handler to scan and remove expired entries
+ */
+static void dn_node_work_handler(
+  struct work_struct *unused
+)
+{
+	dn_node_scan(0);
 }
 
 /*
@@ -164,9 +167,8 @@ static void dn_node_timeout(
   struct timer_list *unused
 )
 {
-        int delta = dn_node_scan(0);
-        
-        mod_timer(&dn_node_timer, jiffies + (delta * HZ));
+	schedule_work(&dn_node_work);
+        mod_timer(&dn_node_timer, jiffies + (60 * HZ));
 }
 
 #ifdef CONFIG_PROC_FS
@@ -344,9 +346,10 @@ int __init dn_node_init(void)
                 dn_node_db[i].chain = NULL;
         }
 
+	INIT_WORK(&dn_node_work, dn_node_work_handler);
+
         timer_setup(&dn_node_timer, dn_node_timeout, 0);
-        dn_node_timer.expires = jiffies + (HZ / 2);
-        add_timer(&dn_node_timer);
+        mod_timer(&dn_node_timer, jiffies + HZ);
 
 #ifdef CONFIG_PROC_FS
         proc_create_seq_private("decnet_nodes", 0444, init_net.proc_net,

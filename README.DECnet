@@ -320,6 +320,10 @@ Kernel module versions
     3.0.25	Minor code optimization for checking when to use "tryhard"
 		on transmit calls.
 
+    3.0.26	Convert the garbage collection routines for node and
+		next hop caches to use a work queue ratrher than run
+		directly from the timer callback.
+
 
 Changes from previous Linux DECnet release:
 

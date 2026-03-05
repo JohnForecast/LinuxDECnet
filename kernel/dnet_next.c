@@ -20,6 +20,7 @@
 #include <linux/netdevice.h>
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
+#include <linux/workqueue.h>
 #include <net/sock.h>
 #include <linux/version.h>
 #include "dnet.h"
@@ -27,6 +28,7 @@
 struct dn_next_hash_bucket *dn_next_cache;
 int dn_next_hash_mask;
 static struct timer_list dn_next_timer;
+static struct work_struct dn_next_work;
 
 #define CACHE_ORDER               4                     /* static for now */
 #define CACHE_TIMEOUT           120UL
@@ -257,10 +259,7 @@ static void dn_next_scan(
         for (i = 0; i <= dn_next_hash_mask; i++) {
                 struct dn_next_hash_bucket *bucket = &dn_next_cache[i];
 
-                if (!forced) {
-                        if (spin_trylock(&bucket->lock) == 0)
-                                continue;
-                } else spin_lock(&bucket->lock);
+                spin_lock(&bucket->lock);
                 ppe = &bucket->chain;
 
                 while (*ppe != NULL) {
@@ -277,13 +276,23 @@ static void dn_next_scan(
 }
 
 /*
+ * Work handler to scan and remove expired nexthop entries
+ */
+static void dn_next_work_handler(
+  struct work_struct *unused
+)
+{
+	dn_next_scan(0);
+}
+
+/*
  * Scan the nexthop cache and remove entries which have expired.
  */
 static void dn_next_timeout(
   struct timer_list *unused
 )
 {
-        dn_next_scan(0);
+	schedule_work(&dn_next_work);
         mod_timer(&dn_next_timer, jiffies + HZ);
 }
 
@@ -511,9 +520,10 @@ int __init dn_next_init(void)
                 dn_next_cache[i].chain = NULL;
         }
 
+	INIT_WORK(&dn_next_work, dn_next_work_handler);
+
         timer_setup(&dn_next_timer, dn_next_timeout, 0);
-        dn_next_timer.expires = jiffies + HZ;
-        add_timer(&dn_next_timer);
+        mod_timer(&dn_next_timer, jiffies + HZ);
 
         /*
          * Create a nexthop entry for the local DECnet address. Note
