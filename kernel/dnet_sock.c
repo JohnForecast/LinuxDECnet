@@ -468,6 +468,9 @@ int dn_sk_destroy_timer(
                         return 1;
                 }
         }
+
+	if (!sock_flag(sk, SOCK_DEAD))
+		sk->sk_state_change(sk);
         return 0;
 }
 

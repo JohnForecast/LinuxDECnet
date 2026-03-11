@@ -324,6 +324,9 @@ Kernel module versions
 		next hop caches to use a work queue ratrher than run
 		directly from the timer callback.
 
+    3.0.27	Make sure that a connection exits the DiscNotify state
+		when all message transmissions are finished.
+
 
 Changes from previous Linux DECnet release:
 
