@@ -319,7 +319,7 @@ void dn_segsize2eth(
   uint16_t segsize
 )
 {
-        segsize += sizeof(struct rt_long_hdr) + 1;
+        segsize += sizeof(struct rt_long_hdr);
         segsize += NSP_MAX_DATAHDR;
 
         nextp->blksize = segsize;

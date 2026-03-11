@@ -91,8 +91,8 @@ uint16_t mtu2blksize(
 {
         uint32_t blksize = dev->mtu;
 
-        if (blksize > 0xFFFF)
-                blksize = 0xFFFF;
+        if (blksize > 0x10000)
+                blksize = 0x10000;
 
         blksize -= 2;
 

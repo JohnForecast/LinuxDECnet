@@ -327,6 +327,8 @@ Kernel module versions
     3.0.27	Make sure that a connection exits the DiscNotify state
 		when all message transmissions are finished.
 
+    3.0.28	Miscellaneous fixes for computing nexthop block size.
+
 
 Changes from previous Linux DECnet release:
 

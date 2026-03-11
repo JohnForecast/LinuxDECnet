@@ -301,9 +301,9 @@ void dn_routing_tx_endnode_hello(
 }
 
 /*
- * Transmit a message using a long routing header. Note the + 3 below is
- * because a long header occupies 21 bytes so we add a padding byte to make
- * it even.
+ * Transmit a message using a long routing header. Note the + 2 below is
+ * because there is a 2 byte length field between the ethernet header and
+ * the route header.
  */
 int dn_routing_tx_long(
   struct sk_buff *skb,
@@ -327,7 +327,7 @@ int dn_routing_tx_long(
 
         skb->dev = dev = dn_devices[nextp->deviceIndex].dev;
         
-        headroom = dev->hard_header_len + sizeof(struct rt_long_hdr) + 3;
+        headroom = dev->hard_header_len + sizeof(struct rt_long_hdr) + 2;
         
         if (skb_headroom(skb) < headroom) {
                 /*
