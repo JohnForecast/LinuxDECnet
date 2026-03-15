@@ -130,7 +130,7 @@ static void dn_node_scan(
                 struct dn_node_hash_bucket *bucket = &dn_node_db[i];
 
                 if (bucket->chain != NULL) {
-                        spin_lock(&bucket->lock);
+                        spin_lock_bh(&bucket->lock);
                         ppe = &bucket->chain;
 
                         while (*ppe != NULL) {
@@ -145,7 +145,7 @@ static void dn_node_scan(
                                         } else ppe = &nodep->next;
                                 } else ppe = &nodep->next;
                         }
-                        spin_unlock(&bucket->lock);
+                        spin_unlock_bh(&bucket->lock);
                 }
         }
 }

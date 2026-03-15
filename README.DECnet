@@ -329,6 +329,8 @@ Kernel module versions
 
     3.0.28	Miscellaneous fixes for computing nexthop block size.
 
+    3.0.29	Fixed a locking problem introduced by 3.0.26
+
 
 Changes from previous Linux DECnet release:
 

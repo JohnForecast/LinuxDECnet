@@ -259,7 +259,7 @@ static void dn_next_scan(
         for (i = 0; i <= dn_next_hash_mask; i++) {
                 struct dn_next_hash_bucket *bucket = &dn_next_cache[i];
 
-                spin_lock(&bucket->lock);
+                spin_lock_bh(&bucket->lock);
                 ppe = &bucket->chain;
 
                 while (*ppe != NULL) {
@@ -271,7 +271,7 @@ static void dn_next_scan(
                                 kfree(nextp);
                         } else ppe = &nextp->next;
                 }
-                spin_unlock(&bucket->lock);
+                spin_unlock_bh(&bucket->lock);
         }
 }
 
