@@ -331,6 +331,9 @@ Kernel module versions
 
     3.0.29	Fixed a locking problem introduced by 3.0.26
 
+    3.0.30	Make sure that an inbound socket buffer is linear before
+		trying to trim() it.
+
 
 Changes from previous Linux DECnet release:
 

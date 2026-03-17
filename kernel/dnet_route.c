@@ -219,7 +219,24 @@ int dn_routing_rcv(
                         skb_pull(skb, sizeof(uint16_t));
 
                         if (len <= skb->len) {
-                                skb_trim(skb, len);
+				/*
+				 * If there is more data in the buffer than
+				 * specified by the length field, we need to
+				 * trim() the buffer. This can happen on
+				 * ethernet if the message length is smaller
+				 * than the minimum transmission size, hence
+				 * the need for a length field.
+				 */
+				if (len != skb->len) {
+					/*
+					 * First we need to make sure the
+					 * buffer is linear.
+					 */
+					if (unlikely(skb_linearize(skb)))
+						goto drop;
+
+                                	skb_trim(skb, len);
+				}
 
                                 flags = *skb->data;
 
