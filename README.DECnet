@@ -334,6 +334,8 @@ Kernel module versions
     3.0.30	Make sure that an inbound socket buffer is linear before
 		trying to trim() it.
 
+    3.0.31	Support talking to NSP 3.2 hosts (Phase III).
+
 
 Changes from previous Linux DECnet release:
 
