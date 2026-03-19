@@ -29,8 +29,13 @@
 static int dn_create(struct net *, struct socket *, int, int);
 
 static int dn_release(struct socket *);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,19,0)
+static int dn_bind(struct socket *, struct sockaddr_unsized *, int);
+static int dn_connect(struct socket *, struct sockaddr_unsized *, int, int);
+#else
 static int dn_bind(struct socket *, struct sockaddr *, int);
 static int dn_connect(struct socket *, struct sockaddr *, int, int);
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
 static int dn_accept(struct socket *, struct socket *,  struct proto_accept_arg *);
 #else
@@ -549,7 +554,11 @@ static int dn_release(
  */
 static int dn_bind(
   struct socket *sock,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,19,0)
+  struct sockaddr_unsized *uaddr,
+#else
   struct sockaddr *uaddr,
+#endif
   int addr_len
 )
 {
@@ -725,7 +734,11 @@ static int __dn_connect(
 
 static int dn_connect(
   struct socket *sock,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,19,0)
+  struct sockaddr_unsized *uaddr,
+#else
   struct sockaddr *uaddr,
+#endif
   int addrlen,
   int flags
 )

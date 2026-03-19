@@ -336,6 +336,9 @@ Kernel module versions
 
     3.0.31	Support talking to NSP 3.2 hosts (Phase III).
 
+    3.0.32	Fix dn_bind()/dn_connect() due to a parameter type
+		change in kernel 6.19.
+
 
 Changes from previous Linux DECnet release:
 
