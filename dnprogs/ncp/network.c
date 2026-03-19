@@ -35,7 +35,7 @@ uint8_t setexecvalid = 0;
 uint16_t setexecaddr;
 struct accessdata_dn setexecaccess;
 
-#define NML_OBJ		19
+#define NML_OBJ         19
 
 static int dnConnect(
   uint16_t addr,
@@ -54,8 +54,8 @@ static int dnConnect(
   if ((sock = socket(PF_DECnet, SOCK_SEQPACKET, DNPROTO_NSP)) >= 0) {
     if (access) {
       if (setsockopt(sock, DNPROTO_NSP, DSO_CONACCESS, access, sizeof(*access)) < 0) {
-	fprintf(stderr, "Unable to set access control information on socket\n");
-	goto fail;
+        fprintf(stderr, "Unable to set access control information on socket\n");
+        goto fail;
       }
     }
 
@@ -77,10 +77,10 @@ static int dnConnect(
       optdata->opt_optl = DN_MAXOPTL;
 
       if (getsockopt(sock, DNPROTO_NSP, DSO_CONDATA, optdata, &optlen) < 0) {
-	fprintf(stderr, "Failed to get optional data on connect\n");
+        fprintf(stderr, "Failed to get optional data on connect\n");
   fail:
-	close(sock);
-	return -1;
+        close(sock);
+        return -1;
       }
     }
   }
@@ -104,13 +104,14 @@ int netConnect(void)
   tellvalid = 0;
 
   if (sock >= 0) {
-    if ((optdata.opt_optl < 3) || (optdata.opt_data[0] != 4)) {
+    if ((optdata.opt_optl < 3) ||
+        ((optdata.opt_data[0] < 2) || (optdata.opt_data[0] > NICE_VERSION))) {
       fprintf(stderr, "Version mismatch\n");
       close(sock);
       return -1;
     }
   } else return -1;
-  NICEsock(sock);
+  NICEsock(sock, optdata.opt_data[0]);
   return sock;
 }
 
@@ -125,7 +126,7 @@ char *parseAccessCtrl(
     if (vmatch(wds[idx], "user") == 0) {
       idx++;
       if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
-	return "username too long";
+        return "username too long";
       access->acc_userl = strlen(wds[idx]);
       memcpy(access->acc_user, wds[idx], access->acc_userl);
       idx++;
@@ -134,7 +135,7 @@ char *parseAccessCtrl(
     if (vmatch(wds[idx], "password") == 0) {
       idx++;
       if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
-	return "password too long";
+        return "password too long";
       access->acc_passl = strlen(wds[idx]);
       memcpy(access->acc_pass, wds[idx], access->acc_passl);
       idx++;
@@ -143,7 +144,7 @@ char *parseAccessCtrl(
     if (vmatch(wds[idx], "account") == 0) {
       idx++;
       if ((idx >= args) || (strlen(wds[idx]) >= DN_MAXACCL))
-	return "account too long";
+        return "account too long";
       access->acc_accl = strlen(wds[idx]);
       memcpy(access->acc_acc, wds[idx], access->acc_accl);
       idx++;
@@ -158,19 +159,19 @@ char *parseAccessCtrl(
  * Parse a nodename/node address with optional access control information.
  * Both DECnet-VMS syntax:
  *
- *	node"username password account"::
+ *      node"username password account"::
  *
  * or DECnet-Ultrix (and RSX-11) syntax"
  *
- *	node/username/password/account::
+ *      node/username/password/account::
  *
  * where the "::" is optional.
  *
  * The access control information may also be provided by subsequent keywords:
  *
- *	USER user-id
- *	PASSWORD password
- *	ACCOUNT account
+ *      USER user-id
+ *      PASSWORD password
+ *      ACCOUNT account
  *
  * If the input was a node name, rather then a node address, a pointer to
  * a static character array of the node name is returned via the "name"
@@ -179,10 +180,10 @@ char *parseAccessCtrl(
  *
  * The type of the input is returned via the "type" argument:
  *
- *	PARSE_UNKNOWN	- Unknown type (typical if an error is detected)
- *	PARSE_ADDRESS	- Node address
- *	PARSE_NAME	- Node name
- *	PARSE_NONAME	- Node name with no address mapping
+ *      PARSE_UNKNOWN   - Unknown type (typical if an error is detected)
+ *      PARSE_ADDRESS   - Node address
+ *      PARSE_NAME      - Node name
+ *      PARSE_NONAME    - Node name with no address mapping
  *
  * "type" may be NULL if this functionality is not required.
  *
@@ -195,11 +196,11 @@ char *parseRemote(
   struct accessdata_dn *access
 )
 {
-#define STATE_NODE	1
-#define STATE_USER	2
-#define STATE_PASSWORD	3
-#define STATE_ACCOUNT	4
-#define STATE_DONE	5
+#define STATE_NODE      1
+#define STATE_USER      2
+#define STATE_PASSWORD  3
+#define STATE_ACCOUNT   4
+#define STATE_DONE      5
   int state = STATE_NODE, n0 = 0, n1 = 0;
   char *str = wds[idx];
   char sep, term, *result;
@@ -217,115 +218,115 @@ char *parseRemote(
   while (state != STATE_DONE) {
     switch (state) {
       case STATE_NODE:
-	if ((str[n0] != ':') && (str[n0] != '\"') &&
-	    (str[n0] != '\'') && (str[n0] != '/') &&
-	    (str[n0] != '\0')) {
-	  if (n1 >= (sizeof(nodename) - 1))
-	    return "node name too long";
+        if ((str[n0] != ':') && (str[n0] != '\"') &&
+            (str[n0] != '\'') && (str[n0] != '/') &&
+            (str[n0] != '\0')) {
+          if (n1 >= (sizeof(nodename) - 1))
+            return "node name too long";
 
-	  nodename[n1++] = str[n0++];
-	} else {
-	  n1 = 0;
-	  switch (str[n0]) {
-	    case '\"':
-	    case '\'':
-	      sep = ' ';
-	      term = str[n0++];
-	      state = STATE_USER;
-	      break;
+          nodename[n1++] = str[n0++];
+        } else {
+          n1 = 0;
+          switch (str[n0]) {
+            case '\"':
+            case '\'':
+              sep = ' ';
+              term = str[n0++];
+              state = STATE_USER;
+              break;
 
-	    case '/':
-	      sep = '/';
-	      term = 0;
-	      n0++;
-	      state = STATE_USER;
-	      break;
+            case '/':
+              sep = '/';
+              term = 0;
+              n0++;
+              state = STATE_USER;
+              break;
 
-	    case '\0':
-	      state = STATE_DONE;
-	      break;
+            case '\0':
+              state = STATE_DONE;
+              break;
 
-	    default:
-	      n0++;
-	      if (str[n0++] != ':')
-		return "invalid character";
-	      state = STATE_DONE;
-	      break;
-	  }
-	}
-	break;
+            default:
+              n0++;
+              if (str[n0++] != ':')
+                return "invalid character";
+              state = STATE_DONE;
+              break;
+          }
+        }
+        break;
 
       case STATE_USER:
-	if ((str[n0] != sep) &&
-	    (str[n0] != '\0') &&
-	    (str[n0] != (term ? term : ':'))) {
-	  if (n1 >= (DN_MAXACCL - 1))
-	    return "username too long";
+        if ((str[n0] != sep) &&
+            (str[n0] != '\0') &&
+            (str[n0] != (term ? term : ':'))) {
+          if (n1 >= (DN_MAXACCL - 1))
+            return "username too long";
 
-	  access->acc_user[n1++] = str[n0++];
-	} else {
-	  access->acc_userl = n1;
-	  n1 = 0;
-	  if (str[n0] == sep) {
-	    n0++;
-	    state = STATE_PASSWORD;
-	  } else {
-	    if (str[n0++] == ':')
-	      if (str[n0] != ':')
-		return "invalid character";
-	    state = STATE_DONE;
-	  }
-	}
-	break;
+          access->acc_user[n1++] = str[n0++];
+        } else {
+          access->acc_userl = n1;
+          n1 = 0;
+          if (str[n0] == sep) {
+            n0++;
+            state = STATE_PASSWORD;
+          } else {
+            if (str[n0++] == ':')
+              if (str[n0] != ':')
+                return "invalid character";
+            state = STATE_DONE;
+          }
+        }
+        break;
 
       case STATE_PASSWORD:
-	if ((str[n0] != sep) &&
-	    (str[n0] != '\0') &&
-	    (str[n0] != (term ? term : ':'))) {
-	  if (n1 >= (DN_MAXACCL - 1))
-	    return "password too long";
+        if ((str[n0] != sep) &&
+            (str[n0] != '\0') &&
+            (str[n0] != (term ? term : ':'))) {
+          if (n1 >= (DN_MAXACCL - 1))
+            return "password too long";
 
-	  access->acc_pass[n1++] = str[n0++];
-	} else {
-	  access->acc_passl = n1;
-	  n1 = 0;
-	  if (str[n0] == sep) {
-	    n0++;
-	    state = STATE_ACCOUNT;
-	  } else {
-	    if (str[n0++] == ':')
-	      if (str[n0] != ':')
-		return "invalid character";
-	    state = STATE_DONE;
-	  }
-	}
-	break;
+          access->acc_pass[n1++] = str[n0++];
+        } else {
+          access->acc_passl = n1;
+          n1 = 0;
+          if (str[n0] == sep) {
+            n0++;
+            state = STATE_ACCOUNT;
+          } else {
+            if (str[n0++] == ':')
+              if (str[n0] != ':')
+                return "invalid character";
+            state = STATE_DONE;
+          }
+        }
+        break;
 
       case STATE_ACCOUNT:
-	if ((str[n0] != sep) &&
-	    (str[n0] != '\0') &&
-	    (str[n0] != (term ? term : ':'))) {
-	  if (n1 >= (DN_MAXACCL - 1))
-	    return "account too long";
+        if ((str[n0] != sep) &&
+            (str[n0] != '\0') &&
+            (str[n0] != (term ? term : ':'))) {
+          if (n1 >= (DN_MAXACCL - 1))
+            return "account too long";
 
-	  access->acc_acc[n1++] = str[n0++];
-	} else {
-	  access->acc_accl = n1;
-	  n1 = 0;
-	  if (str[n0] == sep) {
-	    n0++;
-	    state = STATE_ACCOUNT;
-	  } else {
-	    if (str[n0++] == ':')
-	      if (str[n0] != ':')
-		return "invalid character";
-	    state = STATE_DONE;
-	  }
-	}
-	break;
+          access->acc_acc[n1++] = str[n0++];
+        } else {
+          access->acc_accl = n1;
+          n1 = 0;
+          if (str[n0] == sep) {
+            n0++;
+            state = STATE_ACCOUNT;
+          } else {
+            if (str[n0++] == ':')
+              if (str[n0] != ':')
+                return "invalid character";
+            state = STATE_DONE;
+          }
+        }
+        break;
 
       case STATE_DONE:
-	break;
+        break;
     }
   }
 
@@ -343,39 +344,39 @@ char *parseRemote(
   if (*str != 0) {
     if (strchr(nodename, '.') != NULL) {
       if (!isdigit(*str))
-	goto notaddr;
+        goto notaddr;
 
       area = *str++ - '0';
       if (isdigit(*str)) {
-	area *= 10;
-	area += *str++ - '0';
+        area *= 10;
+        area += *str++ - '0';
       }
       if (*str++ != '.')
-	goto notaddr;
+        goto notaddr;
     }
 
     if (isdigit(*str)) {
       node = *str++ - '0';
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
 
       if (*str == 0) {
-	if ((node <= 1023) && (area <= 63)) {
-	  *addr = (area << 10) | node;
-	  if (type != NULL)
-	    *type = PARSE_ADDRESS;
-	  return NULL;
-	}
+        if ((node <= 1023) && (area <= 63)) {
+          *addr = (area << 10) | node;
+          if (type != NULL)
+            *type = PARSE_ADDRESS;
+          return NULL;
+        }
       }
     }
   }
@@ -389,10 +390,10 @@ notaddr:
 
     while (*str != 0) {
       if (!isalnum(*str))
-	return "invalid character in node name";
+        return "invalid character in node name";
       if (isalpha(*str)) {
-	valid = 1;
-	*str = toupper(*str);
+        valid = 1;
+        *str = toupper(*str);
       }
       str++;
     }
@@ -401,16 +402,16 @@ notaddr:
       struct nodeent *dp;
 
       if (name != NULL)
-	*name = nodename;
+        *name = nodename;
 
       if ((dp = getnodebyname(nodename)) != NULL) {
-	memcpy(addr, dp->n_addr, sizeof(uint16_t));
-	if (type != NULL)
-	  *type = PARSE_NAME;
-	return NULL;
+        memcpy(addr, dp->n_addr, sizeof(uint16_t));
+        if (type != NULL)
+          *type = PARSE_NAME;
+        return NULL;
       }
       if (type != NULL)
-	*type = PARSE_NONAME;
+        *type = PARSE_NONAME;
       return NULL;
     }
   }

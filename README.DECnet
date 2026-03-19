@@ -340,6 +340,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    3/19/26
+
+    Update "ncp" to allow it to communicate with Phase III hosts (NICE
+    version 2).
+
+    Update user code revision to 3.20
+
+
     3/12/26
 
     Update README.Bridging to fix a race condition where DECnetMAC.service

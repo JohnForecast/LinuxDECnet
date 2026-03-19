@@ -30,8 +30,8 @@
  * the field widths for display.
  */
 static struct fields {
-  uint16_t		id;
-  int16_t		width;
+  uint16_t              id;
+  int16_t               width;
 } summaryFields[] = {
   { NICE_P_N_STATE, -13 },
   { NICE_P_N_ACTIVELINKS, -8 },
@@ -71,111 +71,114 @@ void showNode(
   if (NICEget2(&nodeaddress)) {
     if (NICEgetAI(&length, 0x7F, nodename, NICE_MAXNODEL)) {
       if ((length & 0x80) != 0) {
-	executor = TRUE;
-	length &= ~0x80;
+        executor = TRUE;
+        length &= ~0x80;
       }
 
       /*
        * Construct the entity (node address + optional name).
        */
-      sprintf(entity, "%hu.%hu%s%s%s",
-	       (nodeaddress >> 10) & 0x3F, nodeaddress & 0x3FF,
-	       length ? " (" : "", length ? nodename : "", length ? ")" : "");
+      if (remVersion == NICE_VERSION)
+        sprintf(entity, "%hu.%hu%s%s%s",
+                (nodeaddress >> 10) & 0x3F, nodeaddress & 0x3FF,
+                length ? " (" : "", length ? nodename : "", length ? ")" : "");
+      else sprintf(entity, "%hu%s%s%s", nodeaddress & 0xFF,
+                   length ? " (" : "", length ? nodename : "", length ? ")" : "");
 
       if (display)
-	if ((((infotype & NICE_READ_OPT_TYPE) != NICE_READ_OPT_SUM) &&
-	     ((infotype & NICE_READ_OPT_TYPE) != NICE_READ_OPT_STATUS)) ||
-	      executor)
-	  printf("%s node = %s\n\n", executor ? "Executor" : "Remote", entity);
+        if ((((infotype & NICE_READ_OPT_TYPE) != NICE_READ_OPT_SUM) &&
+             ((infotype & NICE_READ_OPT_TYPE) != NICE_READ_OPT_STATUS)) ||
+              executor)
+          printf("%s node = %s\n\n", executor ? "Executor" : "Remote", entity);
 
       switch (infotype & NICE_READ_OPT_TYPE) {
-	case NICE_READ_OPT_SUM:
-	  if (executor) {
-	    if (!NICEisEmpty()) {
-	      do {
-		displayParam(nodeParamTable);
-	      } while (!NICEisEmpty());
-	    }
-	    printf("\n\n");
+        case NICE_READ_OPT_SUM:
+          if (executor) {
+            if (!NICEisEmpty()) {
+              do {
+                displayParam(nodeParamTable);
+              } while (!NICEisEmpty());
+            }
+            printf("\n\n");
 
-	  } else {
-	    uint16_t entry;
-	    struct fields *fields = summaryFields;
-	    struct valueTable *vtable = NULL;
+          } else {
+            uint16_t entry;
+            struct fields *fields = summaryFields;
+            struct valueTable *vtable = NULL;
 
-	    if (NICEisEmpty()) {
-	      if ((code == NICE_RET_SUCCESS) && first)
-		printf("No infomation available\n\n");
-	      return;
-	    }
+            if (NICEisEmpty()) {
+              if ((code == NICE_RET_SUCCESS) && first)
+                printf("No infomation available\n\n");
+              return;
+            }
 
-	    if (*oneshot) {
-	      printf("    Node         State        Active  Delay   Circuit    Next Node\n");
-	      printf("                              Links\n\n");
-	      *oneshot = 0;
-	    }
+            if (*oneshot) {
+              printf("    Node         State        Active  Delay   Circuit    Next Node\n");
+              printf("                              Links\n\n");
+              *oneshot = 0;
+            }
 
-	    printf("%-17s", entity);
+            printf("%-17s", entity);
 
-	    while (!NICEisEmpty()) {
-	      struct nameTable *table = nodeParamTable;
-	      char buf[64] = "";
+            while (!NICEisEmpty()) {
+              struct nameTable *table = nodeParamTable;
+              char buf[64] = "";
 
-	      if (!NICEget2(&entry))
-		break;
+              if (!NICEget2(&entry))
+                break;
 
-	      if ((entry & NICE_ID_CTR) != 0) {
-		fprintf(stderr, "Unexpected counter data ID seen\n");
-		return;
-	      }
+              if ((entry & NICE_ID_CTR) != 0) {
+                fprintf(stderr, "Unexpected counter data ID seen\n");
+                return;
+              }
 
-	      while (fields->id != (entry & NICE_ID_PARAM_TYPE)) {
-		if (fields->id == 0xFFFF)
-		  goto done;
+              while (fields->id != (entry & NICE_ID_PARAM_TYPE)) {
+                if (fields->id == 0xFFFF)
+                  goto done;
 
-		printf("%*s", fields->width, "");
-		fields++;
-	      }
+                printf("%*s", fields->width, "");
+                fields++;
+              }
 
-	      while (table->name != NULL) {
-		if (table->number == (entry & NICE_ID_PARAM_TYPE)) {
-		  vtable = table->aux;
-		  break;
-		}
-		table++;
-	      }
+              while (table->name != NULL) {
+                if (table->number == (entry & NICE_ID_PARAM_TYPE)) {
+                  vtable = table->aux;
+                  break;
+                }
+                table++;
+              }
 
-	      if (table->name == NULL)
-		goto done;
+              if (table->name == NULL)
+                goto done;
 
-	      param2Text(vtable, buf, entry);
-	      printf("%*s", fields->width, buf);
-	      fields++;
-	    }
+              param2Text(vtable, buf, entry);
+              printf("%*s", fields->width, buf);
+              fields++;
+            }
   done:
-	    printf("\n");
-	  }
-	  break;
+            printf("\n");
+          }
+          break;
 
-	case NICE_READ_OPT_STATUS:
-	  if (executor) {
-	    if (!NICEisEmpty()) {
-	      do {
-		displayParam(nodeParamTable);
-	      } while (!NICEisEmpty());
-	    }
-	    printf("\n\n");
+        case NICE_READ_OPT_STATUS:
+          if (executor) {
+            if (!NICEisEmpty()) {
+              do {
+                displayParam(nodeParamTable);
+              } while (!NICEisEmpty());
+            }
+            printf("\n\n");
 
-	  } else {
+          } else {
             uint16_t entry;
             struct fields *fields = statusFields;
             struct valueTable *vtable = NULL;
 
-	    if (*oneshot) {
-	      printf("    Node          State      Active  Delay  Type            Cost  Hops  Circuit\n");
-	      printf("                             Links\n\n");
-	      *oneshot = 0;
-	    }
+            if (*oneshot) {
+              printf("    Node          State      Active  Delay  Type            Cost  Hops  Circuit\n");
+              printf("                             Links\n\n");
+              *oneshot = 0;
+            }
 
             printf("%-16s", entity);
 
@@ -201,53 +204,53 @@ void showNode(
 
               while (fields->id != (entry & NICE_ID_PARAM_TYPE)) {
                 if (fields->id == 0xFFFF)
-		  break;
+                  break;
 
                 printf("%*s", fields->width, "");
                 fields++;
               }
 
-	      if (fields->id == 0xFFFF) {
-		if (table->name != NULL)
-		  printf("\n%s = ", table->name);
-		else printf("\nParameter #%u = ", entry & NICE_ID_PARAM_TYPE);
-		param2Text(vtable, buf, entry);
-		printf("%s", buf);
-	      } else {
+              if (fields->id == 0xFFFF) {
+                if (table->name != NULL)
+                  printf("\n%s = ", table->name);
+                else printf("\nParameter #%u = ", entry & NICE_ID_PARAM_TYPE);
+                param2Text(vtable, buf, entry);
+                printf("%s", buf);
+              } else {
                 param2Text(vtable, buf, entry);
                 printf("%*s", fields->width, buf);
                 fields++;
-	      }
+              }
             }
             printf("\n");
-	  }
-	  break;
+          }
+          break;
 
-	case NICE_READ_OPT_CHAR:
-	  if (NICEisEmpty()) {
-	    if ((code == NICE_RET_SUCCESS) && first)
-	      printf("No information available\n\n");
-	    return;
-	  }
+        case NICE_READ_OPT_CHAR:
+          if (NICEisEmpty()) {
+            if ((code == NICE_RET_SUCCESS) && first)
+              printf("No information available\n\n");
+            return;
+          }
 
-	  do {
-	    displayParam(nodeParamTable);
-	  } while (!NICEisEmpty());
-	  printf("\n");
-	  break;
+          do {
+            displayParam(nodeParamTable);
+          } while (!NICEisEmpty());
+          printf("\n");
+          break;
 
-	case NICE_READ_OPT_CTRS:
-	  if (NICEisEmpty()) {
-	    if ((code == NICE_RET_SUCCESS) && first)
-	      printf("No information available\n\n");
-	    return;
-	  }
+        case NICE_READ_OPT_CTRS:
+          if (NICEisEmpty()) {
+            if ((code == NICE_RET_SUCCESS) && first)
+              printf("No information available\n\n");
+            return;
+          }
 
-	  do {
-	    displayCtr(nodeCtrTable);
-	  } while (!NICEisEmpty());
-	  printf("\n");
-	  break;
+          do {
+            displayCtr(nodeCtrTable);
+          } while (!NICEisEmpty());
+          printf("\n");
+          break;
       }
     }
   }
@@ -272,42 +275,42 @@ int parseNode(
   if (*str != 0) {
     if (strchr(ident, '.') != NULL) {
       if (!isdigit(*str))
-	goto notaddr;
+        goto notaddr;
 
       area = *str++ -'0';
       if (isdigit(*str)) {
-	area *= 10;
-	area += *str++ - '0';
+        area *= 10;
+        area += *str++ - '0';
       }
       if (*str++ != '.')
-	goto notaddr;
+        goto notaddr;
     }
 
     if (isdigit(*str)) {
       node = *str++ - '0';
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
       if (isdigit(*str)) {
-	node *= 10;
-	node += *str++ - '0';
+        node *= 10;
+        node += *str++ - '0';
       }
 
       if (*str == 0) {
-	if ((node <= 1023) && (area <= 63)) {
-	  /*
-	   * Valid node address found
-	   */
-	  addr = (area << 10) | node;
-	  NICEput1(NICE_NFMT_ADDRESS);
-	  NICEput2(addr);
-	  return 0;
-	}
+        if ((node <= 1023) && (area <= 63)) {
+          /*
+           * Valid node address found
+           */
+          addr = (area << 10) | node;
+          NICEput1(NICE_NFMT_ADDRESS);
+          NICEput2(addr);
+          return 0;
+        }
       }
     }
 
@@ -319,18 +322,18 @@ notaddr:
       str = ident;
 
       while (*str != 0) {
-	if (!isalnum(*str))
-	  return -1;
-	if (isalpha(*str)) {
-	  valid = 1;
-	  *str = toupper(*str);
-	}
-	str++;
+        if (!isalnum(*str))
+          return -1;
+        if (isalpha(*str)) {
+          valid = 1;
+          *str = toupper(*str);
+        }
+        str++;
       }
 
       if (valid) {
-	NICEputString(ident);
-	return 0;
+        NICEputString(ident);
+        return 0;
       }
     }
   }

@@ -32,9 +32,11 @@
  * routines.
  */
 static unsigned char outbuf[300], inbuf[300];
-static int outptr, inptr;
+static int outptr, inptr, saveoutptr;
 static ssize_t inlen, savlen;
 static int sock = -1;
+
+unsigned char remVersion = 0;
 
 void NICEinit(void)
 {
@@ -42,10 +44,12 @@ void NICEinit(void)
 }
 
 void NICEsock(
-  int s
+  int s,
+  unsigned char version
 )
 {
   sock = s;
+  remVersion = version;
 }
 
 void NICEclose(void)
@@ -53,6 +57,7 @@ void NICEclose(void)
   if (sock >= 0) {
     close(sock);
     sock = -1;
+    remVersion = 0;
   }
 }
 
@@ -66,6 +71,24 @@ void NICEflush(void)
     write(sock, outbuf, outptr);
   }
   outptr = 0;
+}
+
+/*
+ * Save current position in the outbound buffer
+ */
+void NICEsave(void)
+{
+  saveoutptr = outptr;
+}
+
+/*
+ * Overwrite a single byte at the saved position in the outbound buffer
+ */
+void NICEreplace(
+  uint8_t value
+)
+{
+  outbuf[saveoutptr] = value;
 }
 
 /*
@@ -473,10 +496,10 @@ void NICEsuccessResponse(void)
 {
   outbuf[outptr++] = NICE_RET_SUCCESS;
 
-  outbuf[outptr++] = 0;			/* Error detail */
+  outbuf[outptr++] = 0;                 /* Error detail */
   outbuf[outptr++] = 0;
 
-  outbuf[outptr++] = 0;			/* Error message */
+  outbuf[outptr++] = 0;                 /* Error message */
 }
 
 /*
@@ -616,9 +639,9 @@ int NICEcopyAI(
 
     if (len <= inlen) {
       if ((len + sizeof(uint8_t)) <= maxlen) {
-	memcpy(buf, &inbuf[inptr], len);
-	buf[len] = '\0';
-	result = TRUE;
+        memcpy(buf, &inbuf[inptr], len);
+        buf[len] = '\0';
+        result = TRUE;
       }
       inptr += len;
       inlen -= len;
@@ -650,8 +673,8 @@ int NICEcopyHI(
 
     if (len <= inlen) {
       if (len <= maxlen) {
-	memcpy(buf, &inbuf[inptr], len);
-	result = TRUE;
+        memcpy(buf, &inbuf[inptr], len);
+        result = TRUE;
       }
       inptr += len;
       inlen -= len;
@@ -680,27 +703,27 @@ int NICEgetType(
       inlen--;
 
       switch (expected) {
-	case NICE_TYPE_DU1:
-	case NICE_TYPE_C1:
-	  if (NICEget1(result))
-	    return TRUE;
-	  break;
+        case NICE_TYPE_DU1:
+        case NICE_TYPE_C1:
+          if (NICEget1(result))
+            return TRUE;
+          break;
 
-	case NICE_TYPE_DU2:
-	case NICE_TYPE_C2:
-	  if (NICEget2(result))
-	    return TRUE;
-	  break;
+        case NICE_TYPE_DU2:
+        case NICE_TYPE_C2:
+          if (NICEget2(result))
+            return TRUE;
+          break;
 
-	case NICE_TYPE_AI:
-	  if (NICEcopyAI(result, maxlen))
-	    return TRUE;
-	  break;
+        case NICE_TYPE_AI:
+          if (NICEcopyAI(result, maxlen))
+            return TRUE;
+          break;
 
-	case NICE_TYPE_HI:
-	  if (NICEcopyHI(result, maxlen))
-	    return TRUE;
-	  break;
+        case NICE_TYPE_HI:
+          if (NICEcopyHI(result, maxlen))
+            return TRUE;
+          break;
       }
     }
   }
