@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
 
     // Make use of the remote system type to decide whether a full wildcard
     // is "*.*;*" (system supports file versions), "*.*" (systems with file
-    // extensions) and "*" (for unix-like systems)
+    // extensions), "*" (for unix-like systems) and "" (for RT-11)
     char lastchar('\0');
     if (dirname[0]) lastchar = dirname[strlen(dirname)-1];
     if (lastchar == ']' || lastchar == ':' || dirname[0] == '\0')
@@ -294,6 +294,10 @@ int main(int argc, char *argv[])
 	    case dap_config_message::OS_PYDECNET:
                 strcat(dirname, "*");
                 break;
+
+	    case dap_config_message::OS_RT11:
+		dirname[0] = '\0';
+		break;
 
             default:
               strcat(dirname, "*.*");

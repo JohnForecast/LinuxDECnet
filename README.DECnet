@@ -343,6 +343,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    4/8/26
+
+    Shrink the buffer size offered in the DAP configuration message. Was
+    too big for DECnet-RT. Keep the socket buffer space the same as before.
+
+    Update user code revision to 3.21
+
+
     3/19/26
 
     Update "ncp" to allow it to communicate with Phase III hosts (NICE

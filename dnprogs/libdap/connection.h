@@ -77,7 +77,7 @@ class dap_connection
     char *lasterror;
     char  errstring[256];
 
-    static const int MAX_READ_SIZE = 65535;
+    static const int MAX_READ_SIZE = 16384;
 
     void create_socket();
     void initialise(int);

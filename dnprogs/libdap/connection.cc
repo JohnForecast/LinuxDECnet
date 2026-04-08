@@ -131,7 +131,7 @@ bool dap_connection::set_socket_buffer_size()
         return false;
     }
 
-    bs = min(MAX_READ_SIZE, blocksize * 4);
+    bs = MAX_READ_SIZE * 4;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &bs, sizeof(bs)) < 0)
     {
         sprintf(errstring, "setsockopt (RCVBUF) failed: %s", strerror(errno));
