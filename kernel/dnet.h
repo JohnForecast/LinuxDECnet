@@ -33,7 +33,7 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.32"
+#define DNET_REVISION   "3.0.33"
 
 /*
  * Define the cost to be returned by network management for the ethernet
@@ -139,6 +139,7 @@ struct dn_scp {
 #define DN_PEND_INTR    0x80            /* Interrupt flow control +1 */
 #define DN_PEND_SW      0x40            /* Current setting of flowloc_sw */
 #define DN_PEND_IDLE    0x20            /* Idle link service message */
+#define DN_PEND_MSG	0x10		/* Current value of flowloc */
 #define DN_PEND_NONE    0x00            /* Nothing to do */
 
         uint8_t                 accept_mode;

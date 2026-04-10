@@ -29,6 +29,7 @@ extern int decnet_NSPweight;
 extern int decnet_NSPretrans;
 extern int decnet_ACKdelay;
 extern int decnet_maxWindow;
+extern bool decnet_message_FC;
 
 extern char node_name[7];
 

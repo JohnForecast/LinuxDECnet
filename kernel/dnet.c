@@ -840,7 +840,7 @@ static int dn_accept(
         newscp->nextEntry = nextp;
         newscp->addrrem = cb->src_port;
         newscp->data.services_rem = cb->services;
-        newscp->data.services_loc = NSP_FCOPT_NONE;
+        newscp->data.services_loc = scp->data.services_loc;
         newscp->info_rem = cb->info;
         newscp->segsize_rem = cb->segsize;
         if ((cb->rt_flags & RT_FLG_IE) == 0)
@@ -1520,10 +1520,17 @@ static int dn_recvmsg(
                                 if ((flags & MSG_OOB) != 0) {
                                         dn_nsp_sched_pending(sk, DN_PEND_INTR);
                                 } else {
-                                        if ((scp->data.flowloc_sw == DN_DONTSEND) &&
-                                             !dn_congested(sk)) {
-                                                scp->data.flowloc_sw = DN_SEND;
-                                                dn_nsp_sched_pending(sk, DN_PEND_SW);
+					if (scp->data.services_loc == NSP_FCOPT_MSG) {
+						if (eor) {
+							scp->data.flowloc++;
+							dn_nsp_sched_pending(sk, DN_PEND_MSG);
+						}
+					} else {
+                                        	if ((scp->data.flowloc_sw == DN_DONTSEND) &&
+                                                    !dn_congested(sk)) {
+                                                	scp->data.flowloc_sw = DN_SEND;
+                                                	dn_nsp_sched_pending(sk, DN_PEND_SW);
+						}
                                         }
                                 }
                         }

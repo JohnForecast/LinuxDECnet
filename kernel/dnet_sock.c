@@ -360,7 +360,8 @@ struct sock *dn_alloc_sock(
                 scp->data.flowloc = 0;
                 scp->other.flowloc = 1;
                 scp->data.services_rem = 0;
-                scp->data.services_loc = NSP_FCOPT_NONE;
+                scp->data.services_loc =
+			decnet_message_FC ? NSP_FCOPT_MSG : NSP_FCOPT_NONE;
                 scp->other.services_rem = NSP_FCOPT_MSG;
                 scp->other.services_loc = NSP_FCOPT_MSG;
                 scp->info_rem = 0;

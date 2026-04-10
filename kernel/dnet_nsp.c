@@ -580,6 +580,15 @@ int dn_nsp_rcv_gen(
                         scp->segsize_rem =
                                 min(scp->segsize_rem,
                                         decnet_segbufsize - NSP_MAX_DATAHDR);
+
+		/*
+		 * If we are using message flow control, schedule a
+		 * a flow control update.
+		 */
+		if (scp->data.services_loc == NSP_FCOPT_MSG) {
+			scp->data.flowloc++;
+			dn_nsp_sched_pending(sk, DN_PEND_MSG);
+		}
         }
 
         if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
@@ -647,7 +656,8 @@ int dn_nsp_rcv_data(
                         }
                         rcu_read_unlock();
 
-                        if ((scp->data.flowloc_sw == DN_SEND) &&
+			if ((scp->data.services_loc == NSP_FCOPT_NONE) &&
+                            (scp->data.flowloc_sw == DN_SEND) &&
                             dn_congested(sk)) {
                                 scp->data.flowloc_sw = DN_DONTSEND;
                                 dn_nsp_sched_pending(sk, DN_PEND_SW);
@@ -883,7 +893,17 @@ int dn_nsp_rcv_cc(
                                              scp->conndata_in.opt_data, dlen);
                         }
                 }
-                dn_nsp_sched_pending(sk, DN_PEND_IDLE);
+
+		/*
+		 * If we are using message flow control, schedule a flow
+		 * update, otherwise send an idle link service to flip the
+		 * remote side into the RUN state.
+		 */
+		if (scp->data.services_loc == NSP_FCOPT_MSG) {
+			scp->data.flowloc++;
+			dn_nsp_sched_pending(sk, DN_PEND_MSG);
+                } else dn_nsp_sched_pending(sk, DN_PEND_IDLE);
+
                 if (!sock_flag(sk, SOCK_DEAD))
                         sk->sk_state_change(sk);
                 
@@ -1910,6 +1930,15 @@ void dn_nsp_sched_pending(
                                 scp->pending &= ~DN_PEND_SW;
                         return;
                 }
+
+		if ((scp->pending & DN_PEND_MSG) != 0) {
+			if (dn_nsp_xmt_ls(sk, DN_FCVAL_DATA, scp->data.flowloc)) {
+				scp->data.flowloc = 0;
+				scp->pending &= ~DN_PEND_MSG;
+			}
+			return;
+		}
+
                 if ((scp->pending & DN_PEND_IDLE) != 0) {
                         if (dn_nsp_xmt_ls(sk, DN_NOCHANGE, 0))
                                 scp->pending &= ~DN_PEND_IDLE;

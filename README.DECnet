@@ -63,13 +63,13 @@ Changes from RaspbianDECnet:
         infrastructure and the routing infrastructure. LinuxDECnet does not
         use any of these frameworks.
 
-NOTE:
-
-    Both RaspianDECnet and LinuxDECnet contain 2 implementations of the CTERM protocol;
-    dnlogin is the primary implementation and sethost contains a different implementation.
-    I will no longer fix bugs in the sethost CTERM implementation. sethost may still be
-    used for connecting to RSTS and TOPS-20 via their private protocols (the RSX private
-    protocol is not implemented) but dnlogin should be the preferred mechanism for CTERM.
+NOTE: Both RaspianDECnet and LinuxDECnet contain 2 implementations of the
+      CTERM protocol; dnlogin is the primary implementation and sethost
+      contains a different implementation.  I will no longer fix bugs in the
+      sethost CTERM implementation. sethost may still be used for connecting
+      to RSTS and TOPS-20 via their private protocols (the RSX private
+      protocol is not implemented) but dnlogin should be the preferred
+      mechanism for CTERM.
     
 
 Installation:
@@ -212,6 +212,27 @@ Notes:
             re-install using the "Clean and rebuild using existing tree"
             option.
 
+    6. Inbound Flow Control to Linux
+
+	By default, Linux DECnet will use the "no flow control" option
+	for inbound data flowing into Linux. Recently (February 2026) a
+	version of DECnet-RT has been found. Unfortunately, this version
+	has a bug when sending data on a link using the "no flow control"
+	option (the link will hang after sending ~2KB of data). I have
+	added support for "session control message flow control" which can
+	be enabled by:
+
+		echo 1 >/proc/sys/net/decnet/messageFC
+
+	echoing 0 to the same file will restore the "no flow control" option.
+
+	Once enabled, all logical links will use "session control message
+	flow control" for all newly created logical links. Linux will still
+	be able to commuicate with other DECnet nodes but the performance
+	may be slightly lower.
+	
+	Implemented in kernel revision 3.0.33
+
 
 Kernel module versions
 
@@ -338,6 +359,10 @@ Kernel module versions
 
     3.0.32	Fix dn_bind()/dn_connect() due to a parameter type
 		change in kernel 6.19.
+
+    3.0.33	Implement Session Control Message Flow Control as an
+		option. See "Inbound Flow Control to Linux" above for
+		details.
 
 
 Changes from previous Linux DECnet release:

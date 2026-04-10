@@ -31,6 +31,7 @@ int decnet_NSPweight = 5;
 int decnet_NSPretrans = 5;
 int decnet_ACKdelay = 3;
 int decnet_maxWindow = NSP_MAX_WINDOW / 2;
+bool decnet_message_FC = 0;
 
 char node_name[7] = "???";
 
@@ -285,6 +286,13 @@ static struct ctl_table dn_table[] = {
                 .extra1 = &min_decnet_maxWindow,
                 .extra2 = &max_decnet_maxWindow,
         },
+	{
+		.procname = "messageFC",
+		.data = &decnet_message_FC,
+		.maxlen = sizeof(bool),
+		.mode = 0666,
+		.proc_handler = proc_dobool,
+	},
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6,10,0)
         { }
 #endif
