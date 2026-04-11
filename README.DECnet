@@ -231,6 +231,10 @@ Notes:
 	be able to commuicate with other DECnet nodes but the performance
 	may be slightly lower.
 	
+	If you want to always start with "session control message flow
+	control" enabled, /etc/systemd/system/decnet3.service describes the
+	required change.
+
 	Implemented in kernel revision 3.0.33
 
 
