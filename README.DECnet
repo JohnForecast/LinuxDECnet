@@ -368,6 +368,10 @@ Kernel module versions
 		option. See "Inbound Flow Control to Linux" above for
 		details.
 
+    3.0.34	The dispatch table for inbound messages was missing an
+		entry for retransmitted connect initiate messages which
+		resulted in a kernel panic.
+
 
 Changes from previous Linux DECnet release:
 

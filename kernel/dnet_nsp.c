@@ -114,7 +114,7 @@ static int (*dispatch[32])(struct sock *, struct sk_buff *, uint8_t *) = {
         NULL,                   /* 10111 - reserved */
         dn_nsp_rcv_gen,         /* 11000 - data segment (single segment) */
         NULL,                   /* 11001 - reserved */
-        NULL,                   /* 11010 - retransmitted connect initiate */
+        dn_nsp_rcv_ci,          /* 11010 - retransmitted connect initiate */
         NULL,                   /* 11011 - reserved */
         NULL,                   /* 11100 - reserved */
         NULL,                   /* 11101 - reserved */
@@ -581,14 +581,14 @@ int dn_nsp_rcv_gen(
                                 min(scp->segsize_rem,
                                         decnet_segbufsize - NSP_MAX_DATAHDR);
 
-		/*
-		 * If we are using message flow control, schedule a
-		 * a flow control update.
-		 */
-		if (scp->data.services_loc == NSP_FCOPT_MSG) {
-			scp->data.flowloc++;
-			dn_nsp_sched_pending(sk, DN_PEND_MSG);
-		}
+                /*
+                 * If we are using message flow control, schedule a
+                 * a flow control update.
+                 */
+                if (scp->data.services_loc == NSP_FCOPT_MSG) {
+                        scp->data.flowloc++;
+                        dn_nsp_sched_pending(sk, DN_PEND_MSG);
+                }
         }
 
         if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
@@ -656,7 +656,7 @@ int dn_nsp_rcv_data(
                         }
                         rcu_read_unlock();
 
-			if ((scp->data.services_loc == NSP_FCOPT_NONE) &&
+                        if ((scp->data.services_loc == NSP_FCOPT_NONE) &&
                             (scp->data.flowloc_sw == DN_SEND) &&
                             dn_congested(sk)) {
                                 scp->data.flowloc_sw = DN_DONTSEND;
@@ -894,14 +894,14 @@ int dn_nsp_rcv_cc(
                         }
                 }
 
-		/*
-		 * If we are using message flow control, schedule a flow
-		 * update, otherwise send an idle link service to flip the
-		 * remote side into the RUN state.
-		 */
-		if (scp->data.services_loc == NSP_FCOPT_MSG) {
-			scp->data.flowloc++;
-			dn_nsp_sched_pending(sk, DN_PEND_MSG);
+                /*
+                 * If we are using message flow control, schedule a flow
+                 * update, otherwise send an idle link service to flip the
+                 * remote side into the RUN state.
+                 */
+                if (scp->data.services_loc == NSP_FCOPT_MSG) {
+                        scp->data.flowloc++;
+                        dn_nsp_sched_pending(sk, DN_PEND_MSG);
                 } else dn_nsp_sched_pending(sk, DN_PEND_IDLE);
 
                 if (!sock_flag(sk, SOCK_DEAD))
@@ -1283,50 +1283,50 @@ static uint16_t *dn_nsp_mk_ack_hdr(
 
         BUG_ON(hlen < 9);
 
-	if ((scp->info_rem == NSP_INFO_4_0) || (scp->info_rem == NSP_INFO_4_1)) {
-        	scp->data.ack_xmt = acknum;
-        	scp->other.ack_xmt = ackcrs;
-        	acknum |= NSP_ACK_PRESENT;
-        	ackcrs |= NSP_ACK_PRESENT;
+        if ((scp->info_rem == NSP_INFO_4_0) || (scp->info_rem == NSP_INFO_4_1)) {
+                scp->data.ack_xmt = acknum;
+                scp->other.ack_xmt = ackcrs;
+                acknum |= NSP_ACK_PRESENT;
+                ackcrs |= NSP_ACK_PRESENT;
 
-        	/*
-        	 * If this is an "other data/ack" message, swap acknum and
-		 * ackcrs
-        	 */
-        	if (other)
-                	swap(acknum, ackcrs);
+                /*
+                 * If this is an "other data/ack" message, swap acknum and
+                 * ackcrs
+                 */
+                if (other)
+                        swap(acknum, ackcrs);
 
-        	/*
-        	 * Set "cross subchannel" bit in ackcrs
-        	 */
-        	ackcrs |= NSP_ACK_CROSS;
+                /*
+                 * Set "cross subchannel" bit in ackcrs
+                 */
+                ackcrs |= NSP_ACK_CROSS;
 
-        	ptr = (uint16_t *)dn_nsp_mk_header(scp, skb, msgflag, hlen);
+                ptr = (uint16_t *)dn_nsp_mk_header(scp, skb, msgflag, hlen);
 
-        	*ptr++ = cpu_to_le16(acknum);
-        	*ptr++ = cpu_to_le16(ackcrs);
+                *ptr++ = cpu_to_le16(acknum);
+                *ptr++ = cpu_to_le16(ackcrs);
 
-        	/*
-        	 * Cancel any ack delay timer since we are about to send an
-		 * explicit ACK.
-        	 */
-        	scp->ackdelay = 0;
-	} else {
-		/*
-		 * NSP 3.2 and earlier did not support cross-channel ACKs
-		 */
-		hlen -= sizeof(uint16_t);
+                /*
+                 * Cancel any ack delay timer since we are about to send an
+                 * explicit ACK.
+                 */
+                scp->ackdelay = 0;
+        } else {
+                /*
+                 * NSP 3.2 and earlier did not support cross-channel ACKs
+                 */
+                hlen -= sizeof(uint16_t);
 
-		if (other) {
-			acknum = ackcrs;
-			scp->other.ack_xmt = acknum;
-		} else scp->data.ack_xmt = acknum;
-		acknum |= NSP_ACK_PRESENT;
+                if (other) {
+                        acknum = ackcrs;
+                        scp->other.ack_xmt = acknum;
+                } else scp->data.ack_xmt = acknum;
+                acknum |= NSP_ACK_PRESENT;
 
-		ptr = (uint16_t *)dn_nsp_mk_header(scp, skb, msgflag, hlen);
+                ptr = (uint16_t *)dn_nsp_mk_header(scp, skb, msgflag, hlen);
 
-		*ptr++ = cpu_to_le16(acknum);
-	}
+                *ptr++ = cpu_to_le16(acknum);
+        }
         return ptr;
 }
 
@@ -1340,13 +1340,13 @@ static void dn_nsp_mk_data_hdr(
 )
 {
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
-	struct dn_scp *scp = DN_SK(sk);
+        struct dn_scp *scp = DN_SK(sk);
         uint16_t *ptr = dn_nsp_mk_ack_hdr(sk, skb, cb->nsp_flags, NSP_MAX_DATAHDR, oth);
         uint16_t segnum = cb->segnum;
 
-	if ((scp->info_rem == NSP_INFO_4_0) || (scp->info_rem == NSP_INFO_4_1))
-        	if ((cb->ack_delay != 0) && !oth)
-                	segnum |= NSP_ACK_DELAY;
+        if ((scp->info_rem == NSP_INFO_4_0) || (scp->info_rem == NSP_INFO_4_1))
+                if ((cb->ack_delay != 0) && !oth)
+                        segnum |= NSP_ACK_DELAY;
 
         *ptr++ = cpu_to_le16(segnum);
 }
@@ -1434,7 +1434,7 @@ void dn_nsp_xmt_socket(
         struct dn_scp *scp = DN_SK(sk);
         struct sk_buff *skb;
         unsigned int reduce_win = 0;
-	int tryhard = (decnet_NSPretrans + 1) / 2;
+        int tryhard = (decnet_NSPretrans + 1) / 2;
 
         /*
          * First check for otherdata/linkservice messages
@@ -1442,11 +1442,11 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->other.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-		if (cb->xmit_count > tryhard) {
-			if (cb->xmit_count > decnet_NSPretrans)
-				goto lost;
-			dn_next_tryhard(scp->nextEntry);
-		}
+                if (cb->xmit_count > tryhard) {
+                        if (cb->xmit_count > decnet_NSPretrans)
+                                goto lost;
+                        dn_next_tryhard(scp->nextEntry);
+                }
                 
                 reduce_win = dn_nsp_clone_xmt(skb, GFP_NOWAIT, 1);
         }
@@ -1457,11 +1457,11 @@ void dn_nsp_xmt_socket(
         if ((skb = skb_peek(&scp->data.xmit_queue)) != NULL) {
                 struct dn_skb_cb *cb = DN_SKB_CB(skb);
 
-		if (cb->xmit_count > tryhard) {
-			if (cb->xmit_count > decnet_NSPretrans)
-				goto lost;
-			dn_next_tryhard(scp->nextEntry);
-		}
+                if (cb->xmit_count > tryhard) {
+                        if (cb->xmit_count > decnet_NSPretrans)
+                                goto lost;
+                        dn_next_tryhard(scp->nextEntry);
+                }
                 
                 reduce_win += dn_nsp_clone_xmt(skb, GFP_NOWAIT, 0);
         }
@@ -1931,13 +1931,13 @@ void dn_nsp_sched_pending(
                         return;
                 }
 
-		if ((scp->pending & DN_PEND_MSG) != 0) {
-			if (dn_nsp_xmt_ls(sk, DN_FCVAL_DATA, scp->data.flowloc)) {
-				scp->data.flowloc = 0;
-				scp->pending &= ~DN_PEND_MSG;
-			}
-			return;
-		}
+                if ((scp->pending & DN_PEND_MSG) != 0) {
+                        if (dn_nsp_xmt_ls(sk, DN_FCVAL_DATA, scp->data.flowloc)) {
+                                scp->data.flowloc = 0;
+                                scp->pending &= ~DN_PEND_MSG;
+                        }
+                        return;
+                }
 
                 if ((scp->pending & DN_PEND_IDLE) != 0) {
                         if (dn_nsp_xmt_ls(sk, DN_NOCHANGE, 0))
