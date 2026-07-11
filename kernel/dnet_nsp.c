@@ -591,38 +591,43 @@ int dn_nsp_rcv_gen(
                 }
         }
 
-        if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
-                other = 0;
-        if (cb->nsp_flags == NSP_TYP_ACK)
-                other = 0;
+	/*
+	 * Process these messages if we are in the RUN state
+	 */
+	if (scp->state == DN_RUN) {
+        	if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
+                	other = 0;
+        	if (cb->nsp_flags == NSP_TYP_ACK)
+                	other = 0;
 
-        /*
-         * Process the ACK fields from the message
-         */
-        dn_nsp_process_ack(sk, skb, other);
+        	/*
+        	 * Process the ACK fields from the message
+        	 */
+        	dn_nsp_process_ack(sk, skb, other);
 
-        /*
-         * Check for messages which carry some additional data.
-         */
-        if ((cb->nsp_flags & NSP_TYP_MASK) == NSP_TYP_DATA) {
-                if (scp->state != DN_RUN)
-                        goto drop;
+        	/*
+                 * Check for messages which carry some additional data.
+        	 */
+        	if ((cb->nsp_flags & NSP_TYP_MASK) == NSP_TYP_DATA) {
+                	if (scp->state != DN_RUN)
+                        	goto drop;
 
-                ptr = skb->data;
+                	ptr = skb->data;
                 
-                switch (cb->nsp_flags) {
-                        case NSP_MSG_LS:
-                                dn_nsp_rcv_ls(sk, skb, ptr);
-                                break;
+                	switch (cb->nsp_flags) {
+                        	case NSP_MSG_LS:
+                                	dn_nsp_rcv_ls(sk, skb, ptr);
+                                	break;
                                 
-                        case NSP_MSG_INTR:
-                                dn_nsp_rcv_interrupt(sk, skb, ptr);
-                                break;
+                        	case NSP_MSG_INTR:
+                                	dn_nsp_rcv_interrupt(sk, skb, ptr);
+                                	break;
                                 
-                        default:
-                                dn_nsp_rcv_data(sk, skb, ptr);
-                }
-                return NET_RX_SUCCESS;
+                        	default:
+                                	dn_nsp_rcv_data(sk, skb, ptr);
+                	}
+                	return NET_RX_SUCCESS;
+		}
         }
  drop:
         kfree_skb(skb);

@@ -372,6 +372,22 @@ Kernel module versions
 		entry for retransmitted connect initiate messages which
 		resulted in a kernel panic.
 
+    3.0.35	The logic to check if a logical link already exists when
+		receiving a re-transmitted or regular connect initiate
+		message was broken. If a second or later connect initiate
+		was received before the initial connection transitioned
+		into the RUN state, a second connection would be created
+		resulting in a slow kernel memory leak.
+
+		The output format for /proc/net/decnet limited node addresses
+		to 6 characters so that node addresses like 63.1023 would
+		be truncated to 63.102. This file is used by dnetstat and
+		nml.
+
+		Packets received with acknowledgement or sequence numbers
+		should be discarded if not in the RUN state. This sometimes
+		caused links to hang.
+
 
 Changes from previous Linux DECnet release:
 

@@ -264,9 +264,9 @@ int dn_sk_check_duplicate(
         read_lock_bh(&dn_sk_hash_lock);
         for (i = 0; i < DN_SK_HASH_SIZE; i++) {
                 sk_for_each(sk, &dn_sk_hash[i]) {
-                        if (sk->sk_state != DNET_LISTEN) {
-                                struct dn_scp *scp = DN_SK(sk);
+			struct dn_scp *scp = DN_SK(sk);
 
+                        if ((sk->sk_state != DNET_LISTEN) || (scp->state != DN_O)) {
                                 if (cb->src != dn_saddr2dn(&scp->peer))
                                         continue;
                                 if (cb->src_port != scp->addrrem)
@@ -673,8 +673,8 @@ static void dn_socket_format_entry(
         dn_printable_object(&scp->peer, remote_object);
 
         seq_printf(seq,
-                   "%6s/%04X %04d:%04d %04d:%04d %01d %-16s "
-                   "%6s/%04X %04d:%04d %04d:%04d %01d %-16s %4s %s\n",
+                   "%7s/%04X %04d:%04d %04d:%04d %01d %-16s "
+                   "%7s/%04X %04d:%04d %04d:%04d %01d %-16s %4s %s\n",
                    dn_addr2asc(le16_to_cpu(dn_saddr2dn(&scp->addr)), buf1),
                    scp->addrloc,
                    scp->data.num,
