@@ -388,6 +388,10 @@ Kernel module versions
 		should be discarded if not in the RUN state. This sometimes
 		caused links to hang.
 
+    3.0.36	Off by 1 error in the periodic timer when calculating the
+		remaining tick count. Can cause the timer to terminate
+		early without calling the action routine.
+
 
 Changes from previous Linux DECnet release:
 

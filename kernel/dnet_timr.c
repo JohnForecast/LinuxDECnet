@@ -52,7 +52,7 @@ static void dn_slow_timer(
          * routines may remove sockets.
          */
         if (scp->persist && scp->persist_fcn) {
-                if (scp->persist < TIMER_INTERVAL) {
+                if (scp->persist <= TIMER_INTERVAL) {
                         scp->persist = 0;
 
                         if (scp->persist_fcn(sk))
