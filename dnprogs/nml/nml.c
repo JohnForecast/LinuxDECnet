@@ -46,6 +46,9 @@ extern int verbosity;
 #define PROC_DECNET             "/proc/net/decnet"
 #define PROC_ZERO_NODE		"/proc/net/decnet_zero_node"
 #define PROC_SEGBUFSIZE         "/proc/sys/net/decnet/segbufsize"
+#define PROC_DELAYFACTOR	"/proc/sys/net/decnet/NSPdelay"
+#define PROC_DELAYWEIGHT	"/proc/sys/net/decnet/NSPweight"
+#define PROC_RETRANSMITFACTOR	"/proc/sys/net/decnet/NSPretrans"
 #define PROC_INCOMINGTIMER	"/proc/sys/net/decnet/incoming_timer"
 #define PROC_OUTGOINGTIMER	"/proc/sys/net/decnet/outgoing_timer"
 
@@ -489,7 +492,7 @@ static void read_node_executor(
   char physaddr[6] = { 0xAA, 0x00, 0x04, 0x00, 0x00, 0x00 };
   struct utsname un;
   char ident[256];
-  int segbufsize, timer;
+  int segbufsize, timer, factor, weight;
   
   node = getnodebyaddr((char *)&localaddr, sizeof(localaddr), PF_DECnet);
 
@@ -529,6 +532,9 @@ static void read_node_executor(
           NICEvalueDU1(4);
           NICEvalueDU1(0);
           NICEvalueDU1(0);
+	NICEparamDU2(NICE_P_N_LC, NICE_LOOP_DEF_COUNT);
+	NICEparamDU2(NICE_P_N_LL, NICE_LOOP_DEF_LEN);
+	NICEparamC1(NICE_P_N_LW, NICE_P_N_LW_MIXED);
 	if (get_value(PROC_INCOMINGTIMER, &timer))
 	  NICEparamDU2(NICE_P_N_INC_TIMER, timer);
 	if (get_value(PROC_OUTGOINGTIMER, &timer))
@@ -537,6 +543,12 @@ static void read_node_executor(
           NICEvalueDU1(4);
           NICEvalueDU1(0);
           NICEvalueDU1(0);
+	if (get_value(PROC_DELAYFACTOR, &factor))
+	  NICEparamDU1(NICE_P_N_DELAYFACTOR, factor);
+	if (get_value(PROC_DELAYWEIGHT, &weight))
+	  NICEparamDU1(NICE_P_N_DELAYWEIGHT, weight);
+	if (get_value(PROC_RETRANSMITFACTOR, &factor))
+	  NICEparamDU2(NICE_P_N_RETRANS_FACTOR, factor);
         NICEparamCMn(NICE_P_N_RTRVERSION, 3);
           NICEvalueDU1(2);
           NICEvalueDU1(0);

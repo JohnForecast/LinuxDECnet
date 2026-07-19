@@ -396,6 +396,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    7/19/26
+
+    Some additional parameters are returned from NML as executor
+    characteristics.
+
+    Update user code revision to 3.22
+
+
     4/8/26
 
     Shrink the buffer size offered in the DAP configuration message. Was
