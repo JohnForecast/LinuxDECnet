@@ -442,23 +442,24 @@ int dn_sk_destroy_timer(
                 case DN_DI:
                         dn_nsp_xmt_disc(sk, NSP_MSG_DI, 0, GFP_NOWAIT);
                         Count_timeouts(scp->nodeEntry);
-                        if (scp->persist_count-- != 0)
-                                scp->state = DN_CN;
-                        scp->persist_count = 0;
-                        scp->stamp = jiffies;
-                        return 0;
+			scp->stamp = jiffies;
+			if (--scp->persist_count != 0) {
+				scp->persist = dn_nsp_persist(scp);
+				return 0;
+			}
+			scp->state = DN_CN;
+			break;
                         
                 case DN_DR:
                         dn_nsp_xmt_disc(sk, NSP_MSG_DC, 0, GFP_NOWAIT);
-                        scp->state = DN_DRC;
-                        scp->persist_count = 0;
                         scp->stamp = jiffies;
-                        return 0;
+                        scp->state = DN_DRC;
+			break;
         }
 
         /*
          * Give the underlying stack a couple of seconds to send out the
-         * disconnect initiate/confirm before dropping the connecttion.
+         * disconnect initiate/confirm before dropping the connection.
          */
         scp->persist = HZ;
 

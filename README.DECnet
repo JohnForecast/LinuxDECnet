@@ -392,6 +392,9 @@ Kernel module versions
 		remaining tick count. Can cause the timer to terminate
 		early without calling the action routine.
 
+    3.0.37	Clean up disconnect logic so Disconnect Initiates mayt be
+		retransmitted.
+
 
 Changes from previous Linux DECnet release:
 
