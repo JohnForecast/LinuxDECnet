@@ -55,7 +55,7 @@
 #define NICE_LOOP_OPT_CIRCUIT   0x03            /* Circuit loop test */
 #define NICE_LOOP_OPT_ACCESS    0x80            /* Access control included */
 
-#define NICE_LOOP_DEF_LEN	256		/* Default loop length */
+#define NICE_LOOP_DEF_LEN	40		/* Default loop length */
 #define NICE_LOOP_DEF_COUNT	1		/* Default loop count */
 #define NICE_LOOP_MAX_LEN	4096		/* Maximum loop length */
 

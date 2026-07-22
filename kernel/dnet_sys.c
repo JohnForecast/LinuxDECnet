@@ -29,6 +29,7 @@ int decnet_outgoing_timer = 60;
 int decnet_NSPdelay = 80;
 int decnet_NSPweight = 5;
 int decnet_NSPretrans = 5;
+int decnet_NSPinactive = 30;
 int decnet_ACKdelay = 3;
 int decnet_maxWindow = NSP_MAX_WINDOW / 2;
 bool decnet_message_FC = 0;
@@ -48,6 +49,8 @@ static int min_decnet_NSPweight[] = { 0 };
 static int max_decnet_NSPweight[] = { 255 };
 static int min_decnet_NSPretrans[] = { 2 };
 static int max_decnet_NSPretrans[] = { 255 };
+static int min_decnet_NSPinactive[] = { 2 };
+static int max_decnet_NSPinactive[] = { 65535 };
 static int min_decnet_ACKdelay[] = { 1 };
 static int max_decnet_ACKdelay[] = { 255 };
 static int min_decnet_maxWindow[] = { 1 };
@@ -268,6 +271,15 @@ static struct ctl_table dn_table[] = {
                 .extra1 = &min_decnet_NSPretrans,
                 .extra2 = &max_decnet_NSPretrans,
         },
+	{
+		.procname = "NSPinactive",
+		.data = &decnet_NSPinactive,
+		.maxlen = sizeof(int),
+		.mode = 0666,
+		.proc_handler = proc_dointvec_minmax,
+		.extra1 = &min_decnet_NSPinactive,
+		.extra2 = &max_decnet_NSPinactive,
+	},
         {
                 .procname = "ACKdelay",
                 .data = &decnet_ACKdelay,

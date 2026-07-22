@@ -40,6 +40,8 @@ RaspiOS 2024-03-12, kernel 6.6.20 on aarch64 (Raspberry Pi 5 8GB)
 RaspiOS 2024-11-19, kernel 6.6.62 on aarch64 (Raspberry Pi 5 8GB)
 RaspiOS 2025-05-13, kernel 6.12.34 on aarch64 (Raspberry Pi 5 8GB)
 RaspiOS 2025-12-04, kernel 6.12.47 on aarch64 (Raspberry Pi 4 1GB)
+Ubuntu 24.04, kernel 7.0.0 on x86_64 (Proxmox 9.2 VM)
+
 
 Changes from RaspbianDECnet:
 
@@ -395,8 +397,27 @@ Kernel module versions
     3.0.37	Clean up disconnect logic so Disconnect Initiates mayt be
 		retransmitted.
 
+    3.0.38	Make the inactivity timer settable and increase the default
+		value to 30 seconds.
+
 
 Changes from previous Linux DECnet release:
+
+
+    7/22/26
+
+    Return the inactivity timer from NML as an executor parameter.
+    Modified the "Identification" format returned by NML to:
+
+	Linux Vx.y.z(a.b.c) on <architecture>
+
+    where x.y.z is the user code revision and a.b.c is kernel revision
+    code as returned from /proc/net/decnet_revision.
+
+    Added "Software identification" which contains the short version hash
+    from Git.
+
+    Update user code revision to 3.23
 
 
     7/19/26

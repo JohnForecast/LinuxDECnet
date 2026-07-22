@@ -33,7 +33,7 @@
  * Define the kernel revision. Note that we skipped 2.0.0 so the userland and
  * kernel can be aligned.
  */
-#define DNET_REVISION   "3.0.37"
+#define DNET_REVISION   "3.0.38"
 
 /*
  * Define the cost to be returned by network management for the ethernet
@@ -181,9 +181,6 @@ struct dn_scp {
                   scp->persist_fcn = fcn; \
                   scp->persist_count = decnet_NSPretrans; \
                   scp->persist = dn_nsp_persist(scp)
-        unsigned long           keepalive;
-        void                    (*keepalive_fcn)(struct sock *);
-#define DN_KEEPALIVE            (10 * HZ)
         unsigned long           ackdelay;
         unsigned long           conntimer;
 

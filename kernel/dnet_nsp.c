@@ -595,6 +595,8 @@ int dn_nsp_rcv_gen(
 	 * Process these messages if we are in the RUN state
 	 */
 	if (scp->state == DN_RUN) {
+		scp->stamp = jiffies;
+
         	if ((cb->nsp_flags & (NSP_TYP_MASK|NSP_MSG_ILS)) == NSP_TYP_DATA)
                 	other = 0;
         	if (cb->nsp_flags == NSP_TYP_ACK)

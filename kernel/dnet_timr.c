@@ -23,6 +23,8 @@
 #include <linux/version.h>
 #include "dnet.h"
 
+static void dn_keepalive(struct sock *);
+
 static void dn_slow_timer(
   struct timer_list *t
 )
@@ -79,15 +81,14 @@ static void dn_slow_timer(
         /*
          * Check for keepalive timeout. This comes after the persist timer
          * which may cause a retransmission delaying the need for a keepalive
-         * message. scp->stamp is the last time that we sent a packet. The
-         * keepalive function sends a "no change" linkservice message to the
-         * other end. If it remains unacknowledged, the standard socket timers
-         * will terminate the logical link.
+         * message. scp->stamp is the last time that we sent or received a
+	 * packet. The keepalive function sends a "no change" linkservice
+	 * message to the other end. If it remains unacknowledged, the
+	 * standard socket timers will terminate the logical link.
          */
-        if (scp->keepalive && scp->keepalive_fcn && (scp->state == DN_RUN)) {
-                if (time_after_eq(jiffies, scp->stamp + scp->keepalive))
-                        scp->keepalive_fcn(sk);
-        }
+	if ((scp->state == DN_RUN) &&
+	    (time_after_eq(jiffies, scp->stamp + (decnet_NSPinactive * HZ))))
+		dn_keepalive(sk);
 
         /*
          * Check for delayed ack. We do this after all the other cases since
@@ -111,7 +112,7 @@ static void dn_slow_timer(
  * Keepalive function - periodically sends data to the other end of the
  * connection when no other transfers are present.
  */
-void dn_keepalive(
+static void dn_keepalive(
   struct sock *sk
 )
 {

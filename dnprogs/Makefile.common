@@ -70,7 +70,7 @@ DFLAGS=-g -O0
 
 #Package version
 MAJOR_VERSION=3
-MINOR_VERSION=22
+MINOR_VERSION=23
 VERSION=$(MAJOR_VERSION).$(MINOR_VERSION)
 
 #
@@ -144,12 +144,13 @@ endif
 # been true on Linux for ages now.
 LIBCRYPT=-lcrypt
 
+GITID=$(shell git log -1 --format=%h)
 
 CC=gcc
 CDEFS+=-D_XOPEN_SOURCE -D_DEFAULT_SOURCE -D_GNU_SOURCE -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 INCLUDES=-I$(TOP)/libdap -I$(TOP)/include
-CXXFLAGS+=-pipe -fdollars-in-identifiers -fsigned-char -Wall -Wno-unused -Wno-uninitialized $(INCLUDES) -DVERSION=\"$(VERSION)\" $(CDEFS) $(SHADOWDEFS) $(PTSDEFS) $(DFLAGS) $(LDFLAGS)
-CFLAGS  +=-pipe -fsigned-char -Wstrict-prototypes -Wall -Wno-unused -Wno-uninitialized $(INCLUDES) -DVERSION=\"$(VERSION)\" $(CDEFS) $(SHADOWDEFS) $(PTSDEFS) $(DFLAGS) $(LDFLAGS)
+CXXFLAGS+=-pipe -fdollars-in-identifiers -fsigned-char -Wall -Wno-unused -Wno-uninitialized $(INCLUDES) -DVERSION=\"$(VERSION)\" $(CDEFS) $(SHADOWDEFS) $(PTSDEFS) $(DFLAGS) $(LDFLAGS) -DGITID=\"$(GITID)\"
+CFLAGS  +=-pipe -fsigned-char -Wstrict-prototypes -Wall -Wno-unused -Wno-uninitialized $(INCLUDES) -DVERSION=\"$(VERSION)\" $(CDEFS) $(SHADOWDEFS) $(PTSDEFS) $(DFLAGS) $(LDFLAGS) -DGITID=\"$(GITID)\"
 
 # Conditional for shared/static libs
 ifdef LINKSTATIC

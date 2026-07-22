@@ -27,6 +27,7 @@ extern int decnet_outgoing_timer;
 extern int decnet_NSPdelay;
 extern int decnet_NSPweight;
 extern int decnet_NSPretrans;
+extern int decnet_NSPinactive;
 extern int decnet_ACKdelay;
 extern int decnet_maxWindow;
 extern bool decnet_message_FC;

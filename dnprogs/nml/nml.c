@@ -35,8 +35,6 @@
 
 extern int verbosity;
 
-#define IDENT_STRING            "Linux DECnet"
-
 #define PROC_DECNET_DEV         "/proc/net/decnet_dev"
 #define PROC_DECNET_CACHE       "/proc/net/decnet_cache"
 #define PROC_DECNET_COST	"/proc/net/decnet_cost"
@@ -48,6 +46,7 @@ extern int verbosity;
 #define PROC_SEGBUFSIZE         "/proc/sys/net/decnet/segbufsize"
 #define PROC_DELAYFACTOR	"/proc/sys/net/decnet/NSPdelay"
 #define PROC_DELAYWEIGHT	"/proc/sys/net/decnet/NSPweight"
+#define PROC_INACTIVITYTIMER	"/proc/sys/net/decnet/NSPinactive"
 #define PROC_RETRANSMITFACTOR	"/proc/sys/net/decnet/NSPretrans"
 #define PROC_INCOMINGTIMER	"/proc/sys/net/decnet/incoming_timer"
 #define PROC_OUTGOINGTIMER	"/proc/sys/net/decnet/outgoing_timer"
@@ -491,20 +490,25 @@ static void read_node_executor(
   struct nodeent *node;
   char physaddr[6] = { 0xAA, 0x00, 0x04, 0x00, 0x00, 0x00 };
   struct utsname un;
-  char ident[256];
+  char ident[256], softid[64];
   int segbufsize, timer, factor, weight;
   
   node = getnodebyaddr((char *)&localaddr, sizeof(localaddr), PF_DECnet);
 
   uname(&un);
-  sprintf(ident, "%s V%s on %s", IDENT_STRING, VERSION, un.machine);
+  sprintf(ident, "Linux V%s(%u.%u.%u) on %s", VERSION,
+	   revision[0], revision[1], revision[2], un.machine);
+
+  sprintf(softid, "(%s)", GITID);
 
   /*
-   * Limit the length of the identification string according to the
+   * Limit the length of the identification strings according to the
    * protocol specification.
    */
   if (strlen(ident) > 32)
     ident[32] = '\0';
+  if (strlen(softid) > 16)
+    softid[16] = '\0';
 
   physaddr[4] = localaddr & 0xFF;
   physaddr[5] = (localaddr >> 8) & 0xFF;
@@ -532,6 +536,7 @@ static void read_node_executor(
           NICEvalueDU1(4);
           NICEvalueDU1(0);
           NICEvalueDU1(0);
+	NICEparamAIn(NICE_P_N_SWID, softid);
 	NICEparamDU2(NICE_P_N_LC, NICE_LOOP_DEF_COUNT);
 	NICEparamDU2(NICE_P_N_LL, NICE_LOOP_DEF_LEN);
 	NICEparamC1(NICE_P_N_LW, NICE_P_N_LW_MIXED);
@@ -547,6 +552,8 @@ static void read_node_executor(
 	  NICEparamDU1(NICE_P_N_DELAYFACTOR, factor);
 	if (get_value(PROC_DELAYWEIGHT, &weight))
 	  NICEparamDU1(NICE_P_N_DELAYWEIGHT, weight);
+	if (get_value(PROC_INACTIVITYTIMER, &timer))
+	  NICEparamDU2(NICE_P_N_INACT_TIMER, timer);
 	if (get_value(PROC_RETRANSMITFACTOR, &factor))
 	  NICEparamDU2(NICE_P_N_RETRANS_FACTOR, factor);
         NICEparamCMn(NICE_P_N_RTRVERSION, 3);

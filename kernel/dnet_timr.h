@@ -24,7 +24,6 @@
  */
 #define INITIAL_ESTM    (3 * HZ)
 
-void dn_keepalive(struct sock *);
 void dn_start_slow_timer(struct sock *);
 void dn_stop_slow_timer(struct sock *);
 

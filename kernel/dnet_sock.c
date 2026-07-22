@@ -386,9 +386,6 @@ struct sock *dn_alloc_sock(
 
                 skb_queue_head_init(&scp->other_receive_queue);
         
-                scp->keepalive = DN_KEEPALIVE;
-                scp->keepalive_fcn = dn_keepalive;
-
                 scp->ackdelay = 0;
                 scp->conntimer = 0;
 
