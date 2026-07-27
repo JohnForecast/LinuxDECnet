@@ -400,6 +400,14 @@ Kernel module versions
     3.0.38	Make the inactivity timer settable and increase the default
 		value to 30 seconds.
 
+    3.0.39	Make sure that a logical link always has a valid timestamp
+		where valid means sometime in the past. Previously, a
+		timestamp was created on a receive or transmit of a data
+		of interrupt/link service message. If a link was disconnected
+		before a timestamp was created it would use whatever value
+		was in the field which could be in the future which could
+		cause the link to hang.
+
 
 Changes from previous Linux DECnet release:
 
@@ -409,9 +417,9 @@ Changes from previous Linux DECnet release:
     Return the inactivity timer from NML as an executor parameter.
     Modified the "Identification" format returned by NML to:
 
-	Linux Vx.y.z(a.b.c) on <architecture>
+	Linux Vx.y(a.b.c) on <architecture>
 
-    where x.y.z is the user code revision and a.b.c is kernel revision
+    where x.y is the user code revision and a.b.c is kernel revision
     code as returned from /proc/net/decnet_revision.
 
     Added "Software identification" which contains the short version hash

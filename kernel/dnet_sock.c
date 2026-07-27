@@ -379,6 +379,8 @@ struct sock *dn_alloc_sock(
         
                 scp->snd_window = NSP_MIN_WINDOW;
         
+		scp->stamp = jiffies;
+
                 scp->delayedacks = 0;
 
                 skb_queue_head_init(&scp->data.xmit_queue);
