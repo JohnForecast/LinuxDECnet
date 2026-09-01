@@ -1183,11 +1183,12 @@ int dn_nsp_rcv(
                                 }
                         
                                 /*
-                                 * Linearize everything except data segments
+                                 * Linearize data segments too: dn_recvmsg()
+                                 * uses memcpy_to_msg() from skb->data and
+                                 * skb_pull(), which need linear data.
                                  */
-                                if ((flags & NSP_TYP_MASK) != NSP_TYP_DATA)
-                                        if (unlikely(skb_linearize(skb)))
-                                                goto drop;
+                                if (unlikely(skb_linearize(skb)))
+                                        goto drop;
                         
                                 /*
                                  * Look up socket
