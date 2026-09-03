@@ -547,7 +547,7 @@ static void read_node_executor(
         NICEparamCMn(NICE_P_N_NSPVERSION, 3);
           NICEvalueDU1(4);
           NICEvalueDU1(0);
-          NICEvalueDU1(0);
+          NICEvalueDU1(1);
 	if (get_value(PROC_DELAYFACTOR, &factor))
 	  NICEparamDU1(NICE_P_N_DELAYFACTOR, factor);
 	if (get_value(PROC_DELAYWEIGHT, &weight))

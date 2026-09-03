@@ -121,6 +121,11 @@ or
        packages you can install the packages manually and include
        "HAVE_PACKAGES=1" as an override.
 
+    3. Some distributions use clang rather than gcc for compiling the kernel
+       (e.g. CachyOS). If this is the case, you can add "LLVM=1" as an
+       override to build the DECnet kernel module with clang. Note that the
+       userland code will still be built with gcc.
+
 
 Notes:
 
@@ -137,7 +142,7 @@ Notes:
 
     2. Upgrading from RaspianDECnet to LinuxDECnet
 
-        Dues to the above change it is possible that, after installing
+        Due to the above change it is possible that, after installing
         LinuxDECnet, libraries will exist in both /lib and /lib64. It is
         unclear what the priority order would be so I would suggest deleting
         the following libraries from /lib:
@@ -410,6 +415,14 @@ Kernel module versions
 
 
 Changes from previous Linux DECnet release:
+
+
+    9/3/26
+
+    NML now returns the correct NSP version (4.0.1 since we support delayed
+    acks).
+
+    Update user code revision to 3.24
 
 
     7/22/26
