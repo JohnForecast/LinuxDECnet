@@ -417,6 +417,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    9/6/26
+
+    NML did not correctly handle loop requests to a node with exactly 6
+    characters in its name.
+
+    Update user code revision to 3.25
+
+
     9/3/26
 
     NML now returns the correct NSP version (4.0.1 since we support delayed

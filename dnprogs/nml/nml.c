@@ -1222,7 +1222,7 @@ static void test(void)
 
     if ((option & 0x03) == NICE_LOOP_OPT_NODE) {
       struct accessdata_dn access, *accp = NULL;
-      uint8_t nodename[6];
+      uint8_t nodename[8];
       uint16_t addr;
 
       memset(&access, 0, sizeof(struct accessdata_dn));
