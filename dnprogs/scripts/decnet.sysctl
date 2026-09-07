@@ -1,0 +1,32 @@
+# /etc/decnet.sysctl - DECnet configuration file
+
+#
+# Number of seconds to delay before responding to a delayed ACK
+# (Default = 3)
+#
+#net.decnet.ACKdelay = 3
+
+#
+# Maximum number of consecutive seqments which can be transmitted with
+# a delayed ACK requested
+# (Default = 3)
+#
+#net.decnet.dlyack_seq = 3
+
+#
+# Enable session control message flow control for all newly created logical
+# links
+# (Default = 0)
+#
+#net.decnet.messageFC = 1
+
+#
+# Change the "Segment Buffer Size" parameter for controlling the size of
+# inbound ethernet packets. 1477 will allow full size ethernet packets but
+# mayn cause problems if your network includes links with a smaller MTU
+# than 1500 and a topology change causes large packets to be routed over
+# such a link
+# (Default = 576)
+#
+#net.decnet.segbufsize = 1477
+

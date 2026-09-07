@@ -28,6 +28,9 @@ endif
 	install -m 0644 decnetconf.8 $(manprefix)/man/man8
 	install -m 0755 dnetLoadModule $(prefix)/sbin
 	install -m 0755 dnetChangeMAC $(prefix)/sbin
+	ifneq (/etc/decnet.sysctl,$(wildcard /etc/decnet.sysctl))
+		install -m 0644 decnet.sysctl /etc
+	endif
 
 location:
 	$(info $(prefix))

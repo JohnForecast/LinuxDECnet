@@ -219,7 +219,7 @@ Notes:
             re-install using the "Clean and rebuild using existing tree"
             option.
 
-    6. Inbound Flow Control to Linux
+    6. Inbound Flow Control to Linux (see 7. below for more information).
 
 	By default, Linux DECnet will use the "no flow control" option
 	for inbound data flowing into Linux. Recently (February 2026) a
@@ -235,14 +235,17 @@ Notes:
 
 	Once enabled, all logical links will use "session control message
 	flow control" for all newly created logical links. Linux will still
-	be able to commuicate with other DECnet nodes but the performance
+	be able to communicate with other DECnet nodes but the performance
 	may be slightly lower.
 	
-	If you want to always start with "session control message flow
-	control" enabled, /etc/systemd/system/decnet3.service describes the
-	required change.
-
 	Implemented in kernel revision 3.0.33
+
+    7. /etc/decnet.sysctl
+
+	After the decnet3 kernel module has been loaded and /etc/decnet.sysctl
+	exists, sysctl will be run on this file to update kernel parameters
+	such as messageFC decscribed above. A default /etc/decnet.sysctl
+	is provided with the most likely parameters to change commented out.
 
 
 Kernel module versions

@@ -12,6 +12,12 @@ if [ $? -ne 0 ]; then
     addr=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f2`
     ifc=`grep ^executor /etc/decnet.conf | tr -s " " "\t" | cut -f6`
     /sbin/modprobe decnet3 dn_nodeaddr="${addr}" dn_nodename="${node}" dn_ifname="${ifc}"
+
+    if [ $? -eq 0 ]; then
+        if [ -r /etc/decnet.sysctl ]; then
+            /usr/sbin/sysctl -p /etc/decnet.sysctl
+	fi
+    fi
 fi
 exit 0
 
