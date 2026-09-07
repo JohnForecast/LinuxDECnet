@@ -192,7 +192,7 @@ int dn_routing_rcv(
 )
 {
         struct dn_skb_cb *cb = DN_SKB_CB(skb);
-        uint16_t len = le16_to_cpu(*(uint16_t *)skb->data);
+        uint16_t len;
         uint8_t flags = 0;
         uint8_t padlen = 0;
         
@@ -214,8 +214,18 @@ int dn_routing_rcv(
         if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL)
                 goto out;
 
+        /* skb_share_check() may have returned a clone; cb must follow it. */
+        cb = DN_SKB_CB(skb);
+
         if ((dev == ETHDEVICE.dev) || (dev == LOOPDEVICE.dev)) {
                 if (pskb_may_pull(skb, 3)) {
+                        /*
+                         * Read the length only after pskb_may_pull(). Drivers
+                         * such as virtio_net deliver large frames with the
+                         * payload entirely in page fragments; reading
+                         * skb->data before the pull returned 0.
+                         */
+                        len = le16_to_cpu(*(uint16_t *)skb->data);
                         skb_pull(skb, sizeof(uint16_t));
 
                         if (len <= skb->len) {
