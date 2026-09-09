@@ -22,11 +22,31 @@
 
 #
 # Change the "Segment Buffer Size" parameter for controlling the size of
-# inbound ethernet packets. 1477 will allow full size ethernet packets but
-# mayn cause problems if your network includes links with a smaller MTU
-# than 1500 and a topology change causes large packets to be routed over
-# such a link
+# inbound ethernet data packets. This value may be used to compute the
+# maximum amount of user data that can be transferred in a single NSP
+# data message.
 # (Default = 576)
 #
-#net.decnet.segbufsize = 1477
+#net.decnet.segbufsize = 576
+
+#
+# Control how much user data may be received in a single NSP data message:
+#
+# 0:	Always use "Segment Buffer Size" as described above. Typically this
+#	value would be the same for all nodes in the network and should be
+#	set to the minimum of (MTU - route header size - 2) for all physical
+#	links in the network. Using this setting may result in lower
+#	performance but it will ensure that logical links will not fail
+#	due to a topology change.
+#
+# 1:	Try to make maximal use of the ethernet MTU size. Logical links
+#	established to nodes outside the LAN will use the segment size
+#	advertised by the deignated router. Using this setting will result
+#	in maximum performance on the LAN but a topology change may result
+#	in a logical link failure if packets are forced to use a physical
+#	link with a smaller MTU size.
+#
+# (Default = 1)
+#
+#net.decnet.useFullMTU = 1
 

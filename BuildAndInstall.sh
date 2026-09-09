@@ -26,9 +26,11 @@ CP=/bin/cp
 CUT=/usr/bin/cut
 DATE=/bin/date
 DEPMOD=/sbin/depmod
+DIFF=/usr/bin/diff
 EXPR=/usr/bin/expr
 GIT=/usr/bin/git
 GREP=/bin/grep
+INSTALL=/usr/bin/install
 MAKE=/usr/bin/make
 MV=/bin/mv
 PRINTF=/usr/bin/printf
@@ -569,6 +571,26 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#
+# Check if we need to update /etc/decnet.sysctl
+#
+if [ -e /etc/decnet.sysctl ]; then
+    ${DIFF} scripts/decnet.sysctl /etc/decnet.sysctl >/tmp/null
+    if [ $? -ne 0 ]; then
+	DOCMD "{MV} /etc/decnet.sysctl /etc/decnet.sysctl.old"
+	DOCMD "${INSTALL} -m 0644 scripts/decnet.sysctl /etc"
+	echo "NOTE:"
+	echo
+	echo "A new version of /etc/decnet.sysctl has been installed and"
+	echo "the old version has been renamed as /etc/decnet.sysctl.old"
+	echo
+	echo "If you modified the old version, you may need to manually"
+	echo "change the new version."
+    fi
+else
+    DOCMD "${INSTALL} -m 0644 scripts/decnet.sysctl /etc"
+fi
+
 if [ ${DECnetConfig} -eq 1 ]; then
     ${CAT} >/tmp/$$.conf <<EOF
 #V001.0
@@ -617,9 +639,6 @@ EOF
     ${PRINTF} >>/tmp/$$.service "Type=oneshot\n"
     ${PRINTF} >>/tmp/$$.service "ExecStartPre=${scripts_locn}/sbin/dnetLoadModule\n"
     ${PRINTF} >>/tmp/$$.service "ExecStart=${dnetd_locn}/sbin/dnetd\n"
-    ${PRINTF} >>/tmp/$$.service "# Uncomment the following line to always enable\n"
-    ${PRINTF} >>/tmp/$$.service "#  Session Control Message Flow Control\n"
-    ${PRINTF} >>/tmp/$$.service "#ExecStartPost=/usr/bin/bash -c '/usr/bin/echo 1 >/proc/sys/net/decnet/messageFC'\n"
     ${PRINTF} >>/tmp/$$.service "RemainAfterExit=true\n"
     ${PRINTF} >>/tmp/$$.service "\n"
     ${PRINTF} >>/tmp/$$.service "[Install]\n"

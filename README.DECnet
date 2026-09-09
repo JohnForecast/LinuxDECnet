@@ -247,6 +247,11 @@ Notes:
 	such as messageFC decscribed above. A default /etc/decnet.sysctl
 	is provided with the most likely parameters to change commented out.
 
+	If /etc/decnet.sysctl already exists during installation and is
+	different to the version about to be installed, the old version will
+	be renamed as /etc/decnet.sysctl.old and a warning will be given
+	that the new version may need to be changed.
+
 
 Kernel module versions
 
