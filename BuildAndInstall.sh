@@ -574,11 +574,13 @@ fi
 #
 # Check if we need to update /etc/decnet.sysctl
 #
+DOCMD "cd ${Here}/LinuxDECnet/dnprogs/scripts"
 if [ -e /etc/decnet.sysctl ]; then
-    ${DIFF} scripts/decnet.sysctl /etc/decnet.sysctl >/tmp/null
+    ${DIFF} decnet.sysctl /etc/decnet.sysctl >/tmp/null
     if [ $? -ne 0 ]; then
-	DOCMD "{MV} /etc/decnet.sysctl /etc/decnet.sysctl.old"
-	DOCMD "${INSTALL} -m 0644 scripts/decnet.sysctl /etc"
+	DOCMD "${MV} /etc/decnet.sysctl /etc/decnet.sysctl.old"
+	DOCMD "${INSTALL} -m 0644 decnet.sysctl /etc"
+	echo
 	echo "NOTE:"
 	echo
 	echo "A new version of /etc/decnet.sysctl has been installed and"
@@ -588,7 +590,7 @@ if [ -e /etc/decnet.sysctl ]; then
 	echo "change the new version."
     fi
 else
-    DOCMD "${INSTALL} -m 0644 scripts/decnet.sysctl /etc"
+    DOCMD "${INSTALL} -m 0644 decnet.sysctl /etc"
 fi
 
 if [ ${DECnetConfig} -eq 1 ]; then
