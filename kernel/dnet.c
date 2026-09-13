@@ -160,6 +160,21 @@ static void dn_user_copy(
 }
 
 /*
+ * Initialize local segment size
+ */
+static void dn_local_segsize(
+  struct dn_scp *scp
+)
+{
+  uint16_t segsize = decnet_useFullMTU ? NSP_MAX_SEGSIZE : decnet_segbufsize;
+
+  segsize -= NSP_MAX_DATAHDR;
+  segsize = min_t(uint16_t, segsize, dn_eth2segsize(scp->nextEntry));
+
+  scp->segsize_loc = segsize;
+}
+
+/*
  * Copy a struct sockaddr_dn into a connect initiate message
  */
 int dn_sockaddr2username(
@@ -341,7 +356,7 @@ static int dn_wait_for_accept(
                 return -EINVAL;
 
         scp->state = DN_CC;
-        scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
+	dn_local_segsize(scp);
 
         dn_nsp_xmt_cc(sk, allocation);
 
@@ -718,7 +733,7 @@ static int __dn_connect(
         sock->state = SS_CONNECTING;
         scp->state = DN_CI;
 
-        scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
+	dn_local_segsize(scp);
 
         dn_nsp_xmt_ci(sk, NSP_MSG_CI, 1);
         Count_connect_sent(scp->nodeEntry);
@@ -842,9 +857,10 @@ static int dn_accept(
         newscp->data.services_rem = cb->services;
         newscp->data.services_loc = scp->data.services_loc;
         newscp->info_rem = cb->info;
-        newscp->segsize_rem = cb->segsize;
-        if ((cb->rt_flags & RT_FLG_IE) == 0)
-                dn_segsize2eth(newscp->nextEntry, newscp->segsize_rem);
+	if (newscp->nextEntry->deviceIndex != LOOPINDEX)
+		newscp->segsize_rem =
+			min(cb->segsize, dn_eth2segsize(newscp->nextEntry));
+	else newscp->segsize_rem = dn_eth2segsize(newscp->nextEntry);
         newscp->accept_mode = scp->accept_mode;
 
         newsk->sk_state = DNET_LISTEN;
@@ -1614,13 +1630,12 @@ static inline unsigned int dn_current_mss(
   int flags
 )
 {
-        struct dn_scp *scp = DN_SK(sk);
-        int mss = min_t(int, scp->segsize_loc, scp->segsize_rem);
+	if ((flags & MSG_OOB) == 0) {
+        	struct dn_scp *scp = DN_SK(sk);
 
-        if ((flags & MSG_OOB) != 0)
-                return 16;
-
-        return min_t(int, dn_devices[scp->nextEntry->deviceIndex].blksize, mss);
+		return min_t(uint16_t, scp->segsize_rem, dn_eth2segsize(scp->nextEntry));
+	}
+	return 16;
 }
 
 

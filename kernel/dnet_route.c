@@ -191,8 +191,7 @@ int dn_routing_rcv(
   struct net_device *orig_dev
 )
 {
-        struct dn_skb_cb *cb = DN_SKB_CB(skb);
-        uint16_t len = le16_to_cpu(*(uint16_t *)skb->data);
+        struct dn_skb_cb *cb;
         uint8_t flags = 0;
         uint8_t padlen = 0;
         
@@ -205,17 +204,20 @@ int dn_routing_rcv(
                 return 0;
         }
         
+	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL)
+		goto out;
+
+	cb = DN_SKB_CB(skb);
+
         /*
          * Timestamp this packet as soon as possible since it may be used to
          * compute a round-trip time for NSP.
          */
         cb->stamp = jiffies;
 
-        if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL)
-                goto out;
-
         if ((dev == ETHDEVICE.dev) || (dev == LOOPDEVICE.dev)) {
                 if (pskb_may_pull(skb, 3)) {
+       			uint16_t len = le16_to_cpu(*(uint16_t *)skb->data);
                         skb_pull(skb, sizeof(uint16_t));
 
                         if (len <= skb->len) {

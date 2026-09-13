@@ -147,13 +147,21 @@ int dn_next_update(
         }
 
         if (nextp == NULL) {
-                if ((nextp = create_next_entry(hash, addr, ethaddr, onEthernet)) == NULL)
-                        res = 0;
-        }
+                if ((nextp = create_next_entry(hash, addr, ethaddr, onEthernet)) != NULL) {
+			uint16_t blksize = ETHDEVICE.blksize;
 
-        if ((nextp != ETHDEVICE.router) && onEthernet)
-                nextp->blksize = ETHDEVICE.blksize;
-        
+			if (!onEthernet) {
+				if (ETHDEVICE.router != NULL)
+					blksize = ETHDEVICE.router->blksize;
+				else blksize = decnet_segbufsize + sizeof(struct rt_long_hdr);
+			}
+			nextp->blksize = blksize;
+		} else res = 0;
+        } else {
+		if ((nextp != ETHDEVICE.router) && onEthernet)
+			nextp->blksize = ETHDEVICE.blksize;
+	}
+
         spin_unlock_bh(&bucket->lock);
 
         return res;
@@ -189,9 +197,8 @@ dn_next_entry *dn_next_update_and_hold(
                 nextp = create_next_entry(hash, addr, ethaddr, onEthernet);
 
         if (nextp != NULL) {
-                nextp->onEthernet = onEthernet;
-                if ((nextp != ETHDEVICE.router) && onEthernet)
-                        nextp->blksize = ETHDEVICE.blksize;
+		if (ethaddr != NULL)
+                	nextp->onEthernet = onEthernet;
                 refcount_inc(&nextp->refcount);
         }
         
@@ -309,20 +316,6 @@ uint16_t dn_eth2segsize(
         segsize -= NSP_MAX_DATAHDR;
 
         return segsize;
-}
-
-/*
- * Update a dn_next_entry blksize given a data segment size.
- */
-void dn_segsize2eth(
-  struct dn_next_entry *nextp,
-  uint16_t segsize
-)
-{
-        segsize += sizeof(struct rt_long_hdr);
-        segsize += NSP_MAX_DATAHDR;
-
-        nextp->blksize = segsize;
 }
 
 #ifdef CONFIG_PROC_FS

@@ -361,7 +361,7 @@ Kernel module versions
 		on transmit calls.
 
     3.0.26	Convert the garbage collection routines for node and
-		next hop caches to use a work queue ratrher than run
+		next hop caches to use a work queue rather than run
 		directly from the timer callback.
 
     3.0.27	Make sure that a connection exits the DiscNotify state
@@ -421,6 +421,15 @@ Kernel module versions
 		was in the field which could be in the future which could
 		cause the link to hang.
 
+    3.0.40	Fixed a number of bugs:
+
+		  - Always issue a pullup request before referencing the
+		    data portion of a buffer.
+		  - Always linearize incoming buffers
+		  - Add option (useFullMTU) to permit trade-off between
+		    performance and resilience in the face of topology
+		    changes. Default setting is "performance" which is
+		    the same as prior versions.
 
 Changes from previous Linux DECnet release:
 

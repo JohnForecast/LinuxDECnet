@@ -218,6 +218,7 @@ typedef struct __attribute__((__packed__)) nsp_cc {
         uint16_t        segsize;
         uint8_t         data_ctl[1];
 } nsp_cc;
+#define NSP_MAX_SEGSIZE	65534
 
 typedef struct __attribute__((__packed__)) nsp_di {
         uint8_t         msgflg;

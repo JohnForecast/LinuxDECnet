@@ -31,6 +31,7 @@ extern int decnet_NSPinactive;
 extern int decnet_ACKdelay;
 extern int decnet_maxWindow;
 extern bool decnet_message_FC;
+extern bool decnet_useFullMTU;
 
 extern char node_name[7];
 

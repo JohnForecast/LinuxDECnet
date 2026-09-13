@@ -72,6 +72,5 @@ extern void dn_next_tryhard(struct dn_next_entry *);
 extern struct dn_next_entry *dn_next_clone(struct dn_next_entry *);
 extern void dn_next_release(struct dn_next_entry *);
 extern uint16_t dn_eth2segsize(struct dn_next_entry *);
-extern void dn_segsize2eth(struct dn_next_entry *, uint16_t);
 
 #endif

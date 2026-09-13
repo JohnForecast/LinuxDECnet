@@ -572,16 +572,6 @@ int dn_nsp_rcv_gen(
                 sk->sk_state_change(sk);
 
                 /*
-                 * If the message was received with the Intra-Ethernet bit
-                 * clear, revert to the "SEGMENT BUFFER SIZE" parameter
-                 * since traffic will be going off ethernet.
-                 */
-                if ((cb->rt_flags & RT_FLG_IE) == 0)
-                        scp->segsize_rem =
-                                min(scp->segsize_rem,
-                                        decnet_segbufsize - NSP_MAX_DATAHDR);
-
-                /*
                  * If we are using message flow control, schedule a
                  * a flow control update.
                  */
@@ -876,21 +866,6 @@ int dn_nsp_rcv_cc(
                 scp->info_rem = cb->info;
                 scp->segsize_rem = cb->segsize;
 
-                /*
-                 * If the Connect Confirm message was received with the
-                 * Intra-Ethernet bit clear, revert to the "SEGMENT BUFFER
-                 * SIZE" parameter since traffic will be going off ethernet.
-                 */
-                if ((cb->rt_flags & RT_FLG_IE) == 0)
-                        scp->segsize_rem =
-                                min(scp->segsize_rem,
-                                        decnet_segbufsize - NSP_MAX_DATAHDR);
-
-                /*
-                 * Update the local segment size in case it has changed.
-                 */
-                scp->segsize_loc = dn_eth2segsize(scp->nextEntry);
-
                 if (skb->len > 0) {
                         uint16_t dlen = *skb->data;
 
@@ -1182,12 +1157,11 @@ int dn_nsp_rcv(
                                         return NET_RX_SUCCESS;
                                 }
                         
-                                /*
-                                 * Linearize everything except data segments
-                                 */
-                                if ((flags & NSP_TYP_MASK) != NSP_TYP_DATA)
-                                        if (unlikely(skb_linearize(skb)))
-                                                goto drop;
+				/*
+				 * Linearize all remaining messages
+				 */
+                                if (unlikely(skb_linearize(skb)))
+                                	goto drop;
                         
                                 /*
                                  * Look up socket
