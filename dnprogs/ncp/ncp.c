@@ -33,6 +33,8 @@
 char *wds[MAX_WDS + 1];
 int idx, args;
 
+int exitstatus = 0;
+
 int done = 0;
 
 extern void showCommand(int), zeroCommand(void), copyCommand(void),
@@ -78,6 +80,9 @@ void cmdError(
   char *error = NULL, *error2 = NULL, errorText[64];
   int16_t detail = 0;
   uint8_t msg[256];
+
+  if (code != NICE_RET_DONE)
+    exitstatus = 1;
 
   msg[0] = '\0';
 
@@ -318,10 +323,12 @@ static void process(void)
     if (idx < args) {
       if ((status = parseForTell()) != NULL) {
 	fprintf(stderr, "tell - %s\n", status);
+	exitstatus = 1;
         return;
       }
     } else {
       fprintf(stderr, "Missing node name or address\n");
+      exitstatus = 1;
       return;
     }
   }
@@ -365,8 +372,10 @@ static void process(void)
        * Clean up any socket used
        */
       NICEclose();
+      return;
     } else fprintf(stderr, "Unknown command \'%s\'\n", wds[idx]);
   } else fprintf(stderr, "No command provided\n");
+  exitstatus = 1;
 }
 
 static int parse(
@@ -437,7 +446,7 @@ int main(
       wds[args++] = argv[i];
 
     process();
-    return 0;
+    return  exitstatus;
   }
 
   while (!done) {
@@ -452,9 +461,9 @@ int main(
 
     if (parse(buf) == 0) {
       process();
-    }
+    } else exitstatus = 1;
     free(buf);
   }
-  return 0;
+  return  exitstatus;
 }
 

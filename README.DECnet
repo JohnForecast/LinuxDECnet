@@ -434,6 +434,14 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    9/15/26
+
+    NCP now exits with a status of 0 on success and 1 if an error is
+    detected.
+
+    Update user code revision to 3.26
+
+
     9/6/26
 
     NML did not correctly handle loop requests to a node with exactly 6

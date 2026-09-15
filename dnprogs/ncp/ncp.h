@@ -116,6 +116,8 @@ struct minmax {
 extern int idx, args;
 extern char *wds[];
 
+extern int exitstatus;
+
 extern struct table commandTable;
 extern struct table showEntitiesTable;
 extern struct table listEntitiesTable;
