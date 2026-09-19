@@ -1988,10 +1988,52 @@ static int __init dnet_init(void)
 
 static void __exit dnet_exit(void)
 {
-#ifdef CONFIG_PROC_FS
-        remove_proc_entry("decnet_zero_node", NULL);
-#endif
+        /*
+         * Tear down in reverse order of dnet_init(), stopping inbound work
+         * first so that nothing can arrive and touch structures while they
+         * are being dismantled.
+         *
+         * Every registration below was previously left in place on unload,
+         * leaving the kernel holding pointers into freed module memory. In
+         * practice that meant an immediate panic: the stale netdevice
+         * notifier was walked by the very next "ip link delete", and the
+         * stale hello timer fired in softirq context moments later.
+         */
+
+        /*
+         * 1. Stop new packets being delivered to dn_routing_rcv(). This must
+         *    come first - it is the only registration reachable directly from
+         *    softirq context on every received DECnet frame.
+         */
+        dev_remove_pack(&dn_dix_packet_type);
+
+        /*
+         * 2. Stop new sockets being created. Existing sockets hold a module
+         *    reference via .owner, so we cannot get here with any open.
+         */
+        sock_unregister(AF_DECnet);
+
+        /*
+         * 3. Per-subsystem teardown: timers, work items, notifier, device
+         *    references, caches and their /proc/net entries.
+         */
         dn_dev_exit();
+        dn_next_cleanup();
+        dn_node_cleanup();
+        dn_sock_exit();
+
+        /*
+         * 4. Finally the sysctl table, the protocol itself, and our remaining
+         *    /proc/net entry. Note the parent: decnet_zero_node is created
+         *    under init_net.proc_net, so it must be removed with that same
+         *    parent rather than NULL.
+         */
+        dn_unregister_sysctl();
+        proto_unregister(&dnet_proto);
+
+#ifdef CONFIG_PROC_FS
+        remove_proc_entry("decnet_zero_node", init_net.proc_net);
+#endif
 }
 
 module_init(dnet_init);

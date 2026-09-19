@@ -726,6 +726,12 @@ void __init dn_sock_init(void)
 
 void __exit dn_sock_exit(void)
 {
+        /*
+         * Remove the /proc/net/decnet entry created by dn_sock_init().
+         * Leaving it behind exposes seq_operations belonging to an unloaded
+         * module: reading the file afterwards would jump into freed memory.
+         */
+        remove_proc_entry("decnet", init_net.proc_net);
 }
 
 #endif

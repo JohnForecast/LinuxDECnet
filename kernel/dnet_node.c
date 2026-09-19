@@ -316,6 +316,12 @@ void dn_node_zero_counters(
 
 #endif
 
+/*
+ * Page order actually used for dn_node_db, recorded at allocation time so
+ * that dn_node_cleanup() can hand the matching order back to free_pages().
+ */
+static int dn_node_db_order;
+
 int __init dn_node_init(void)
 {
         int i, order = CACHE_ORDER;
@@ -335,6 +341,8 @@ int __init dn_node_init(void)
 
         if (!dn_node_db)
                 panic("Failed to allocate DECnet node database\n");
+
+        dn_node_db_order = order;
 
         pr_info("DECnet: Node database hash table of %u buckets, %ld Kbytes\n",
                 dn_node_hash_mask,
@@ -362,14 +370,33 @@ int __init dn_node_init(void)
 
 void __exit dn_node_cleanup(void)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
-        timer_delete(&dn_node_timer);
+        /*
+         * dn_node_timeout() re-arms itself via mod_timer() and schedules
+         * dn_node_work, so the timer must be permanently disarmed (with the
+         * _sync variant) before the work is cancelled - otherwise it can
+         * queue fresh work behind us, to run after the module is gone.
+         */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,2,0)
+        timer_shutdown_sync(&dn_node_timer);
 #else
-        del_timer(&dn_node_timer);
+        del_timer_sync(&dn_node_timer);
 #endif
+        cancel_work_sync(&dn_node_work);
 
         /*** Flush node db entries ***/
+        /*
+         * NOTE: individual node entries chained off dn_node_db are still not
+         * flushed here (the upstream TODO above). Freeing the bucket array
+         * below is safe - dn_node_entry contains no timer, work item or other
+         * kernel registration, just refcounted data - but any entries present
+         * at unload are leaked. Unloading is rare, so this is a bounded leak
+         * rather than a correctness problem, and flushing properly needs the
+         * entry lifetime rules this module does not yet document.
+         */
 #ifdef CONFIG_PROC_FS
         remove_proc_entry("decnet_nodes", init_net.proc_net);
 #endif
+
+        free_pages((unsigned long)dn_node_db, dn_node_db_order);
+        dn_node_db = NULL;
 }
