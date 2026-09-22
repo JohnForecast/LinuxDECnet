@@ -650,7 +650,7 @@ EOF
 
     ${PRINTF} >/tmp/$$.service "[Unit]\n"
     ${PRINTF} >>/tmp/$$.service "Description=Start phone daemon\n"
-    ${PRINTF} >>/tmp/$$.service "After=network-online.target\n"
+    ${PRINTF} >>/tmp/$$.service "After=network-online.target decnet3.service\n"
     ${PRINTF} >>/tmp/$$.service "\n"
     ${PRINTF} >>/tmp/$$.service "[Service]\n"
     ${PRINTF} >>/tmp/$$.service "Type=oneshot\n"

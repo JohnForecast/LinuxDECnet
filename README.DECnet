@@ -434,6 +434,12 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    9/21/26
+
+    Modify phoned.service so that it waits for DECnet startup to complete
+    before trying to execute phoned.
+
+
     9/15/26
 
     NCP now exits with a status of 0 on success and 1 if an error is
