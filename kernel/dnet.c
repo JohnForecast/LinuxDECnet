@@ -516,6 +516,11 @@ static void dn_destroy_sock(
                         
                 case DN_RUN:
                         scp->state = DN_DI;
+			if (sk_wmem_alloc_get(sk)) {
+				/*** Implement SO_LINGER? ***/
+				skb_queue_purge(&scp->data.xmit_queue);
+				skb_queue_purge(&scp->other.xmit_queue);
+			}
                         fallthrough;
                         
                 case DN_DI:

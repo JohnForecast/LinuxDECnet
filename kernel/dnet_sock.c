@@ -109,6 +109,10 @@ void dn_sk_unhash_sock_bh(
         write_lock_bh(&dn_sk_hash_lock);
         sk_del_node_init(sk);
         write_unlock_bh(&dn_sk_hash_lock);
+
+#if LINUX_VERSION < KERNEL_VERSION(4,20,15)
+	sk->sk = NULL;
+#endif
 }
 
 /*
@@ -421,6 +425,8 @@ void dn_sk_destruct(
         skb_queue_purge(&scp->other.xmit_queue);
         
         skb_queue_purge(&scp->other_receive_queue);
+	skb_queue_purge(&sk->sk_receive_queue);
+	skb_queue_purge(&sk->sk_write_queue);
 }
 
 /*

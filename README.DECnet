@@ -431,6 +431,17 @@ Kernel module versions
 		    changes. Default setting is "performance" which is
 		    the same as prior versions.
 
+    3.0.41	More bug fixes:
+		  - For kernels before 4.20.15, the back pointer from
+		    struct sock to the socket was not cleared.
+		  - If an attempt to linearize a buffer failed, the lock
+		    on struct sock was not released.
+		  - If there were outstanding transmits awaiting
+		    acknowledgement when a socket was closed, a memory
+		    leak of the struct sock and the pending transmits
+		    would occur.
+
+
 Changes from previous Linux DECnet release:
 
 

@@ -796,8 +796,10 @@ static int dn_nsp_preprocess_ci(
                 
                 scp->stamp = jiffies;
 
-                if (unlikely(skb_linearize(skb)))
+                if (unlikely(skb_linearize(skb))) {
+			sock_put(sk);
                         goto drop;
+		}
 
                 return sk_receive_skb(sk, skb, 0);
         }
