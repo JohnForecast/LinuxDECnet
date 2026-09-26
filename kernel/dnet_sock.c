@@ -111,7 +111,8 @@ void dn_sk_unhash_sock_bh(
         write_unlock_bh(&dn_sk_hash_lock);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,20,15)
-	sk->sk->sk = NULL;
+	if (sk->sk_socket)
+		sk->sk_socket->sk = NULL;
 #endif
 }
 

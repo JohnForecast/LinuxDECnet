@@ -449,6 +449,26 @@ static int dn_wait_run(
 }
 
 /*
+ * Wait for transmits to complete or timeout
+ */
+static void dn_wait_for_transmits(
+  struct sock *sk,
+  long timeout
+)
+{
+	DEFINE_WAIT_FUNC(wait, woken_wake_function);
+
+	add_wait_queue(sk_sleep(sk), &wait);
+
+	do {
+		if (sk_wait_event(sk, &timeout, sk_wmem_alloc_get(sk), &wait))
+			break;
+	} while (!signal_pending(current) && timeout);
+
+	remove_wait_queue(sk_sleep(sk), &wait);
+}
+
+/*
  * Socket layer hooks
  */
 
@@ -517,7 +537,9 @@ static void dn_destroy_sock(
                 case DN_RUN:
                         scp->state = DN_DI;
 			if (sk_wmem_alloc_get(sk)) {
-				/*** Implement SO_LINGER? ***/
+				if (sock_flag(sk, SOCK_LINGER) && sk->sk_lingertime)
+					dn_wait_for_transmits(sk, sk->sk_lingertime);
+
 				skb_queue_purge(&scp->data.xmit_queue);
 				skb_queue_purge(&scp->other.xmit_queue);
 			}

@@ -336,6 +336,11 @@ bool dap_connection::do_connect(const char *node, const char *user,
     bufptr = buflen = 0;
     connected = true;
 
+// Try to linger on close() so that any final transmit is given a chance to
+// reach the remote system.
+    struct linger linger = { 1, 2 };
+    setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
+
     return true;
 }
 

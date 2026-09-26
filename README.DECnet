@@ -252,6 +252,15 @@ Notes:
 	be renamed as /etc/decnet.sysctl.old and a warning will be given
 	that the new version may need to be changed.
 
+    8.  SO_LINGER
+
+	The Linux DECnet socket options interface was modelled after the
+	DECnet-Ultrix implementation. One of the features which did not make
+	it into Linux was support for SO_LINGER. I have now added support for
+	SO_LINGER. When a DECnet socket is closed and SO_LINGER has been set
+	with a non-zero lingertime, the close logic will wait up to
+	lingertime seconds for any pending transmits to be acknowledged.
+
 
 Kernel module versions
 
@@ -441,8 +450,18 @@ Kernel module versions
 		    leak of the struct sock and the pending transmits
 		    would occur.
 
+    3.0.42	Added support for SO_LINGER.
+
 
 Changes from previous Linux DECnet release:
+
+
+    9/26/26
+
+    Set SO_LINGER with a timeout of 2 seconds on all DAP connections (dndir,
+    dncopy, dntype, dndel).
+
+    Update user code revision to 3.27
 
 
     9/21/26
