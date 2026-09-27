@@ -399,6 +399,8 @@ struct sock *dn_alloc_sock(
                 scp->strTime = 0;
 
                 dn_start_slow_timer(sk);
+
+		sock_prot_inuse_add(sock_net(sk), sk->sk_prot, 1);
         }
         return sk;
 }
@@ -428,6 +430,8 @@ void dn_sk_destruct(
         skb_queue_purge(&scp->other_receive_queue);
 	skb_queue_purge(&sk->sk_receive_queue);
 	skb_queue_purge(&sk->sk_write_queue);
+
+	sock_prot_inuse_add(sock_net(sk), sk->sk_prot, -1);
 }
 
 /*

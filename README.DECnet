@@ -452,6 +452,9 @@ Kernel module versions
 
     3.0.42	Added support for SO_LINGER.
 
+    3.0.43	Added support for counting active sockets. Can be seen
+		in /proc/net/protocols.
+
 
 Changes from previous Linux DECnet release:
 
