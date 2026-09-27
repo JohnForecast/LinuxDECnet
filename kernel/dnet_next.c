@@ -483,10 +483,16 @@ static const struct seq_operations dn_next_cache_seq_ops = {
 
 #endif
 
+/*
+ * Page order actually used for dn_next_cache, recorded at allocation time so
+ * that dn_next_cleanup() can hand the matching order back to free_pages().
+ */
+static int dn_next_cache_order;
+
 int __init dn_next_init(void)
 {
         int i, order = CACHE_ORDER;
-        
+
         /*
          * Try to allocate as large nexthop cache as possible, we can
          * always run with a smaller one.
@@ -502,6 +508,8 @@ int __init dn_next_init(void)
 
         if (!dn_next_cache)
                 panic("Failed to allocate DECnet nexthop cache\n");
+
+        dn_next_cache_order = order;
 
         pr_info("DECnet: Nexthop cache hash table of %u buckets, %ld Kbytes\n",
                 dn_next_hash_mask,
@@ -556,11 +564,21 @@ int __init dn_next_init(void)
 
 void __exit dn_next_cleanup(void)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
-        timer_delete(&dn_next_timer);
+        /*
+         * dn_next_timeout() re-arms itself via mod_timer(), so the timer must
+         * be permanently disarmed rather than merely deleted - and with the
+         * _sync variant, since a non-sync delete can return while the handler
+         * is still running on another CPU. The handler also schedules
+         * dn_next_work, so the timer must be stopped before the work is
+         * cancelled, otherwise it can queue fresh work behind us.
+         */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,2,0)
+        timer_shutdown_sync(&dn_next_timer);
 #else
-        del_timer(&dn_next_timer);
+        del_timer_sync(&dn_next_timer);
 #endif
+        cancel_work_sync(&dn_next_work);
+
         refcount_dec(&loop->refcount);
         dn_next_scan(1);
 
@@ -570,4 +588,7 @@ void __exit dn_next_cleanup(void)
         remove_proc_entry("decnet_cache", init_net.proc_net);
 #endif
 #endif
+
+        free_pages((unsigned long)dn_next_cache, dn_next_cache_order);
+        dn_next_cache = NULL;
 }

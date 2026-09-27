@@ -443,10 +443,59 @@ int __init dn_dev_init(void)
 
 void __exit dn_dev_exit(void)
 {
+        /*
+         * Shut the hello timer down first, since it touches the device
+         * structures released below.
+         *
+         * dn_dev_timer() unconditionally re-arms itself via add_timer() on
+         * every expiry, so del_timer_sync() is NOT sufficient here: it waits
+         * for a handler running on another CPU to finish, but that handler
+         * re-arms the timer just before returning, leaving it armed against
+         * memory we are about to free. timer_shutdown_sync() permanently
+         * disarms the timer so later re-arm attempts become no-ops.
+         */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,2,0)
+        timer_shutdown_sync(&ETHDEVICE.timer);
+#else
+        del_timer_sync(&ETHDEVICE.timer);
+#endif
+
+        /*
+         * Stop receiving device events before dropping our device
+         * references. Leaving this registered was the direct cause of a
+         * kernel panic on module unload: a subsequent "ip link delete"
+         * walked netdev_chain into the unmapped module.
+         */
+        unregister_netdevice_notifier(&dn_dev_notifier);
+
+        /*
+         * Release the ethernet device, unless dn_dev_event() already did so
+         * in response to NETDEV_UNREGISTER (e.g. the interface was deleted
+         * while we were loaded), in which case ETHDEVICE.dev is NULL.
+         */
+        if (ETHDEVICE.dev != NULL) {
+                dev_mc_del(ETHDEVICE.dev, dn_all_endnodes);
+                if (dn_IVprime)
+                        dev_mc_del(ETHDEVICE.dev, dn_unknown_dest);
+
+                dev_put(ETHDEVICE.dev);
+                ETHDEVICE.dev = NULL;
+        }
+
+        if (LOOPDEVICE.dev != NULL) {
+                dev_put(LOOPDEVICE.dev);
+                LOOPDEVICE.dev = NULL;
+        }
+
 #ifdef CONFIG_PROC_FS
-        remove_proc_entry("decnet_phase", NULL);
-        remove_proc_entry("decnet_dev", NULL);
-        remove_proc_entry("decnet_revision", NULL);
-        remove_proc_entry("decnet_cost", NULL);
+        /*
+         * These are created under init_net.proc_net (i.e. /proc/net), so they
+         * must be removed with that same parent. Passing NULL looks in /proc
+         * instead and silently removes nothing.
+         */
+        remove_proc_entry("decnet_phase", init_net.proc_net);
+        remove_proc_entry("decnet_dev", init_net.proc_net);
+        remove_proc_entry("decnet_revision", init_net.proc_net);
+        remove_proc_entry("decnet_cost", init_net.proc_net);
 #endif
 }
