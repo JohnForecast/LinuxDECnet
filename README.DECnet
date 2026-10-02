@@ -455,6 +455,14 @@ Kernel module versions
     3.0.43	Added support for counting active sockets. Can be seen
 		in /proc/net/protocols.
 
+    3.0.44	Re-wrote module _init() and _exit() code. Failing to load
+		the module will not leave it in an indeterminate state.
+		Unloading the module will free up allocated memory and
+		restore device state to what it was befor4e loading. In
+		order to unload decnet3, you must kill netd, phoned if it
+		was enabled at boot time and any processes with open
+		DECnet sockets.
+
 
 Changes from previous Linux DECnet release:
 

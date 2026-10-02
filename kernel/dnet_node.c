@@ -26,8 +26,8 @@
 #include <linux/timekeeping.h>
 #include "dnet.h"
 
-struct dn_node_hash_bucket *dn_node_db;
-int dn_node_hash_mask;
+struct dn_node_hash_bucket *dn_node_db = NULL;
+int dn_node_db_order, dn_node_hash_mask;
 static struct work_struct dn_node_work;
 static struct timer_list dn_node_timer;
 
@@ -333,8 +333,12 @@ int __init dn_node_init(void)
                         (struct dn_node_hash_bucket *)__get_free_pages(GFP_KERNEL, order);
         } while ((dn_node_db == NULL) && (--order > 0));
 
-        if (!dn_node_db)
-                panic("Failed to allocate DECnet node database\n");
+        if (!dn_node_db) {
+                pr_err("Failed to allocate DECnet node database\n");
+		return -ENOMEM;
+	}
+
+	dn_node_db_order = order;
 
         pr_info("DECnet: Node database hash table of %u buckets, %ld Kbytes\n",
                 dn_node_hash_mask,
@@ -360,16 +364,21 @@ int __init dn_node_init(void)
         return 0;
 }
 
-void __exit dn_node_cleanup(void)
+void __exit dn_node_exit(void)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
-        timer_delete(&dn_node_timer);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,158)
+	timer_shutdown_sync(&dn_node_timer);
 #else
-        del_timer(&dn_node_timer);
+	del_timer_sync(&dn_node_timer);
 #endif
 
-        /*** Flush node db entries ***/
+	cancel_work_sync(&dn_node_work);
+	dn_node_scan(1);
+
 #ifdef CONFIG_PROC_FS
         remove_proc_entry("decnet_nodes", init_net.proc_net);
 #endif
+
+	free_pages((unsigned long)dn_node_db, dn_node_db_order);
+	dn_node_db = NULL;
 }

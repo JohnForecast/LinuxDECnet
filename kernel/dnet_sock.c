@@ -737,6 +737,7 @@ void __init dn_sock_init(void)
 
 void __exit dn_sock_exit(void)
 {
+	remove_proc_entry("decnet", init_net.proc_net);
 }
 
 #endif

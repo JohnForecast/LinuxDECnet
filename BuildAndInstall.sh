@@ -414,7 +414,7 @@ echo
 while ${TRUE} ; do
     echo "When the build completes, do you want to:"
     echo "  1 - Install the new kernel modules and DECnet on this system"
-    echo "  2 - Pause before install the new kernel and DECnet on this system"
+    echo "  2 - Pause before install the new kernel modules and DECnet on this system"
     echo "  3 - Terminate this script"
     read -p "Enter code (1 - 3): " PostBuild junk
 

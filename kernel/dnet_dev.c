@@ -340,7 +340,7 @@ int __init dn_dev_init(void)
         }
 
         if (eth == NULL) {
-                pr_err("DECnet: ethernet device \"%s\" not found\n", dn_ifname);
+                pr_err("DECnet: ethernet/wifi device \"%s\" not found\n", dn_ifname);
                 return -ENODEV;
         }
 
@@ -373,10 +373,6 @@ int __init dn_dev_init(void)
         
         timer_setup(&ETHDEVICE.timer, dn_dev_timer, 0);
         
-        dev_mc_add(eth, dn_all_endnodes);
-        if (dn_IVprime)
-                dev_mc_add(eth, dn_unknown_dest);
-
         /*
          * If the MAC address of the ethernet device does not start with
          * "AA:00:04:00" we need to operate as an Phase IV prime node
@@ -389,21 +385,20 @@ int __init dn_dev_init(void)
         pr_info("DECnet: Phase IV%s, started on %s\n",
                 dn_IVprime ? " Prime" : "", dn_ifname);
         
-        if (dn_nodeaddr != NULL)
-                if (parse_addr(&decnet_address, dn_nodeaddr)) {
-                        pr_info("Invalid DECnet node address \"%s\"\n",
-                                dn_nodeaddr);
-                        rc = -EINVAL;
-                }
+	if (parse_addr(&decnet_address, dn_nodeaddr)) {
+		pr_info("Invalid DECnet node address \"%s\"\n",
+			dn_nodeaddr);
+		rc = -EINVAL;
+	}
         
-        if (dn_nodename != NULL)
-                if (parse_name(dn_nodename)) {
-                        pr_info("Invalid DECnet node name \"%s\"\n",
-                                dn_nodename);
-                        rc = -EINVAL;
-                }
+	if (dn_nodename != NULL)
+		if (parse_name(dn_nodename)) {
+			pr_info("Invalid DECnet node name \"%s\"\n",
+				dn_nodename);
+			rc = -EINVAL;
+		}
 
-        if (decnet_address) {
+        if (rc == 0) {
 #ifdef DNET_COMPAT
                 uint8_t ethaddr[ETH_ALEN];
 
@@ -416,6 +411,10 @@ int __init dn_dev_init(void)
                 } else 
 #endif
                 {
+        		dev_mc_add(eth, dn_all_endnodes);
+        		if (dn_IVprime)
+                		dev_mc_add(eth, dn_unknown_dest);
+
                         /*
                          * Special case the first hello timer so that we
                          * only wait 2 seconds.
@@ -425,28 +424,57 @@ int __init dn_dev_init(void)
                         ETHDEVICE.timer.expires = jiffies + HZ;
                         add_timer(&ETHDEVICE.timer);
                 }
-        }
 
-        register_netdevice_notifier(&dn_dev_notifier);
+	        register_netdevice_notifier(&dn_dev_notifier);
 
 #ifdef CONFIG_PROC_FS
-        proc_create_single("decnet_phase", 0444, init_net.proc_net, &dn_phase_show);
-        proc_create_single("decnet_dev", 0444, init_net.proc_net, &dn_dev_show);
-        proc_create_single("decnet_revision", 0444, init_net.proc_net, &dn_revision_show);
-        proc_create_single("decnet_cost", 0444, init_net.proc_net, &dn_cost_show);
+        	proc_create_single("decnet_phase", 0444, init_net.proc_net, &dn_phase_show);
+        	proc_create_single("decnet_dev", 0444, init_net.proc_net, &dn_dev_show);
+        	proc_create_single("decnet_revision", 0444, init_net.proc_net, &dn_revision_show);
+        	proc_create_single("decnet_cost", 0444, init_net.proc_net, &dn_cost_show);
 #endif
-        
-        if (rc)
+	} else {
+		dev_put(lo);
+		dev_put(eth);
+
                 pr_info("dn_dev_init() failed (%d)\n", rc);
+	}
         return rc;
 }
 
 void __exit dn_dev_exit(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,158)
+	timer_shutdown_sync(&ETHDEVICE.timer);
+#else
+	del_timer_sync(&ETHDEVICE.timer);
+#endif
+
+	unregister_netdevice_notifier(&dn_dev_notifier);
+
+	if (ETHDEVICE.router != NULL) {
+		dn_next_release(ETHDEVICE.router);
+		ETHDEVICE.router = NULL;
+	}
+
+	if (ETHDEVICE.dev != NULL) {
+		dev_mc_del(ETHDEVICE.dev, dn_all_endnodes);
+		if (dn_IVprime)
+			dev_mc_del(ETHDEVICE.dev, dn_unknown_dest);
+
+		dev_put(ETHDEVICE.dev);
+		ETHDEVICE.dev = NULL;
+	}
+
+	if (LOOPDEVICE.dev != NULL) {
+		dev_put(LOOPDEVICE.dev);
+		LOOPDEVICE.dev = NULL;
+	}
+
 #ifdef CONFIG_PROC_FS
-        remove_proc_entry("decnet_phase", NULL);
-        remove_proc_entry("decnet_dev", NULL);
-        remove_proc_entry("decnet_revision", NULL);
-        remove_proc_entry("decnet_cost", NULL);
+        remove_proc_entry("decnet_phase", init_net.proc_net);
+        remove_proc_entry("decnet_dev", init_net.proc_net);
+        remove_proc_entry("decnet_revision", init_net.proc_net);
+        remove_proc_entry("decnet_cost", init_net.proc_net);
 #endif
 }

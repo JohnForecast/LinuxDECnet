@@ -1976,49 +1976,70 @@ static int __init dnet_init(void)
         trc_init();
 #endif
         
-        /*
-         * Make sure mandatory parameters are present.
-         */
-        if ((dn_ifname != NULL ) && (dn_nodeaddr != NULL)) {
-                printk(banner);
+	/*
+	 * Make sure mandatory parameters are present.
+	 */
+	if ((dn_ifname == NULL) || (dn_nodeaddr == NULL)) {
+		char *extra = "ifname and nodeaddr";
 
-                if ((rc = proto_register(&dnet_proto, 1)) == 0) {
-                        if ((rc = dn_dev_init() == 0) &&
-                            (rc = dn_next_init() == 0) &&
-                            (rc = dn_node_init() == 0)) {
-                                dn_sock_init();
-                                sock_register(&dnet_family_ops);
-                                dev_add_pack(&dn_dix_packet_type);
-                                dn_register_sysctl();
+		if (dn_ifname == NULL)
+			extra = "ifname";
+		if (dn_nodeaddr == NULL)
+			extra = "nodeaddr";
+
+		pr_info("Missing required DECnet parameter(s) - %s\n", extra);
+		pr_info("DECnet module load failed (ENODEV)\n");
+		return -ENODEV;
+	}
+
+	printk(banner);
+
+	if ((rc = proto_register(&dnet_proto, 1)) == 0) {
+		if ((rc = dn_dev_init()) == 0) {
+			if ((rc = dn_next_init()) == 0) {
+				if ((rc = dn_node_init()) == 0) {
+					dn_sock_init();
+					sock_register(&dnet_family_ops);
+					dev_add_pack(&dn_dix_packet_type);
+					dn_register_sysctl();
 
 #ifdef CONFIG_PROC_FS
-                                proc_create_net_single_write("decnet_zero_node",
-                                                              0222,
-                                                              init_net.proc_net,
-                                                              NULL,
-                                                              dnet_zero_write,
-                                                              NULL);
+					proc_create_net_single_write(
+						"decnet_zero_node",
+						0222,
+						init_net.proc_net,
+						NULL,
+						dnet_zero_write,
+						NULL);
 #endif
-                                return 0;
-                        }
-                }
-        } else {
-                if (dn_ifname == NULL)
-                        pr_info("Required DECnet parameter \"ifname\" missing\n");
-                if (dn_nodeaddr == NULL)
-                        pr_info("Required DECnet parameter \"nodeaddr\" missing\n");
-                rc = -ENODEV;
-        }
-        pr_info("DECnet load failed (%d)\n", rc);
-        return rc;
+					return 0;
+				}
+				dn_next_exit();
+			}
+			dn_dev_exit();
+		}
+		proto_unregister(&dnet_proto);
+	}
+	pr_info("DECnet module load failed (%d)\n", -rc);
+	return rc;
 }
 
 static void __exit dnet_exit(void)
 {
+	dev_remove_pack(&dn_dix_packet_type);
+	sock_unregister(AF_DECnet);
+
+	dn_dev_exit();
+	dn_next_exit();
+	dn_node_exit();
+	dn_sock_exit();
+
+	dn_unregister_sysctl();
+	proto_unregister(&dnet_proto);
+
 #ifdef CONFIG_PROC_FS
-        remove_proc_entry("decnet_zero_node", NULL);
+        remove_proc_entry("decnet_zero_node", init_net.proc_net);
 #endif
-        dn_dev_exit();
 }
 
 module_init(dnet_init);

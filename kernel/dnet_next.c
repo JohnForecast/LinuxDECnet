@@ -25,8 +25,8 @@
 #include <linux/version.h>
 #include "dnet.h"
 
-struct dn_next_hash_bucket *dn_next_cache;
-int dn_next_hash_mask;
+struct dn_next_hash_bucket *dn_next_cache = NULL;
+int dn_next_cache_order, dn_next_hash_mask;
 static struct timer_list dn_next_timer;
 static struct work_struct dn_next_work;
 
@@ -500,8 +500,12 @@ int __init dn_next_init(void)
                         (struct dn_next_hash_bucket *)__get_free_pages(GFP_KERNEL, order);
         } while ((dn_next_cache == NULL) && (--order > 0));
 
-        if (!dn_next_cache)
-                panic("Failed to allocate DECnet nexthop cache\n");
+        if (!dn_next_cache) {
+                pr_err("Failed to allocate DECnet nexthop cache\n");
+		return -ENOMEM;
+	}
+
+	dn_next_cache_order = order;
 
         pr_info("DECnet: Nexthop cache hash table of %u buckets, %ld Kbytes\n",
                 dn_next_hash_mask,
@@ -528,8 +532,9 @@ int __init dn_next_init(void)
         loop = create_next_entry(decnet_address & dn_next_hash_mask,
                                  decnet_address, loopMacAddr, 1);
         if (loop == NULL) {
-          pr_info("Unable to allocate nexthop entry to self (lo)\n");
-          return -ENOMEM;
+        	pr_info("Unable to allocate nexthop entry to self (lo)\n");
+		free_pages((unsigned long)dn_next_cache, order);
+        	return -ENOMEM;
         }
 
         /*
@@ -554,15 +559,20 @@ int __init dn_next_init(void)
         return 0;
 }
 
-void __exit dn_next_cleanup(void)
+void __exit dn_next_exit(void)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
-        timer_delete(&dn_next_timer);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,158)
+	timer_shutdown_sync(&dn_next_timer);
 #else
-        del_timer(&dn_next_timer);
+	del_timer_sync(&dn_next_timer);
 #endif
+
+	cancel_work_sync(&dn_next_work);
         refcount_dec(&loop->refcount);
         dn_next_scan(1);
+
+	free_pages((unsigned long)dn_next_cache, dn_next_cache_order);
+	dn_next_cache = NULL;
 
 #ifdef CONFIG_PROC_FS
 #ifdef DNET_COMPAT
