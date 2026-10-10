@@ -467,6 +467,13 @@ Kernel module versions
 Changes from previous Linux DECnet release:
 
 
+    10/10/26
+
+    Don't send access control information for dlogin.
+
+    Update user code revision to 3.28
+
+
     9/26/26
 
     Set SO_LINGER with a timeout of 2 seconds on all DAP connections (dndir,

@@ -270,6 +270,7 @@ int found_setup_link(char *node, int object, int (*processor)(char *, int),
         if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)))
                 perror("setting snd timeout");
 
+#if 0
         /* Send the logged in userID for niceness sake */
         memset(&accessdata, 0, sizeof(accessdata));
         local_user = cuserid(NULL);
@@ -284,6 +285,7 @@ int found_setup_link(char *node, int object, int (*processor)(char *, int),
                 setsockopt(sockfd, DNPROTO_NSP, SO_CONACCESS, &accessdata,
                            sizeof(accessdata));
         }
+#endif
 
         sockaddr.sdn_family = AF_DECnet;
         sockaddr.sdn_flags = 0x00;
