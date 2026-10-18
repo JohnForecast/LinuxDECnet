@@ -461,7 +461,7 @@ static void dn_wait_for_transmits(
 	add_wait_queue(sk_sleep(sk), &wait);
 
 	do {
-		if (sk_wait_event(sk, &timeout, sk_wmem_alloc_get(sk), &wait))
+		if (sk_wait_event(sk, &timeout, sk_wmem_alloc_get(sk) == 0, &wait))
 			break;
 	} while (!signal_pending(current) && timeout);
 

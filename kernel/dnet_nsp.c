@@ -1178,7 +1178,13 @@ int dn_nsp_rcv(
                                         return sk_receive_skb(sk, skb, 0);
                                 }
 
-                                return dn_nsp_no_sock(skb, NSP_REASON_NL);
+				/*
+				 * Don't send a "No Link" Disconnect Confirm
+				 * in response to a received Disconnect
+				 * Confirm.
+				 */
+				if (flags != NSP_MSG_DC)
+                                	return dn_nsp_no_sock(skb, NSP_REASON_NL);
                         }
                 }
         }

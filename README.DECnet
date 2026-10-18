@@ -458,10 +458,17 @@ Kernel module versions
     3.0.44	Re-wrote module _init() and _exit() code. Failing to load
 		the module will not leave it in an indeterminate state.
 		Unloading the module will free up allocated memory and
-		restore device state to what it was befor4e loading. In
+		restore device state to what it was before loading. In
 		order to unload decnet3, you must kill netd, phoned if it
 		was enabled at boot time and any processes with open
 		DECnet sockets.
+
+    3.0.45	Fix bug introduced in 3.0.42, the check for when buffers were
+		inuse was inverted.This sometime caused the close() code
+`		to wait forever and consume 100% of single core doing so.
+
+		If we receive a Disconnect Confirm with an invalid logical
+		link address, don't send a No-Link message in response.
 
 
 Changes from previous Linux DECnet release:
