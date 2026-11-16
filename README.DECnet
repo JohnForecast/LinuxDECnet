@@ -470,6 +470,9 @@ Kernel module versions
 		If we receive a Disconnect Confirm with an invalid logical
 		link address, don't send a No-Link message in response.
 
+    3.0.46	Simplify the wait logic for SO_LINGER. Really fix the bug
+		in close() which caused it to wait forever.
+
 
 Changes from previous Linux DECnet release:
 
